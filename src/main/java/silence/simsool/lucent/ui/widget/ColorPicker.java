@@ -55,7 +55,6 @@ public class ColorPicker extends UIWidget {
 	private int alphaX, alphaY;
 
 	private int panelBg     = 0xFF141517;
-	private int panelBorder = 0xFF444444;
 	private int inputBorder = 0x883D4049;
 	private int inputFocus  = 0xFF66AAFF;
 	private int inputErr    = 0xFFFF4444;

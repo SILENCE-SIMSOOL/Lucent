@@ -9,9 +9,10 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.SpecialGuiElementRegistry;
-import silence.simsool.lucent.client.dev.screens.LucentConfigScreen;
-import silence.simsool.lucent.client.dev.screens.LucentConfigScreenSecond;
+import silence.simsool.lucent.client.dev.examplemods.ChattingMod;
+import silence.simsool.lucent.config.ModuleManager;
 import silence.simsool.lucent.general.UChat;
+import silence.simsool.lucent.ui.screens.ConfigScreen;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 
 public class LucentClient implements ClientModInitializer {
@@ -39,7 +40,7 @@ public class LucentClient implements ClientModInitializer {
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (ScreenOpenHelper.shouldOpen) {
-				client.setScreen(new LucentConfigScreenSecond(moduleManager));
+				client.setScreen(new ConfigScreen(moduleManager));
 				//client.setScreen(new LucentConfigScreen(moduleManager));
 				ScreenOpenHelper.shouldOpen = false;
 			}

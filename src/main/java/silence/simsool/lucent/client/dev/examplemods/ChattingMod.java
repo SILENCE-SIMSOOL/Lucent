@@ -1,4 +1,4 @@
-package silence.simsool.lucent.client;
+package silence.simsool.lucent.client.dev.examplemods;
 
 import silence.simsool.lucent.general.abstracts.Module;
 import silence.simsool.lucent.general.enums.ConfigType;

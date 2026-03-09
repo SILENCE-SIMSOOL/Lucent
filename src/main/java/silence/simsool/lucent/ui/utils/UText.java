@@ -1,20 +1,20 @@
 package silence.simsool.lucent.ui.utils;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
-import static net.minecraft.resources.Identifier.parse;
-import static silence.simsool.lucent.Lucent.mc;
-
-import java.awt.Font;
-import java.io.InputStream;
-
-import net.minecraft.client.gui.GuiGraphics;
-import silence.simsool.lucent.Lucent;
-import silence.simsool.lucent.ui.font.CFontRenderer;
-import silence.simsool.lucent.ui.font.LucentFont;
+//import java.util.List;
+//import java.util.ArrayList;
+//import java.util.HashMap;
+//import java.util.Map;
+//
+//import static net.minecraft.resources.Identifier.parse;
+//import static silence.simsool.lucent.Lucent.mc;
+//
+//import java.awt.Font;
+//import java.io.InputStream;
+//
+//import net.minecraft.client.gui.GuiGraphics;
+//import silence.simsool.lucent.Lucent;
+//import silence.simsool.lucent.ui.font.CFontRenderer;
+//import silence.simsool.lucent.ui.font.LucentFont;
 
 public class UText {
 

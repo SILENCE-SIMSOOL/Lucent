@@ -1,12 +1,11 @@
 package silence.simsool.lucent.ui.widget;
 
-import static silence.simsool.lucent.Lucent.mc;
-
 import java.util.function.Consumer;
 
 import net.minecraft.client.gui.GuiGraphics;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UColor;
+import silence.simsool.lucent.ui.utils.UDisplay;
 import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 import silence.simsool.lucent.ui.widget.base.UIWidget;
 
@@ -113,8 +112,8 @@ public class ColorPickerButton extends UIWidget {
 	    int pickerW = ColorPicker.getPreferredWidth();
 	    pickerAbove = false;
 
-	    float screenH = mc.getWindow().getScreenHeight() / NVGRenderer.getStandardGuiScale();
-	    float screenW = mc.getWindow().getScreenWidth()  / NVGRenderer.getStandardGuiScale();
+	    float screenH = UDisplay.getScreenHeight() / NVGRenderer.getStandardGuiScale();;
+	    float screenW = UDisplay.getScreenWidth() / NVGRenderer.getStandardGuiScale();;
 
 	    int py = y + height + 4;
 	    if (py + pickerH > screenH) {
@@ -138,8 +137,7 @@ public class ColorPickerButton extends UIWidget {
 	    int pickerW = ColorPicker.getPreferredWidth();
 	    int pickerH = ColorPicker.getPreferredHeight();
 
-	    float screenW = mc.getWindow().getScreenWidth()  / NVGRenderer.getStandardGuiScale();
-	    float screenH = mc.getWindow().getScreenHeight() / NVGRenderer.getStandardGuiScale();
+	    float screenW = UDisplay.getScreenWidth() / NVGRenderer.getStandardGuiScale();
 
 	    int px = this.x;
 	    int py = pickerAbove ? this.y - pickerH - 4 : this.y + this.height + 4;

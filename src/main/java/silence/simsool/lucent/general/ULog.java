@@ -3,35 +3,34 @@ package silence.simsool.lucent.general;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.general.enums.LogLevel;
 
 public class ULog {
-	private static String NAME = Lucent.NAME;
-	private static Logger LOGGER = LoggerFactory.getLogger(NAME);
+	private final String name;
+	private final Logger logger;
 
-	public static Logger getLogger() {
-		return LOGGER;
+	public ULog(String name) {
+		this.name = name;
+		this.logger = LoggerFactory.getLogger(name);
 	}
 
-	public static void setLogger(String name) {
-		NAME = name;
-		LOGGER = LoggerFactory.getLogger(NAME);
-	}
-
-	public static void custom(String message, LogLevel level) {
-		print(getPrefix(level) + message);
+	public Logger getLogger() {
+		return logger;
 	}
 
 	public static void print(String message) {
 		System.out.println(message);
 	}
 
-	public static void printc(String message) {
+	public void printc(String message) {
 		print(getPrefix() + message);
 	}
 
-	public static void log(String message, LogLevel level) {
+	public void custom(String message, LogLevel level) {
+		print(getPrefix(level) + message);
+	}
+
+	public void log(String message, LogLevel level) {
 		switch (level) {
 			case INFO -> info(message);
 			case WARN -> warn(message);
@@ -41,91 +40,91 @@ public class ULog {
 		}
 	}
 
-	public static void info(String message) {
-		LOGGER.info(message);
+	public void info(String message) {
+		logger.info(message);
 	}
 
-	public static void warn(String message) {
-		LOGGER.warn(message);
+	public void warn(String message) {
+		logger.warn(message);
 	}
 
-	public static void error(String message) {
-		LOGGER.error(message);
+	public void error(String message) {
+		logger.error(message);
 	}
 
-	public static void debug(String message) {
-		LOGGER.debug(message);
+	public void debug(String message) {
+		logger.debug(message);
 	}
 
-	public static void trace(String message) {
-		LOGGER.trace(message);
+	public void trace(String message) {
+		logger.trace(message);
 	}
 
-	public static void info(String message, Throwable t) {
-		LOGGER.info(message, t);
+	public void info(String message, Throwable t) {
+		logger.info(message, t);
 	}
 
-	public static void warn(String message, Throwable t) {
-		LOGGER.warn(message, t);
+	public void warn(String message, Throwable t) {
+		logger.warn(message, t);
 	}
 
-	public static void error(String message, Throwable t) {
-		LOGGER.error(message, t);
+	public void error(String message, Throwable t) {
+		logger.error(message, t);
 	}
 
-	public static void debug(String message, Throwable t) {
-		LOGGER.debug(message, t);
+	public void debug(String message, Throwable t) {
+		logger.debug(message, t);
 	}
 
-	public static void trace(String message, Throwable t) {
-		LOGGER.trace(message, t);
+	public void trace(String message, Throwable t) {
+		logger.trace(message, t);
 	}
 
-	public static void info(String format, Object... args) {
-		LOGGER.info(format, args);
+	public void info(String format, Object... args) {
+		logger.info(format, args);
 	}
 
-	public static void warn(String format, Object... args) {
-		LOGGER.warn(format, args);
+	public void warn(String format, Object... args) {
+		logger.warn(format, args);
 	}
 
-	public static void error(String format, Object... args) {
-		LOGGER.error(format, args);
+	public void error(String format, Object... args) {
+		logger.error(format, args);
 	}
 
-	public static void debug(String format, Object... args) {
-		LOGGER.debug(format, args);
+	public void debug(String format, Object... args) {
+		logger.debug(format, args);
 	}
 
-	public static void trace(String format, Object... args) {
-		LOGGER.trace(format, args);
+	public void trace(String format, Object... args) {
+		logger.trace(format, args);
 	}
 
-	public static void info(String format, Throwable t, Object... args) {
-		LOGGER.info(format, args, t);
+	public void info(String format, Throwable t, Object... args) {
+		logger.info(format, args, t);
 	}
 
-	public static void warn(String format, Throwable t, Object... args) {
-		LOGGER.warn(format, args, t);
+	public void warn(String format, Throwable t, Object... args) {
+		logger.warn(format, args, t);
 	}
 
-	public static void error(String format, Throwable t, Object... args) {
-		LOGGER.error(format, args, t);
+	public void error(String format, Throwable t, Object... args) {
+		logger.error(format, args, t);
 	}
 
-	public static void debug(String format, Throwable t, Object... args) {
-		LOGGER.debug(format, args, t);
+	public void debug(String format, Throwable t, Object... args) {
+		logger.debug(format, args, t);
 	}
 
-	public static void trace(String format, Throwable t, Object... args) {
-		LOGGER.trace(format, args, t);
+	public void trace(String format, Throwable t, Object... args) {
+		logger.trace(format, args, t);
 	}
 
-	private static String getPrefix() {
-		return "[" + NAME + "] ";
+	private String getPrefix() {
+		return "[" + name + "] ";
 	}
 
-	private static String getPrefix(LogLevel level) {
-		return "[" + NAME + "] [" + level.name() + "] ";
+	private String getPrefix(LogLevel level) {
+		return "[" + name + "] [" + level.name() + "] ";
 	}
 }

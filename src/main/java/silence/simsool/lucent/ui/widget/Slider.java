@@ -23,7 +23,7 @@ public class Slider extends UIWidget {
     float VALUE_FONT       = 16f;
     int   VALUE_BOX_H      = 22;
     int   VALUE_BOX_PAD    = 12;
-    int VALUE_BOX_W = 0;
+    int   VALUE_BOX_W      = 0;
 
 	private double min;
 	private double max;

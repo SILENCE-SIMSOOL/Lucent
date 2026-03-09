@@ -1,4 +1,4 @@
-package silence.simsool.lucent.client.dev.screens;
+package silence.simsool.lucent.ui.screens;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
-import silence.simsool.lucent.client.ModuleManager;
+import silence.simsool.lucent.config.ModuleManager;
 import silence.simsool.lucent.general.abstracts.Module;
 import silence.simsool.lucent.general.interfaces.ModConfig;
 import silence.simsool.lucent.ui.utils.UAnimation;
@@ -30,7 +30,7 @@ import silence.simsool.lucent.ui.widget.Slider;
 import silence.simsool.lucent.ui.widget.ToggleButton;
 import silence.simsool.lucent.ui.widget.base.UIWidget;
 
-public class LucentConfigScreenSecond extends Screen {
+public class ConfigScreen extends Screen {
 
     // ─── 색상 팔레트 (OneConfig 스타일로 조정) ─────────────────────────────────────────────
     private static final int C_WIN_BG         = 0xFF18181A;
@@ -114,7 +114,7 @@ public class LucentConfigScreenSecond extends Screen {
     private double maxScroll    = 0;
 
     // ─── 생성자 ──────────────────────────────────────────────────────────────────
-    public LucentConfigScreenSecond(ModuleManager moduleManager) {
+    public ConfigScreen(ModuleManager moduleManager) {
         super(Component.literal("Lucent Config"));
         this.moduleManager = moduleManager;
     }
@@ -366,10 +366,9 @@ public class LucentConfigScreenSecond extends Screen {
 
     private void renderSidebar() {
         int ix = winX + PAD; // 좌측 패딩
-        
-        // 로고 텍스트 (아이콘 느낌)
-        float lw = NVGRenderer.textWidth("L", Fonts.PRETENDARD_SEMIBOLD, 20f);
+
         NVGRenderer.text("LUCENT", ix, winY + 26f, Fonts.PRETENDARD_SEMIBOLD, C_ACCENT, 20f);
+        //float lw = NVGRenderer.textWidth("L", Fonts.PRETENDARD_SEMIBOLD, 20f);
         //NVGRenderer.text("L", ix, winY + 26f, Fonts.PRETENDARD_SEMIBOLD, C_ACCENT, 20f);
         //NVGRenderer.text("UCENT", ix + lw, winY + 26f, Fonts.PRETENDARD_SEMIBOLD, C_TEXT_PRIMARY, 20f);
 
@@ -594,7 +593,7 @@ public class LucentConfigScreenSecond extends Screen {
 
         // 사이드바 탭 전환
         if (btn == 0) {
-            int ix = winX + PAD;
+            //int ix = winX + PAD;
             int sy = winY + 80 + 36 + 16; // 첫 Mods y 위치
             
             String[] pages  = {"Mods", "Profiles", "Themes", "Preferences"};

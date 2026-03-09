@@ -21,7 +21,6 @@ public class Selector extends UIWidget {
 	private int arrowColor       = 0xFFAAAAAA;
 	private int dropdownBgColor  = 0xFF222222;
 	private int itemHoverColor   = 0xFF3A3A3A;
-	private int selectedBgColor  = 0xFF1A4A8A;
 	private int separatorColor   = 0xFF333333;
 
 	private static int PADDING     = 14;
