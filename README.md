@@ -78,13 +78,13 @@ public class MyModClient implements ClientModInitializer {
 
 ### 3. Opening the Config Screen
 
-You can easily open the Lucent generated UI screen by passing your `ModuleManager` into the `LucentConfigScreenSecond` (the primary modern config screen API). 
+You can easily open the Lucent generated UI screen by passing your `ModuleManager` into the `LucentConfigScreen` (the primary modern config screen API). 
 
 ```java
-import silence.simsool.lucent.client.dev.screens.LucentConfigScreenSecond;
+import silence.simsool.lucent.client.dev.screens.LucentConfigScreen;
 
 // E.g., inside a KeyBinding callback or a command
-Minecraft.getInstance().setScreen(new LucentConfigScreenSecond(MyModClient.moduleManager));
+Minecraft.getInstance().setScreen(new LucentConfigScreen(MyModClient.moduleManager));
 ```
 
 ### 4. Utilities
@@ -114,3 +114,4 @@ When you register properties using `@ModConfig`, Lucent automatically generates 
 - `ConfigType.SLIDER`: An interactive slider with min/max/step bounds, custom input box, and drop-shadow thumb.
 - `ConfigType.SELECTOR`: A dropdown selection box for enums/strings.
 - `ConfigType.COLOR`: A real-time PolyUI-like Color Picker modal.
+
