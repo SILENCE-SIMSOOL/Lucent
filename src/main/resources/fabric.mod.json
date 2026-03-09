@@ -1,0 +1,35 @@
+{
+	"schemaVersion": 1,
+	"id": "lucent",
+	"version": "${version}",
+	"name": "Lucent",
+	"description": "",
+	"authors": [
+		"SimSool"
+	],
+	"contact": {
+		"homepage": "",
+		"sources": ""
+	},
+	"license": "MIT",
+	"icon": "assets/lucent/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"silence.simsool.lucent.LucentMod"
+		],
+		"client": [
+			"silence.simsool.lucent.client.LucentClient"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.15.11",
+		"minecraft": "~1.21",
+		"java": ">=21",
+		"fabric-api": "*",
+		"fabric-language-kotlin": "1.13.8+kotlin.2.3.0"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
