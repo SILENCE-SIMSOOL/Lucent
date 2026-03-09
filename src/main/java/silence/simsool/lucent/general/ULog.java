@@ -4,14 +4,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import silence.simsool.lucent.Lucent;
+import silence.simsool.lucent.general.enums.LogLevel;
 
 public class ULog {
 	private static String NAME = Lucent.NAME;
 	private static Logger LOGGER = LoggerFactory.getLogger(NAME);
-
-	public enum LogLevel {
-		INFO, WARN, ERROR, DEBUG, TRACE
-	}
 
 	public static Logger getLogger() {
 		return LOGGER;

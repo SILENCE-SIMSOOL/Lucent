@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.SpecialGuiElementRegistry;
 import silence.simsool.lucent.client.dev.screens.LucentConfigScreen;
 import silence.simsool.lucent.client.dev.screens.LucentConfigScreenSecond;
+import silence.simsool.lucent.general.UChat;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 
 public class LucentClient implements ClientModInitializer {
@@ -30,6 +31,7 @@ public class LucentClient implements ClientModInitializer {
 			dispatcher.register(ClientCommandManager.literal("screen")
 				.executes(context -> {
 					//UText.init();
+					UChat.chat(ChattingMod.removeChatBackground);
 					ScreenOpenHelper.shouldOpen = true;
 					return Command.SINGLE_SUCCESS;
 				}));

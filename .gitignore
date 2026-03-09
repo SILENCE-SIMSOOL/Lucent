@@ -2,7 +2,7 @@
 *.md
 *.py
 ! Compile.bat
-* .launch
+*.launch
 
 # gradle
 .gradle/

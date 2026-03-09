@@ -10,6 +10,30 @@ public class UChat {
 		if (mc.player != null) mc.player.displayClientMessage(Component.literal(text), false);
 	}
 
+	public static void chat(int value) {
+		chat(String.valueOf(value));
+	}
+
+	public static void chat(long value) {
+		chat(String.valueOf(value));
+	}
+
+	public static void chat(double value) {
+		chat(String.valueOf(value));
+	}
+
+	public static void chat(float value) {
+		chat(String.valueOf(value));
+	}
+
+	public static void chat(boolean value) {
+		chat(value ? "true" : "false");
+	}
+
+	public static void chat(Object value) {
+		chat(value != null ? value.toString() : "null");
+	}
+
 	public static void say(String text) {
 		if (mc.player != null) mc.player.connection.sendChat(text);
 	}

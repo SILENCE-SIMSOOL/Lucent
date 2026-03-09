@@ -34,6 +34,16 @@ public class ModuleManager {
 	public void registerAll() {
 		register(new ChattingMod());
 	}
+	
+	@SuppressWarnings("unchecked")
+	public <T extends Module> T getModule(Class<T> moduleClass) {
+		for (Module m : modules) {
+			if (moduleClass.isAssignableFrom(m.getClass())) {
+				return (T) m;
+			}
+		}
+		return null;
+	}
 
 	public void loadConfigs() {
 		if (!configDirectory.exists()) return;
