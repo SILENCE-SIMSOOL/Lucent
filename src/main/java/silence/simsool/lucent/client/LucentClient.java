@@ -20,6 +20,7 @@ public class LucentClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		moduleManager.registerAll();
+		moduleManager.loadConfigs();
 
 		SpecialGuiElementRegistry.register(context -> 
 	   		new NVGPIPRenderer(context.vertexConsumers())

@@ -795,4 +795,12 @@ public class LucentConfigScreenSecond extends Screen {
             NVGRenderer.text(description, x + 16, y + 46, Fonts.PRETENDARD,        C_TEXT_SECONDARY, 12f);
         }
     }
+
+    @Override
+    public void removed() {
+        super.removed();
+        if (moduleManager != null) {
+            moduleManager.saveConfigs();
+        }
+    }
 }

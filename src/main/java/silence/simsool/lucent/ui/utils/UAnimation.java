@@ -149,7 +149,18 @@ public class UAnimation {
 	/** Snap value to step units (for sliders) */
 	public static double snapToStep(double value, double step) {
 		if (step <= 0) return value;
-		return Math.round(value / step) * step;
+		double snapped = Math.round(value / step) * step;
+		
+		int decimals = 0;
+		double s = step;
+		while (s < 1 && decimals < 10) {
+			s *= 10;
+			decimals++;
+		}
+		
+		java.math.BigDecimal bd = new java.math.BigDecimal(Double.toString(snapped));
+		bd = bd.setScale(decimals, java.math.RoundingMode.HALF_UP);
+		return bd.doubleValue();
 	}
 
 	/** Format based on decimal places (matching step) */
