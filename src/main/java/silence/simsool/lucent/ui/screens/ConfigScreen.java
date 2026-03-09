@@ -112,6 +112,8 @@ public class ConfigScreen extends Screen {
 
     private double scrollOffset = 0;
     private double maxScroll    = 0;
+    
+    private float uiScale = 1.0f;
 
     // ─── 생성자 ──────────────────────────────────────────────────────────────────
     public ConfigScreen(ModuleManager moduleManager) {
@@ -120,10 +122,10 @@ public class ConfigScreen extends Screen {
     }
 
     private float scaledMX() {
-        return (float)(minecraft.mouseHandler.xpos() / NVGRenderer.getStandardGuiScale());
+        return (float)(minecraft.mouseHandler.xpos() / (NVGRenderer.getStandardGuiScale() * uiScale));
     }
     private float scaledMY() {
-        return (float)(minecraft.mouseHandler.ypos() / NVGRenderer.getStandardGuiScale());
+        return (float)(minecraft.mouseHandler.ypos() / (NVGRenderer.getStandardGuiScale() * uiScale));
     }
 
     @Override
@@ -134,8 +136,16 @@ public class ConfigScreen extends Screen {
         float screenW = minecraft.getWindow().getScreenWidth()  / gs;
         float screenH = minecraft.getWindow().getScreenHeight() / gs;
 
-        winX = (int)((screenW - WINDOW_W) / 2f);
-        winY = (int)((screenH - WINDOW_H) / 2f);
+        float pad = 40f;
+        float scaleX = (screenW - pad) / WINDOW_W;
+        float scaleY = (screenH - pad) / WINDOW_H;
+        uiScale = Math.min(1.0f, Math.min(scaleX, scaleY));
+
+        float virtScreenW = screenW / uiScale;
+        float virtScreenH = screenH / uiScale;
+
+        winX = (int)((virtScreenW - WINDOW_W) / 2f);
+        winY = (int)((virtScreenH - WINDOW_H) / 2f);
 
         contentX = winX + SIDEBAR_W;
         contentY = winY + TOPBAR_H;
@@ -248,8 +258,23 @@ public class ConfigScreen extends Screen {
                             overlayWidgets.add(sel);
                         }
                         case COLOR -> {
-                            ColorPickerButton cp = new ColorPickerButton(ux - 54, curY + 17, 54, 38, (int) val);
-                            cp.setOnChange(c -> { try { field.set(currentModSettings, c); } catch (Exception e) {} });
+                            int initialColor = 0xFFFFFFFF;
+                            if (val instanceof java.awt.Color cObj) {
+                                initialColor = cObj.getRGB();
+                            } else if (val instanceof Number nObj) {
+                                initialColor = nObj.intValue();
+                            }
+                        	
+                            ColorPickerButton cp = new ColorPickerButton(ux - 54, curY + 17, 54, 38, initialColor);
+                            cp.setOnChange(c -> { 
+                                try { 
+                                    if (field.getType() == java.awt.Color.class) {
+                                        field.set(currentModSettings, new java.awt.Color(c, true));
+                                    } else {
+                                        field.set(currentModSettings, c);
+                                    }
+                                } catch (Exception e) {} 
+                            });
                             overlayWidgets.add(cp);
                         }
                         case BUTTON -> {
@@ -310,7 +335,7 @@ public class ConfigScreen extends Screen {
             float smy = scaledMY();
 
             NVGRenderer.push();
-            NVGRenderer.scale(gs, gs);
+            NVGRenderer.scale(gs * uiScale, gs * uiScale);
 
             loadIconsIfNeeded();
 
@@ -537,14 +562,17 @@ public class ConfigScreen extends Screen {
         }
 
         for (UIWidget w : overlayWidgets) {
-            if (shouldSkipOverlay(w)) continue;
-            if (w.mouseClicked(mx, my + scrollOffset, btn)) return true;
+            if (!shouldSkipOverlay(w)) {
+                if (w.mouseClicked(mx, my + scrollOffset, btn)) return true;
+            }
         }
 
         if (mx >= contentX && mx <= contentX + contentW
                 && my >= scissorY && my <= scissorY + scissorH) {
             for (UIWidget w : widgets)
                 if (w.mouseClicked(mx, my + scrollOffset, btn)) return true;
+            for (UIWidget w : overlayWidgets)
+                if (shouldSkipOverlay(w) && w.mouseClicked(mx, my + scrollOffset, btn)) return true;
         }
 
         // 상단바 네비게이션 버튼 클릭
@@ -628,14 +656,19 @@ public class ConfigScreen extends Screen {
     public boolean mouseDragged(MouseButtonEvent event, double mouseX, double mouseY) {
         float mx = scaledMX(), my = scaledMY();
         int btn  = event.button();
+        
         for (UIWidget w : overlayWidgets) {
-            if (shouldSkipOverlay(w)) continue;
-            if (w.mouseDragged(mx, my + scrollOffset, btn, event.x(), event.y())) return true;
+            if (!shouldSkipOverlay(w)) {
+                if (w.mouseDragged(mx, my + scrollOffset, btn, event.x(), event.y())) return true;
+            }
         }
+        
         if (mx >= contentX && mx <= contentX + contentW
                 && my >= scissorY && my <= scissorY + scissorH) {
             for (UIWidget w : widgets)
                 if (w.mouseDragged(mx, my + scrollOffset, btn, event.x(), event.y())) return true;
+            for (UIWidget w : overlayWidgets)
+                if (shouldSkipOverlay(w) && w.mouseDragged(mx, my + scrollOffset, btn, event.x(), event.y())) return true;
         }
         return super.mouseDragged(event, mouseX, mouseY);
     }
@@ -644,14 +677,19 @@ public class ConfigScreen extends Screen {
     public boolean mouseReleased(MouseButtonEvent event) {
         float mx = scaledMX(), my = scaledMY();
         int btn  = event.button();
+        
         for (UIWidget w : overlayWidgets) {
-            if (shouldSkipOverlay(w)) continue;
-            if (w.mouseReleased(mx, my + scrollOffset, btn)) return true;
+            if (!shouldSkipOverlay(w)) {
+                if (w.mouseReleased(mx, my + scrollOffset, btn)) return true;
+            }
         }
+        
         if (mx >= contentX && mx <= contentX + contentW
                 && my >= scissorY && my <= scissorY + scissorH) {
             for (UIWidget w : widgets)
                 if (w.mouseReleased(mx, my + scrollOffset, btn)) return true;
+            for (UIWidget w : overlayWidgets)
+                if (shouldSkipOverlay(w) && w.mouseReleased(mx, my + scrollOffset, btn)) return true;
         }
         return super.mouseReleased(event);
     }
@@ -659,11 +697,19 @@ public class ConfigScreen extends Screen {
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double hAmt, double vAmt) {
         float mx = scaledMX(), my = scaledMY();
+        
+        for (UIWidget w : overlayWidgets) {
+            if (!shouldSkipOverlay(w)) {
+                if (w.mouseScrolled(mx, my + scrollOffset, hAmt, vAmt)) return true;
+            }
+        }
+        
         if (mx >= contentX && mx <= contentX + contentW
                 && my >= scissorY && my <= scissorY + scissorH) {
             for (UIWidget w : overlayWidgets) {
-                if (shouldSkipOverlay(w)) continue;
-                if (w.mouseScrolled(mx, my + scrollOffset, hAmt, vAmt)) return true;
+                if (shouldSkipOverlay(w)) {
+                    if (w.mouseScrolled(mx, my + scrollOffset, hAmt, vAmt)) return true;
+                }
             }
             scrollOffset -= vAmt * 36;
             scrollOffset  = UAnimation.clamp(scrollOffset, 0, maxScroll);

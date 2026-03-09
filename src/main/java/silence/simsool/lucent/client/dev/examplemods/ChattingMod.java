@@ -1,5 +1,7 @@
 package silence.simsool.lucent.client.dev.examplemods;
 
+import java.awt.Color;
+
 import silence.simsool.lucent.general.abstracts.Module;
 import silence.simsool.lucent.general.enums.ConfigType;
 import silence.simsool.lucent.general.interfaces.ModConfig;
@@ -23,6 +25,14 @@ public class ChattingMod extends Module {
 		step = 0.1
 	)
 	public static double chatOpacity = 0.8;
+
+	@ModConfig(
+		type = ConfigType.COLOR,
+		name = "Background Color",
+		description = "change background color",
+		category = "Quality of Life"
+	)
+	public static Color testColor = new Color(85, 255, 85, 155);
 
 	public ChattingMod() {
 		super("Chatting Mod", "채팅 관련 여러 편의 기능을 제공합니다.", "QOL", "minecraft, chat", "/assets/lucent/textures/modicons/chatmod.png");
