@@ -2,8 +2,8 @@ package silence.simsool.lucent.ui.utils.nvg;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 
@@ -62,8 +62,21 @@ public class Image {
 			if (file.exists() && file.isFile()) {
 				return Files.newInputStream(file.toPath());
 			} else {
-				InputStream stream = Image.class.getResourceAsStream(trimmedPath);
-				if (stream == null) throw new FileNotFoundException(trimmedPath);
+				// 앞의 '/' 제거: ClassLoader.getResourceAsStream()은 절대 경로가 아닌
+				// 클래스패스 상대 경로를 사용하므로 leading slash가 있으면 null을 반환함
+				String resourcePath = trimmedPath.startsWith("/") ? trimmedPath.substring(1) : trimmedPath;
+
+				// Thread context classloader 사용: Lucent가 라이브러리로 사용될 때
+				// 다른 모드(SilenceUtils 등)의 리소스도 찾을 수 있도록 함
+				ClassLoader cl = Thread.currentThread().getContextClassLoader();
+				InputStream stream = (cl != null) ? cl.getResourceAsStream(resourcePath) : null;
+
+				// fallback: Lucent 자신의 클래스로더로 재시도
+				if (stream == null) {
+					stream = Image.class.getClassLoader().getResourceAsStream(resourcePath);
+				}
+
+				if (stream == null) throw new FileNotFoundException(path);
 				return stream;
 			}
 		}

@@ -3,7 +3,6 @@ plugins {
 	id 'maven-publish'
 }
 
-
 version = project.mod_version
 group = project.maven_group
 
@@ -16,6 +15,11 @@ repositories {
 }
 
 loom {
+	mods {
+		"silenceutils" {
+			sourceSet sourceSets.main
+		}
+	}
 }
 
 //fabricApi {
@@ -27,14 +31,14 @@ dependencies {
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	modImplementation "net.fabricmc:fabric-language-kotlin:1.13.8+kotlin.2.3.0"
-//	implementation "org.lwjgl:lwjgl-nanovg:3.3.3"
-//	include "org.lwjgl:lwjgl-nanovg:3.3.3"
-//	["windows", "linux", "macos", "macos-arm64"].each { os ->
-//		implementation "org.lwjgl:lwjgl-nanovg:3.3.3:natives-$os"
-//		include "org.lwjgl:lwjgl-nanovg:3.3.3:natives-$os"
-//	}
-	modImplementation fileTree(dir: 'libs', include: ['*.jar'])
+
+	def lwjglVersion = project.property("minecraft_lwjgl_version")
+	modImplementation "org.lwjgl:lwjgl-nanovg:${lwjglVersion}"
+	include "org.lwjgl:lwjgl-nanovg:${lwjglVersion}"
+	["windows", "linux", "macos", "macos-arm64"].each { os ->
+		modImplementation "org.lwjgl:lwjgl-nanovg:${lwjglVersion}:natives-${os}"
+		include "org.lwjgl:lwjgl-nanovg:${lwjglVersion}:natives-${os}"
+	}
 }
 
 processResources {
