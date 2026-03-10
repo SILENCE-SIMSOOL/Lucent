@@ -2,11 +2,11 @@ package silence.simsool.lucent.client.dev.examplemods;
 
 import java.awt.Color;
 
-import silence.simsool.lucent.general.abstracts.Module;
+import silence.simsool.lucent.general.abstracts.Mod;
 import silence.simsool.lucent.general.enums.ConfigType;
 import silence.simsool.lucent.general.interfaces.ModConfig;
 
-public class ChattingMod extends Module {
+public class ChattingMod extends Mod {
 	@ModConfig(
 		type = ConfigType.SWITCH,
 		name = "Remove Chat Background",

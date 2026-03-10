@@ -15,11 +15,8 @@
 	"icon": "assets/lucent/icon.png",
 	"environment": "*",
 	"entrypoints": {
-		"main": [
-			"silence.simsool.lucent.LucentMod"
-		],
 		"client": [
-			"silence.simsool.lucent.client.LucentClient"
+			"silence.simsool.lucent.Lucent"
 		]
 	},
 	"depends": {

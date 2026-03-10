@@ -15,8 +15,8 @@ import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
-import silence.simsool.lucent.config.ModuleManager;
-import silence.simsool.lucent.general.abstracts.Module;
+import silence.simsool.lucent.config.ModManager;
+import silence.simsool.lucent.general.abstracts.Mod;
 import silence.simsool.lucent.general.interfaces.ModConfig;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UIColors;
@@ -74,7 +74,7 @@ public class ConfigScreen extends Screen {
             
             // 모드 아이콘 로드 로직
             if (moduleManager != null) {
-                for (Module m : moduleManager.modules) {
+                for (Mod m : moduleManager.modules) {
                     if (m.icon != null && !m.icon.isEmpty() && !modIconsMap.containsKey(m.name)) {
                         try {
                             modIconsMap.put(m.name, NVGRenderer.createImage(m.icon));
@@ -93,9 +93,9 @@ public class ConfigScreen extends Screen {
     }
 
     // ─── 상태 ────────────────────────────────────────────────────────────────────
-    private final ModuleManager moduleManager;
-    private Module currentModSettings = null;
-    private Module lastModSettings = null;
+    private final ModManager moduleManager;
+    private Mod currentModSettings = null;
+    private Mod lastModSettings = null;
     private String currentCategory    = "All";
     private String currentSidebarPage = "Mods";
     private String lastSearchQuery    = "";
@@ -116,7 +116,7 @@ public class ConfigScreen extends Screen {
     private float uiScale = 1.0f;
 
     // ─── 생성자 ──────────────────────────────────────────────────────────────────
-    public ConfigScreen(ModuleManager moduleManager) {
+    public ConfigScreen(ModManager moduleManager) {
         super(Component.literal("Lucent Config"));
         this.moduleManager = moduleManager;
     }
@@ -183,7 +183,7 @@ public class ConfigScreen extends Screen {
         scissorY = contentY + 54;
         scissorH = contentH - 54;
 
-        List<Module> mods = getFilteredMods();
+        List<Mod> mods = getFilteredMods();
 
         int cols  = 4;
         int gap   = 16;
@@ -206,10 +206,10 @@ public class ConfigScreen extends Screen {
         maxScroll = Math.max(0, (maxRow + 1) * (cardH + gap) + 20 - scissorH);
     }
 
-    private List<Module> getFilteredMods() {
+    private List<Mod> getFilteredMods() {
         String q = (searchField == null) ? "" : searchField.getValue().trim().toLowerCase();
-        List<Module> out = new ArrayList<>();
-        for (Module m : moduleManager.modules) {
+        List<Mod> out = new ArrayList<>();
+        for (Mod m : moduleManager.modules) {
             boolean catOk = currentCategory.equals("All") || m.category.equals(currentCategory);
             boolean qOk   = q.isEmpty()
                 || m.name.toLowerCase().contains(q)
@@ -456,21 +456,42 @@ public class ConfigScreen extends Screen {
         NVGRenderer.rect(bx, by, bw, bh, C_SEARCHBAR_BG, 8f);
         NVGRenderer.outlineRect(bx, by, bw, bh, 1, searchFocused ? C_ACCENT : C_SEARCHBAR_BDR, 8f);
         drawIcon(iconSearch, bx + 10, by + (bh - 16) / 2f, 16);
-        
+
         if (searchField != null) {
             String txt = searchField.getValue();
             float textY = by + (bh - 14f) / 2f;
-            
+
+            // 텍스트가 그려질 영역: 아이콘(26px) + 여백(8px) = 34px 우측부터, 우측 여백 8px
+            float textAreaX = bx + 34;
+            float textAreaW = bw - 34 - 8;
+
             if (txt.isEmpty() && !searchFocused) {
-                NVGRenderer.text("Search...", bx + 34, textY, Fonts.PRETENDARD_MEDIUM, C_TEXT_SECONDARY, 14f);
+                // placeholder: 클리핑 불필요
+                NVGRenderer.pushScissor((int) textAreaX, by, (int) textAreaW, bh);
+                NVGRenderer.text("Search...", textAreaX, textY, Fonts.PRETENDARD_MEDIUM, C_TEXT_SECONDARY, 14f);
+                NVGRenderer.popScissor();
             } else {
-                NVGRenderer.text(txt, bx + 34, textY, Fonts.PRETENDARD_MEDIUM, C_TEXT_PRIMARY, 14f);
-                if (searchFocused && (System.currentTimeMillis() / 500) % 2 == 0) {
-                    int cpos = searchField.getCursorPosition();
-                    String beforeCursor = txt.substring(0, Math.min(cpos, txt.length()));
-                    float tw = NVGRenderer.textWidth(beforeCursor, Fonts.PRETENDARD_MEDIUM, 14f);
-                    NVGRenderer.rect(bx + 34 + tw + 1f, textY - 1f, 1.5f, 16f, C_TEXT_PRIMARY, 0f);
+                int cpos = searchField.getCursorPosition();
+                String beforeCursor = txt.substring(0, Math.min(cpos, txt.length()));
+                float cursorX = NVGRenderer.textWidth(beforeCursor, Fonts.PRETENDARD_MEDIUM, 14f);
+
+                // 커서가 항상 텍스트 영역 안에 보이도록 수평 스크롤 오프셋 계산
+                float scrollX = 0f;
+                if (cursorX > textAreaW) {
+                    // 커서가 오른쪽으로 넘어갈 경우: 커서를 영역 우측 끝에 맞춤
+                    scrollX = cursorX - textAreaW + 4f;
                 }
+
+                // 텍스트 영역을 scissor로 클리핑
+                NVGRenderer.pushScissor((int) textAreaX, by, (int) textAreaW, bh);
+                NVGRenderer.text(txt, textAreaX - scrollX, textY, Fonts.PRETENDARD_MEDIUM, C_TEXT_PRIMARY, 14f);
+
+                // 커서 깜빡임
+                if (searchFocused && (System.currentTimeMillis() / 500) % 2 == 0) {
+                    float cx = textAreaX + cursorX - scrollX;
+                    NVGRenderer.rect(cx + 1f, textY - 1f, 1.5f, 16f, C_TEXT_PRIMARY, 0f);
+                }
+                NVGRenderer.popScissor();
             }
         }
     }
@@ -532,7 +553,7 @@ public class ConfigScreen extends Screen {
     private List<String> getCategories() {
         List<String> cats = new ArrayList<>();
         cats.add("All");
-        for (Module m : moduleManager.modules)
+        for (Mod m : moduleManager.modules)
             if (!cats.contains(m.category)) cats.add(m.category);
         return cats;
     }
@@ -755,10 +776,10 @@ public class ConfigScreen extends Screen {
     // ═══════════════════════════════ 내부 위젯 ════════════════════════════════
 
     private class ModCardWidget extends UIWidget {
-        private final Module mod;
+        private final Mod mod;
         private static final int BAR_H = 30;
 
-        public ModCardWidget(int x, int y, int w, int h, Module mod) {
+        public ModCardWidget(int x, int y, int w, int h, Mod mod) {
             super(x, y, w, h);
             this.mod = mod;
         }
