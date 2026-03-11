@@ -5,5 +5,6 @@ public enum ConfigType {
 	SLIDER,
 	BUTTON,
 	COLOR,
-	SELECTOR
+	SELECTOR,
+	KEYBIND
 }

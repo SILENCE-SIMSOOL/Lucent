@@ -45,7 +45,6 @@ public class Lucent implements ClientModInitializer {
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
 			dispatcher.register(ClientCommandManager.literal("lucentTestScreen")
 				.executes(context -> {
-					UChat.chat(ChattingMod.removeChatBackground);
 					ScreenOpenHelper.shouldOpen = true;
 					return Command.SINGLE_SUCCESS;
 				}));

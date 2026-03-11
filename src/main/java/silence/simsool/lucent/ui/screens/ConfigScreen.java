@@ -25,10 +25,12 @@ import silence.simsool.lucent.ui.utils.nvg.Image;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 import silence.simsool.lucent.ui.widget.ColorPickerButton;
+import silence.simsool.lucent.ui.widget.KeyBindButton;
 import silence.simsool.lucent.ui.widget.Selector;
 import silence.simsool.lucent.ui.widget.Slider;
 import silence.simsool.lucent.ui.widget.ToggleButton;
 import silence.simsool.lucent.ui.widget.base.UIWidget;
+import silence.simsool.lucent.general.data.KeyBind;
 
 public class ConfigScreen extends Screen {
 
@@ -71,7 +73,7 @@ public class ConfigScreen extends Screen {
             iconClose       = NVGRenderer.createImage("/assets/lucent/textures/gui/icons/close.png");
             iconSearch      = NVGRenderer.createImage("/assets/lucent/textures/gui/icons/search.png");
             iconSettings    = NVGRenderer.createImage("/assets/lucent/textures/gui/icons/settings.png");
-            
+
             // 모드 아이콘 로드 로직
             if (moduleManager != null) {
                 for (Mod m : moduleManager.modules) {
@@ -265,7 +267,8 @@ public class ConfigScreen extends Screen {
                                 initialColor = nObj.intValue();
                             }
                         	
-                            ColorPickerButton cp = new ColorPickerButton(ux - 54, curY + 17, 54, 38, initialColor);
+                            int width = 64;
+                            ColorPickerButton cp = new ColorPickerButton(ux - width, curY + 17, width, 38, initialColor);
                             cp.setOnChange(c -> { 
                                 try { 
                                     if (field.getType() == java.awt.Color.class) {
@@ -279,6 +282,15 @@ public class ConfigScreen extends Screen {
                         }
                         case BUTTON -> {
                         	// Do nothing for now
+                        }
+                        case KEYBIND -> {
+                            KeyBind initialBind = null;
+                            if (val instanceof KeyBind kb) {
+                                initialBind = kb;
+                            }
+                            KeyBindButton kbb = new KeyBindButton(ux - 100, curY + 19, 100, 34, initialBind);
+                            kbb.setOnChange(v -> { try { field.set(currentModSettings, v); } catch (Exception e) {} });
+                            overlayWidgets.add(kbb);
                         }
                     }
                 } catch (IllegalAccessException e) { e.printStackTrace(); }
@@ -742,6 +754,14 @@ public class ConfigScreen extends Screen {
     @Override
     public boolean keyPressed(KeyEvent input) {
         int key = input.key();
+        
+        // waiting 상태인 KeyBindButton에게 먼저 이벤트를 전달
+        for (UIWidget w : overlayWidgets) {
+            if (w instanceof KeyBindButton kbb && kbb.isWaiting()) {
+                if (kbb.keyPressed(key, input.scancode(), input.modifiers())) return true;
+            }
+        }
+        
         if (key == GLFW.GLFW_KEY_ESCAPE) {
             if (currentModSettings != null) {
                 currentModSettings = null;
@@ -759,6 +779,25 @@ public class ConfigScreen extends Screen {
     }
 
     @Override
+    public boolean keyReleased(KeyEvent input) {
+        int key = input.key();
+
+        // waiting 상태인 KeyBindButton에게 먼저 이벤트를 전달
+        for (UIWidget w : overlayWidgets) {
+            if (w instanceof KeyBindButton kbb && kbb.isWaiting()) {
+                if (kbb.keyReleased(key, input.scancode(), input.modifiers())) return true;
+            }
+        }
+
+        for (UIWidget w : widgets)
+            if (w.keyReleased(key, input.scancode(), input.modifiers())) return true;
+        for (UIWidget w : overlayWidgets)
+            if (!shouldSkipOverlay(w) && w.keyReleased(key, input.scancode(), input.modifiers())) return true;
+
+        return super.keyReleased(input);
+    }
+
+    @Override
     public boolean charTyped(CharacterEvent event) {
         for (UIWidget w : widgets)
             if (w.charTyped((char) event.codepoint(), event.modifiers())) return true;
@@ -770,6 +809,7 @@ public class ConfigScreen extends Screen {
     private boolean shouldSkipOverlay(UIWidget w) {
         if (w instanceof Selector s          && !s.isOpen())         return true;
         if (w instanceof ColorPickerButton c && !c.isPickerOpen())   return true;
+        if (w instanceof KeyBindButton kbb   && !kbb.isWaiting())    return true;
         return false;
     }
 
@@ -857,8 +897,8 @@ public class ConfigScreen extends Screen {
             boolean hov = mx >= x && mx <= x + width && my >= y && my <= y + height;
             NVGRenderer.rect(x, y, width, height, hov ? C_CARD_HOVER : C_CARD_BG, 8f);
             NVGRenderer.outlineRect(x, y, width, height, 1, C_SEARCHBAR_BDR, 8f);
-            NVGRenderer.text(label,       x + 16, y + 24, Fonts.PRETENDARD_MEDIUM, C_TEXT_PRIMARY,   15f);
-            NVGRenderer.text(description, x + 16, y + 46, Fonts.PRETENDARD,        C_TEXT_SECONDARY, 12f);
+            NVGRenderer.text(label,       x + 16, y + 18, Fonts.PRETENDARD_MEDIUM, C_TEXT_PRIMARY,   18f);
+            NVGRenderer.text(description, x + 16, y + 43, Fonts.PRETENDARD_LIGHT, C_TEXT_SECONDARY, 14f);
         }
     }
 
