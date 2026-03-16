@@ -2,7 +2,6 @@ package silence.simsool.lucent.ui.screens;
 
 import java.awt.Color;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +18,6 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.general.abstracts.Mod;
-import silence.simsool.lucent.general.data.KeyBind;
 import silence.simsool.lucent.general.interfaces.ModConfig;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UIColors;
@@ -28,17 +26,31 @@ import silence.simsool.lucent.ui.utils.nvg.Fonts;
 import silence.simsool.lucent.ui.utils.nvg.Image;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
-import silence.simsool.lucent.ui.widget.ActionButton;
 import silence.simsool.lucent.ui.widget.ColorPickerButton;
 import silence.simsool.lucent.ui.widget.KeyBindButton;
 import silence.simsool.lucent.ui.widget.Selector;
 import silence.simsool.lucent.ui.widget.Slider;
-import silence.simsool.lucent.ui.widget.TextBox;
 import silence.simsool.lucent.ui.widget.ToggleButton;
 import silence.simsool.lucent.ui.widget.base.UIWidget;
+import silence.simsool.lucent.general.data.KeyBind;
 
 public class ConfigScreen extends Screen {
+	// ─── [NEW] Theme System ───
+	public static class ThemePreset {
+		public String name;
+		public int winBg, sidebarBg, accent, textPrimary, textSecondary, textLabel, itemBg, itemHover, itemBorder, barOn, barOff, divider, sidebarSel, searchbarBg;
 
+		public ThemePreset(String name, int winBg, int sidebarBg, int accent, int textPrimary, int textSecondary, int textLabel, int itemBg, int itemHover, int itemBorder, int barOn, int barOff, int divider, int sidebarSel, int searchbarBg) {
+			this.name = name;
+			this.winBg = winBg; this.sidebarBg = sidebarBg; this.accent = accent;
+			this.textPrimary = textPrimary; this.textSecondary = textSecondary; this.textLabel = textLabel;
+			this.itemBg = itemBg; this.itemHover = itemHover; this.itemBorder = itemBorder;
+			this.barOn = barOn; this.barOff = barOff; this.divider = divider;
+			this.sidebarSel = sidebarSel; this.searchbarBg = searchbarBg;
+		}
+	}
+	// List of predefined themes
+	private final List<ThemePreset> availableThemes = new ArrayList<>();
 	// ─── 색상 팔레트 ─────────────────────────────────────────────
 	private static int C_WIN_BG         = 0xF218181A;
 	private static int C_SIDEBAR_BG     = 0xF21D1D21;
@@ -52,6 +64,7 @@ public class ConfigScreen extends Screen {
 	private static int C_DIVIDER        = 0xFF2F2F32;
 	private static int C_SEARCHBAR_BG   = 0xFF141416;
 	private static int C_SEARCHBAR_BDR  = 0xFF2A2A2D;
+	private static int C_SIDEBAR_SEL    = 0xFF2B2B30; // [NEW] Added for dynamic theme sidebar highlight color
 
 	// ─── 레이아웃 상수 ────────────────────────────────────────────────────────────
 	private static int WINDOW_W  = 1100;
@@ -105,6 +118,8 @@ public class ConfigScreen extends Screen {
 	private int contentX, contentY, contentW, contentH;
 	private int scissorY, scissorH;
 
+	private String currentTab = "Mods";
+
 	private final List<UIWidget> widgets        = new ArrayList<>();
 	private final List<UIWidget> overlayWidgets = new ArrayList<>();
 
@@ -113,13 +128,55 @@ public class ConfigScreen extends Screen {
 
 	private double scrollOffset = 0;
 	private double maxScroll    = 0;
-	
+
 	private float uiScale = 1.0f;
 
 	// ─── 생성자 ──────────────────────────────────────────────────────────────────
 	public ConfigScreen(ModManager moduleManager) {
 		super(Component.literal("Lucent Config"));
 		this.moduleManager = moduleManager;
+		// [NEW] Registering custom themes
+		availableThemes.add(new ThemePreset("Midnight Cyan",
+				0xFF111217, 0xFF0A0B0E, 0xFF00D2FF, 0xFFFFFFFF, 0xFF9CA3AF, 0xFF6B7280,
+				0xFF1A1C23, 0xFF242730, 0xFF2E323D, 0xFF00D2FF, 0xFF1A1C23, 0xFF22252E, 0xFF181B22, 0xFF14161C));
+
+		availableThemes.add(new ThemePreset("Crimson Dawn",
+				0xFF171111, 0xFF0E0A0A, 0xFFFF4444, 0xFFFFFFFF, 0xFFAFA0A0, 0xFF806B6B,
+				0xFF231A1A, 0xFF302424, 0xFF3D2E2E, 0xFFFF4444, 0xFF231A1A, 0xFF2E2222, 0xFF221818, 0xFF1C1414));
+
+		availableThemes.add(new ThemePreset("Abyssal Gold",
+				0xFF131313, 0xFF090909, 0xFFF5A623, 0xFFF2F2F2, 0xFF999999, 0xFF666666,
+				0xFF1E1E1E, 0xFF2A2A2A, 0xFF363636, 0xFFF5A623, 0xFF1E1E1E, 0xFF252525, 0xFF181818, 0xFF151515));
+
+
+		availableThemes.add(new ThemePreset("Forest Emerald",
+				0xFF0D1411, 0xFF080D0B, 0xFF10B981, 0xFFFFFFFF, 0xFF9CA3AF, 0xFF6B7280,
+				0xFF15201A, 0xFF1B2A22, 0xFF22352A, 0xFF10B981, 0xFF15201A, 0xFF1A261F, 0xFF111C16, 0xFF0A100D));
+
+
+		availableThemes.add(new ThemePreset("Amethyst Void",
+				0xFF120F1A, 0xFF0B0910, 0xFF8B5CF6, 0xFFFFFFFF, 0xFF9CA3AF, 0xFF6B7280,
+				0xFF1B1626, 0xFF251E33, 0xFF322A42, 0xFF8B5CF6, 0xFF1B1626, 0xFF231D30, 0xFF171320, 0xFF0F0C15));
+
+
+		availableThemes.add(new ThemePreset("Arctic Frost",
+				0xFF0F172A, 0xFF020617, 0xFF38BDF8, 0xFFF1F5F9, 0xFF94A3B8, 0xFF64748B,
+				0xFF1E293B, 0xFF334155, 0xFF475569, 0xFF38BDF8, 0xFF1E293B, 0xFF1E293B, 0xFF0F172A, 0xFF0B1121));
+
+
+		availableThemes.add(new ThemePreset("Sakura Blossom",
+				0xFF1A1316, 0xFF120C0F, 0xFFF472B6, 0xFFFDF2F8, 0xFFA59A9F, 0xFF82757B,
+				0xFF261A20, 0xFF33222A, 0xFF422C36, 0xFFF472B6, 0xFF261A20, 0xFF2A1C23, 0xFF1F151A, 0xFF140E11));
+
+
+		availableThemes.add(new ThemePreset("Sunset Flare",
+				0xFF171311, 0xFF0E0B0A, 0xFFF97316, 0xFFFFFFFF, 0xFFA19793, 0xFF756A65,
+				0xFF241C18, 0xFF302520, 0xFF3D3029, 0xFFF97316, 0xFF241C18, 0xFF29201C, 0xFF1C1613, 0xFF110E0C));
+
+
+		availableThemes.add(new ThemePreset("Monochrome Minimal",
+				0xFF111111, 0xFF000000, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFAAAAAA, 0xFF666666,
+				0xFF1C1C1C, 0xFF2A2A2A, 0xFF333333, 0xFFFFFFFF, 0xFF1C1C1C, 0xFF222222, 0xFF181818, 0xFF0A0A0A));
 	}
 
 	@Override
@@ -154,6 +211,29 @@ public class ConfigScreen extends Screen {
 		refreshUI();
 	}
 
+	// [NEW] Method to apply a ThemePreset to the UI globally
+	public void applyTheme(ThemePreset t) {
+		C_WIN_BG         = t.winBg;
+		C_SIDEBAR_BG     = t.sidebarBg;
+		C_ACCENT         = t.accent;
+		C_TEXT_PRIMARY   = t.textPrimary;
+		C_TEXT_SECONDARY = t.textSecondary;
+		C_TEXT_LABEL     = t.textLabel;
+		C_CARD_BG        = t.itemBg;
+		C_CARD_HOVER     = t.itemHover;
+		C_TAB_BG         = t.barOff;
+		C_DIVIDER        = t.divider;
+		C_SEARCHBAR_BG   = t.searchbarBg;
+		C_SEARCHBAR_BDR  = t.itemBorder;
+		C_SIDEBAR_SEL    = t.sidebarSel;
+
+		if (searchField != null) {
+			searchField.setTextColor(C_TEXT_PRIMARY);
+			searchField.setTextColorUneditable(C_TEXT_SECONDARY);
+		}
+	}
+
+
 	private void refreshUI() {
 		widgets.clear();
 		overlayWidgets.clear();
@@ -161,17 +241,47 @@ public class ConfigScreen extends Screen {
 		if (currentSidebarPage.equals("Mods")) {
 			if (currentModSettings == null) buildMainWidgets();
 			else                            buildSettingsWidgets();
+		}  else if (currentSidebarPage.equals("Themes")) { // [NEW] Added conditional for Themes page
+			buildThemesWidgets();
 		} else {
 			buildPlaceholderWidgets(currentSidebarPage);
 		}
 	}
-	
+
 	private void buildPlaceholderWidgets(String pageName) {
 		scissorY = contentY;
 		scissorH = contentH;
 		maxScroll = 0;
 		// Placeholder UI will be rendered in empty state
 	}
+
+	// [NEW] Build the UI grid for Theme Selection
+	private void buildThemesWidgets() {
+		scissorY = contentY + 20; // Slight padding
+		scissorH = contentH - 20;
+
+		int cols  = 3; // 3 themes per row
+		int gap   = 16;
+		int cardW = (contentW - PAD * 2 - gap * (cols - 1)) / cols;
+		int cardH = 100;
+		int sx    = contentX + PAD;
+		int sy    = scissorY;
+		int maxRow = 0;
+
+		for (int i = 0; i < availableThemes.size(); i++) {
+			int col = i % cols;
+			int row = i / cols;
+			maxRow  = Math.max(maxRow, row);
+
+			widgets.add(new ThemeCardWidget(
+					sx + col * (cardW + gap),
+					sy + row * (cardH + gap),
+					cardW, cardH, availableThemes.get(i)
+			));
+		}
+		maxScroll = Math.max(0, (maxRow + 1) * (cardH + gap) + 20 - scissorH);
+	}
+
 
 	private void buildMainWidgets() {
 		scissorY = contentY + 54;
@@ -192,9 +302,9 @@ public class ConfigScreen extends Screen {
 			int row = i / cols;
 			maxRow  = Math.max(maxRow, row);
 			widgets.add(new ModCardWidget(
-				sx + col * (cardW + gap),
-				sy + row * (cardH + gap),
-				cardW, cardH, mods.get(i)
+					sx + col * (cardW + gap),
+					sy + row * (cardH + gap),
+					cardW, cardH, mods.get(i)
 			));
 		}
 		maxScroll = Math.max(0, (maxRow + 1) * (cardH + gap) + 20 - scissorH);
@@ -206,8 +316,8 @@ public class ConfigScreen extends Screen {
 		for (Mod m : moduleManager.modules) {
 			boolean catOk = currentCategory.equals("All") || m.category.equals(currentCategory);
 			boolean qOk   = q.isEmpty()
-				|| m.name.toLowerCase().contains(q)
-				|| m.searchTags.toLowerCase().contains(q);
+					|| m.name.toLowerCase().contains(q)
+					|| m.searchTags.toLowerCase().contains(q);
 			if (catOk && qOk) out.add(m);
 		}
 		return out;
@@ -221,41 +331,34 @@ public class ConfigScreen extends Screen {
 		int curY  = scissorY + 66;
 		int itemW = contentW - PAD * 2;
 
-		for (Map.Entry<String, List<Object>> entry : groupConfigMembers().entrySet()) {
-			curY += 36; 
+		for (Map.Entry<String, List<Field>> entry : groupSettingFields().entrySet()) {
+			curY += 36;
 
-			for (Object member : entry.getValue()) {
-				ModConfig cfg = (member instanceof Field f) ? f.getAnnotation(ModConfig.class) : ((Method)member).getAnnotation(ModConfig.class);
+			for (Field field : entry.getValue()) {
+				ModConfig cfg = field.getAnnotation(ModConfig.class);
 				widgets.add(new SettingRowWidget(sx, curY, itemW, 74, cfg.name(), cfg.description()));
 
 				try {
-					Object val = null;
-					if (member instanceof Field f) {
-						f.setAccessible(true);
-						val = f.get(currentModSettings);
-					}
-					
-					int ux = sx + itemW - PAD; 
+					field.setAccessible(true);
+					Object val = field.get(currentModSettings);
+					int ux = sx + itemW - PAD;
 
 					switch (cfg.type()) {
 						case SWITCH -> {
 							ToggleButton t = new ToggleButton(ux - 48, curY + 25, 48, 24, (boolean) val);
-							final Field f = (member instanceof Field field) ? field : null;
-							t.setOnChange(v -> { try { if (f != null) f.set(currentModSettings, v); } catch (Exception e) {} });
+							t.setOnChange(v -> { try { field.set(currentModSettings, v); } catch (Exception e) {} });
 							widgets.add(t);
 						}
 						case SLIDER -> {
 							Slider s = new Slider(ux - 290, curY + 25, 290, 24,
-								cfg.min(), cfg.max(), cfg.step(), (double) val);
-							final Field f = (member instanceof Field field) ? field : null;
-							s.setOnChange(v -> { try { if (f != null) f.set(currentModSettings, v); } catch (Exception e) {} });
+									cfg.min(), cfg.max(), cfg.step(), (double) val);
+							s.setOnChange(v -> { try { field.set(currentModSettings, v); } catch (Exception e) {} });
 							widgets.add(s);
 						}
 						case SELECTOR -> {
 							Selector sel = new Selector(ux - 148, curY + 17, 148, 38, List.of(cfg.options()));
 							sel.setValue((String) val);
-							final Field f = (member instanceof Field field) ? field : null;
-							sel.setOnChange(v -> { try { if (f != null) f.set(currentModSettings, v); } catch (Exception e) {} });
+							sel.setOnChange(v -> { try { field.set(currentModSettings, v); } catch (Exception e) {} });
 							overlayWidgets.add(sel);
 						}
 						case COLOR -> {
@@ -265,35 +368,22 @@ public class ConfigScreen extends Screen {
 							} else if (val instanceof Number nObj) {
 								initialColor = nObj.intValue();
 							}
-							
+
 							int width = 64;
 							ColorPickerButton cp = new ColorPickerButton(ux - width, curY + 17, width, 38, initialColor);
-							final Field f = (member instanceof Field field) ? field : null;
-							cp.setOnChange(c -> { 
-								try { 
-									if (f != null) {
-										if (f.getType() == Color.class) {
-											f.set(currentModSettings, new Color(c, true));
-										} else {
-											f.set(currentModSettings, c);
-										}
+							cp.setOnChange(c -> {
+								try {
+									if (field.getType() == Color.class) {
+										field.set(currentModSettings, new Color(c, true));
+									} else {
+										field.set(currentModSettings, c);
 									}
-								} catch (Exception e) {} 
+								} catch (Exception e) {}
 							});
 							overlayWidgets.add(cp);
 						}
 						case BUTTON -> {
-							String btnText = cfg.display().isEmpty() ? cfg.name() : cfg.display();
-							ActionButton ab = new ActionButton(ux - 100, curY + 19, 100, 34, btnText);
-							if (member instanceof Method m) {
-								ab.setOnClick(() -> {
-									try { m.setAccessible(true); m.invoke(currentModSettings); } 
-									catch (Exception e) { e.printStackTrace(); }
-								});
-							} else if (member instanceof Field f && val instanceof Runnable r) {
-								ab.setOnClick(r);
-							}
-							widgets.add(ab);
+							// Do nothing for now
 						}
 						case KEYBIND -> {
 							KeyBind initialBind = null;
@@ -301,18 +391,11 @@ public class ConfigScreen extends Screen {
 								initialBind = kb;
 							}
 							KeyBindButton kbb = new KeyBindButton(ux - 100, curY + 19, 100, 34, initialBind);
-							final Field f = (member instanceof Field field) ? field : null;
-							kbb.setOnChange(v -> { try { if (f != null) f.set(currentModSettings, v); } catch (Exception e) {} });
+							kbb.setOnChange(v -> { try { field.set(currentModSettings, v); } catch (Exception e) {} });
 							overlayWidgets.add(kbb);
 						}
-						case TEXT -> {
-							TextBox tb = new TextBox(ux - 200, curY + 19, 200, 34, (String) val);
-							final Field f = (member instanceof Field field) ? field : null;
-							tb.setOnChange(v -> { try { if (f != null) f.set(currentModSettings, v); } catch (Exception e) {} });
-							widgets.add(tb);
-						}
 					}
-				} catch (Exception e) { e.printStackTrace(); }
+				} catch (IllegalAccessException e) { e.printStackTrace(); }
 
 				curY += 84;
 			}
@@ -321,35 +404,22 @@ public class ConfigScreen extends Screen {
 		maxScroll = Math.max(0, curY - scissorY + 10 - scissorH);
 	}
 
-	private Map<String, List<Object>> groupConfigMembers() {
-		Map<String, List<Object>> map = new java.util.LinkedHashMap<>();
+	private Map<String, List<Field>> groupSettingFields() {
+		Map<String, List<Field>> map = new java.util.LinkedHashMap<>();
 		String q = (searchField == null) ? "" : searchField.getValue().trim().toLowerCase();
-		
-		Class<?> clazz = currentModSettings.getClass();
-		for (Field f : clazz.getDeclaredFields()) {
+		for (Field f : currentModSettings.getClass().getDeclaredFields()) {
 			if (f.isAnnotationPresent(ModConfig.class)) {
 				ModConfig cfg = f.getAnnotation(ModConfig.class);
-				if (matchesSearch(cfg, q)) {
+				boolean match = q.isEmpty()
+						|| cfg.name().toLowerCase().contains(q)
+						|| cfg.description().toLowerCase().contains(q)
+						|| cfg.category().toLowerCase().contains(q);
+				if (match) {
 					map.computeIfAbsent(cfg.category(), k -> new ArrayList<>()).add(f);
 				}
 			}
 		}
-		for (Method m : clazz.getDeclaredMethods()) {
-			if (m.isAnnotationPresent(ModConfig.class)) {
-				ModConfig cfg = m.getAnnotation(ModConfig.class);
-				if (matchesSearch(cfg, q)) {
-					map.computeIfAbsent(cfg.category(), k -> new ArrayList<>()).add(m);
-				}
-			}
-		}
 		return map;
-	}
-
-	private boolean matchesSearch(ModConfig cfg, String q) {
-		if (q == null || q.isEmpty()) return true;
-		return cfg.name().toLowerCase().contains(q)
-				|| cfg.description().toLowerCase().contains(q)
-				|| cfg.category().toLowerCase().contains(q);
 	}
 
 	// ═══════════════════════════════ 렌더링 ══════════════════════════════════════
@@ -357,7 +427,7 @@ public class ConfigScreen extends Screen {
 	@Override
 	public void renderBackground(GuiGraphics ctx, int mx, int my, float delta) {
 		// 배경 블러 구현 (혹은 어두운 반투명 색상) - vanilla 스크린의 blur 등을 사용하거나 단순 어둡게 처리
-		ctx.fill(0, 0, width, height, 0x50000000); 
+		ctx.fill(0, 0, width, height, 0x50000000);
 	}
 
 	@Override
@@ -391,17 +461,16 @@ public class ConfigScreen extends Screen {
 				renderSearchBarBg();
 				if (currentModSettings == null) {
 					renderCategoryTabs();
+				} else {
+					renderSettingsHeader();
 				}
-			} else {
+			} else if (!currentSidebarPage.equals("Themes")) { // [NEW] Added logic for empty state except Themes
 				float sx = contentX + PAD;
 				float hy = contentY + PAD;
 				NVGRenderer.text(currentSidebarPage, sx, hy + 20, Fonts.PRETENDARD_SEMIBOLD, C_TEXT_PRIMARY, 26f);
 			}
 
 			NVGRenderer.pushScissor(contentX, scissorY, contentW, scissorH);
-			if (currentSidebarPage.equals("Mods") && currentModSettings != null) {
-				renderSettingsHeader();
-			}
 			NVGRenderer.push();
 			NVGRenderer.translate(0, (float) -scrollOffset);
 
@@ -442,7 +511,7 @@ public class ConfigScreen extends Screen {
 
 		int sy = winY + 44;
 
-		
+
 		sy += 36;
 		NVGRenderer.text("MOD CONFIG", ix, sy, Fonts.PRETENDARD_SEMIBOLD, C_TEXT_LABEL, 10f); // 폰트 약간 작고 진하게
 		sy += 16;
@@ -462,9 +531,12 @@ public class ConfigScreen extends Screen {
 
 	private int sidebarItem(int x, int y, Image icon, String label, boolean active) {
 		final int itemH = 34; // 기존 36에서 34로 약간 줄임 (둥근 사각형 크기)
-		
+
 		if (active) {
-			NVGRenderer.rect(winX + 12, y, SIDEBAR_W - 24, itemH, 0xFF2B2B30, 8f);
+			//NVGRenderer.rect(winX + 12, y, SIDEBAR_W - 24, itemH, 0xFF2B2B30, 8f);
+
+			// [NEW] Use C_SIDEBAR_SEL instead of hardcoded hex
+			NVGRenderer.rect(winX + 12, y, SIDEBAR_W - 24, itemH, C_SIDEBAR_SEL, 8f);
 			// 좌측 강조 라인 (왼쪽 끝에 붙어야 함)
 			NVGRenderer.rect(winX + 12, y + 6, 3, itemH - 12, C_ACCENT, 1.5f);
 		}
@@ -472,7 +544,7 @@ public class ConfigScreen extends Screen {
 		int fg = active ? C_TEXT_PRIMARY : C_TEXT_SECONDARY;
 		NVGRenderer.image(icon, x + 4, y + (itemH - 16) / 2f, 16);
 		NVGRenderer.text(label, x + 30, y + 10f, Fonts.PRETENDARD_MEDIUM, fg, 14f);
-		
+
 		return y + itemH + 2;
 	}
 
@@ -486,9 +558,13 @@ public class ConfigScreen extends Screen {
 		int backColor = canGoBack ? C_TEXT_PRIMARY : C_TEXT_LABEL;
 		int fwdColor  = canGoFwd  ? C_TEXT_PRIMARY : C_TEXT_LABEL;
 
-		NVGRenderer.text("←", cx, winY + 26f,  Fonts.PRETENDARD_MEDIUM, backColor, 20f);
+		/*NVGRenderer.text("←", cx, winY + 26f,  Fonts.PRETENDARD_MEDIUM, backColor, 20f);
 		NVGRenderer.text("→", cx + 32, winY + 26f,  Fonts.PRETENDARD_MEDIUM, fwdColor, 20f);
 		NVGRenderer.text("Mods", cx + 70, winY + 25f,  Fonts.PRETENDARD_SEMIBOLD, C_TEXT_PRIMARY, 22f);
+		 */
+		// [NEW] Use dynamic title text based on tab instead of fixed "Mods"
+		String titleText = currentSidebarPage.equals("Mods") ? "Mods" : currentSidebarPage;
+		NVGRenderer.text(titleText, cx + 70, winY + 25f,  Fonts.PRETENDARD_SEMIBOLD, C_TEXT_PRIMARY, 22f);
 	}
 
 	private void renderSearchBarBg() {
@@ -510,10 +586,9 @@ public class ConfigScreen extends Screen {
 
 			if (txt.isEmpty() && !searchFocused) {
 				// placeholder: 클리핑 불필요
-				NVGRenderer.push();
-				org.lwjgl.nanovg.NanoVG.nvgIntersectScissor(NVGRenderer.getVG(), (int) textAreaX, by, (int) textAreaW, bh);
+				NVGRenderer.pushScissor((int) textAreaX, by, (int) textAreaW, bh);
 				NVGRenderer.text("Search...", textAreaX, textY, Fonts.PRETENDARD_MEDIUM, C_TEXT_SECONDARY, 14f);
-				NVGRenderer.pop();
+				NVGRenderer.popScissor();
 			} else {
 				int cpos = searchField.getCursorPosition();
 				String beforeCursor = txt.substring(0, Math.min(cpos, txt.length()));
@@ -527,8 +602,7 @@ public class ConfigScreen extends Screen {
 				}
 
 				// 텍스트 영역을 scissor로 클리핑
-				NVGRenderer.push();
-				org.lwjgl.nanovg.NanoVG.nvgIntersectScissor(NVGRenderer.getVG(), (int) textAreaX, by, (int) textAreaW, bh);
+				NVGRenderer.pushScissor((int) textAreaX, by, (int) textAreaW, bh);
 				NVGRenderer.text(txt, textAreaX - scrollX, textY, Fonts.PRETENDARD_MEDIUM, C_TEXT_PRIMARY, 14f);
 
 				// 커서 깜빡임
@@ -536,33 +610,33 @@ public class ConfigScreen extends Screen {
 					float cx = textAreaX + cursorX - scrollX;
 					NVGRenderer.rect(cx + 1f, textY - 1f, 1.5f, 16f, C_TEXT_PRIMARY, 0f);
 				}
-				NVGRenderer.pop();
+				NVGRenderer.popScissor();
 			}
 		}
 	}
 
 	private void renderCategoryTabs() {
 		List<String> cats = getCategories();
-		
+
 		float cx = contentX + PAD;
-		float cy = contentY; 
+		float cy = contentY;
 
 		for (String cat : cats) {
 			float tw = NVGRenderer.textWidth(cat, Fonts.PRETENDARD_MEDIUM, 13f);
 			boolean active = cat.equals(currentCategory);
-			
+
 			int bg = active ? C_ACCENT : C_TAB_BG;
 			int fg = active ? C_TEXT_PRIMARY : 0xFFCCCCCC;
-			
+
 			int padX = 16;
 			int tabW = (int)(tw + padX * 2);
 			int tabH = 28;
-			
+
 			NVGRenderer.rect(cx, cy, tabW, tabH, bg, 8f);
 			float textY = cy + (tabH - 13f) / 2f;
 			NVGRenderer.text(cat, cx + padX, textY, Fonts.PRETENDARD_MEDIUM, fg, 13f);
-			
-			cx += tabW + 8f; 
+
+			cx += tabW + 8f;
 		}
 	}
 
@@ -576,15 +650,15 @@ public class ConfigScreen extends Screen {
 		}
 
 		int curY = contentY + 66;
-		for (Map.Entry<String, List<Object>> e : groupConfigMembers().entrySet()) {
+		for (Map.Entry<String, List<Field>> e : groupSettingFields().entrySet()) {
 			float ry = curY + 14 - (float) scrollOffset;
 			if (ry > scissorY - 30 && ry < scissorY + scissorH) {
 				String catName = e.getKey().toUpperCase();
 				float catW = NVGRenderer.textWidth(catName, Fonts.PRETENDARD_SEMIBOLD, 12f);
 				float indent = 8f;
-				
+
 				NVGRenderer.text(catName, sx + indent, ry, Fonts.PRETENDARD_SEMIBOLD, C_TEXT_LABEL, 12f);
-				
+
 				float lineX = sx + indent + catW + 16f;
 				float lineW = (contentW - PAD * 2) - (lineX - sx);
 				NVGRenderer.rect(lineX, ry + 6f, lineW, 1.5f, C_DIVIDER, 0.75f);
@@ -645,11 +719,11 @@ public class ConfigScreen extends Screen {
 		if (currentSidebarPage.equals("Mods") && btn == 0) {
 			float bx = contentX + PAD;
 			float cy = winY + TOPBAR_H / 2f;
-			
+
 			boolean isSub = currentModSettings != null;
 			boolean canGoBack = isSub;
 			boolean canGoFwd = !isSub && lastModSettings != null;
-			
+
 			// Back button ←
 			if (mx >= bx - 4 && mx <= bx + 20 && my >= cy - 20 && my <= cy + 10) {
 				if (canGoBack) {
@@ -689,11 +763,11 @@ public class ConfigScreen extends Screen {
 		if (btn == 0) {
 			//int ix = winX + PAD;
 			int sy = winY + 96; // Mods 시작 위치
-			
+
 			String[] pages  = {"Mods", "Profiles", "Themes", "Preferences"};
 			int sy3 = sy + 36 + 36 + 32; // Themes 시작 위치 (Profiles 이후 68px 간격)
 			int[] ys = {sy, sy + 36, sy3, sy3 + 36};
-			
+
 			for (int i = 0; i < pages.length; i++) {
 				int ty = ys[i];
 				if (mx >= winX + 16 && mx <= winX + SIDEBAR_W - 16 && my >= ty && my <= ty + 36) {
@@ -741,13 +815,13 @@ public class ConfigScreen extends Screen {
 	public boolean mouseReleased(MouseButtonEvent event) {
 		float mx = UMouse.getScaledX(uiScale), my = UMouse.getScaledY(uiScale);
 		int btn  = event.button();
-		
+
 		for (UIWidget w : overlayWidgets) {
 			if (!shouldSkipOverlay(w)) {
 				if (w.mouseReleased(mx, my + scrollOffset, btn)) return true;
 			}
 		}
-		
+
 		if (mx >= contentX && mx <= contentX + contentW && my >= scissorY && my <= scissorY + scissorH) {
 			for (UIWidget w : widgets) if (w.mouseReleased(mx, my + scrollOffset, btn)) return true;
 			for (UIWidget w : overlayWidgets) if (shouldSkipOverlay(w) && w.mouseReleased(mx, my + scrollOffset, btn)) return true;
@@ -758,13 +832,13 @@ public class ConfigScreen extends Screen {
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double hAmt, double vAmt) {
 		float mx = UMouse.getScaledX(uiScale), my = UMouse.getScaledY(uiScale);
-		
+
 		for (UIWidget w : overlayWidgets) {
 			if (!shouldSkipOverlay(w)) {
 				if (w.mouseScrolled(mx, my + scrollOffset, hAmt, vAmt)) return true;
 			}
 		}
-		
+
 		if (mx >= contentX && mx <= contentX + contentW && my >= scissorY && my <= scissorY + scissorH) {
 			for (UIWidget w : overlayWidgets) {
 				if (shouldSkipOverlay(w)) {
@@ -781,14 +855,14 @@ public class ConfigScreen extends Screen {
 	@Override
 	public boolean keyPressed(KeyEvent input) {
 		int key = input.key();
-		
+
 		// waiting 상태인 KeyBindButton에게 먼저 이벤트를 전달
 		for (UIWidget w : overlayWidgets) {
 			if (w instanceof KeyBindButton kbb && kbb.isWaiting()) {
 				if (kbb.keyPressed(key, input.scancode(), input.modifiers())) return true;
 			}
 		}
-		
+
 		if (key == GLFW.GLFW_KEY_ESCAPE) {
 			if (currentModSettings != null) {
 				currentModSettings = null;
@@ -834,6 +908,44 @@ public class ConfigScreen extends Screen {
 		return false;
 	}
 
+	// ── [NEW] Theme Card Widget ──────────────────────────────────────────────
+	private class ThemeCardWidget extends UIWidget {
+		private final ThemePreset theme;
+
+		public ThemeCardWidget(int x, int y, int w, int h, ThemePreset theme) {
+			super(x, y, w, h);
+			this.theme = theme;
+		}
+
+		@Override
+		protected void renderWidget(GuiGraphics ctx, int mx, int my, float delta) {
+			boolean hov = mx >= x && mx <= x + width && my >= y && my <= y + height;
+
+			// Draw background using the preset's actual background colors so the user gets a preview
+			NVGRenderer.rect(x, y, width, height, theme.winBg, 12);
+			NVGRenderer.outlineRect(x, y, width, height, 2, hov ? theme.accent : theme.itemBorder, 12);
+
+			// Draw a mini "sidebar" preview inside the card
+			NVGRenderer.rect(x, y, 20, height, theme.sidebarBg, 12, 0, 0, 12);
+
+			// Draw a color preview circle for the accent color
+			NVGRenderer.rect(x + width - 30, y + height / 2f - 10, 20, 20, theme.accent, 10);
+
+			// Theme Name
+			float cy = y + height / 2f - 7f;
+			NVGRenderer.text(theme.name, x + 35, cy, Fonts.PRETENDARD_SEMIBOLD, theme.textPrimary, 16f);
+		}
+
+		@Override
+		public boolean mouseClicked(double mx, double my, int btn) {
+			if (btn == 0 && mx >= x && mx <= x + width && my >= y && my <= y + height) {
+				applyTheme(theme); // Apply the clicked theme globally!
+				return true;
+			}
+			return false;
+		}
+	}
+
 	// ═══════════════════════════════ 내부 위젯 ════════════════════════════════
 
 	private class ModCardWidget extends UIWidget {
@@ -856,7 +968,7 @@ public class ConfigScreen extends Screen {
 			NVGRenderer.rect(x, y, width, height - BAR_H, topBg, 12, 12, 0, 0);
 			// 하단 바
 			NVGRenderer.rect(x, y + height - BAR_H, width, BAR_H, barBg, 0, 0, 12, 12);
-			
+
 			// 중앙 아이콘 또는 큰 글자
 			float midX = x + width / 2f;
 			float topH = height - BAR_H;
@@ -865,7 +977,7 @@ public class ConfigScreen extends Screen {
 			if (mod.icon != null && !mod.icon.isEmpty()) {
 				iconImg = modIconsMap.get(mod.name);
 			}
-			
+
 			if (iconImg != null) {
 				NVGRenderer.image(iconImg, midX - 22f, y + (topH - 44f) / 2f, 44f, 44f);
 			} else {
@@ -877,11 +989,11 @@ public class ConfigScreen extends Screen {
 			float barTop  = y + height - BAR_H;
 
 			NVGRenderer.text(mod.name, x + 12f, barTop + 8f, Fonts.PRETENDARD_MEDIUM, UIColors.PURE_WHITE, 14f);
-			
+
 			// 구분선 및 설정 아이콘
 			float divX = x + width - 36f;
 			NVGRenderer.rect(divX, barTop + 6f, 1, BAR_H - 12f, 0x55FFFFFF, 0f); // 약간 투명한 선
-			
+
 			if (iconSettings != null) {
 				NVGRenderer.image(iconSettings, divX + 10f, barTop + (BAR_H - 16f) / 2f, 16f, 16f);
 			}
