@@ -82,4 +82,22 @@ public class ChattingMod extends Mod {
 	)
 	public static boolean test3 = true;
 
+	@ModConfig(
+		type = ConfigType.TEXT,
+		name = "Test Text Input",
+		description = "This is a text input config.",
+		category = "Test Category"
+	)
+	public static String testText = "Default Text";
+
+	@ModConfig(
+		type = ConfigType.BUTTON,
+		name = "Click Me!",
+		description = "This button runs a function when clicked.",
+		category = "Test Category"
+	)
+	public void onTestButtonClicked() {
+		System.out.println("Button clicked!");
+	}
+
 }

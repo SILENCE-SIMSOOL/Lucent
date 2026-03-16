@@ -2,6 +2,7 @@ package silence.simsool.lucent.ui.screens;
 
 import java.awt.Color;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +19,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.general.abstracts.Mod;
+import silence.simsool.lucent.general.data.KeyBind;
 import silence.simsool.lucent.general.interfaces.ModConfig;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UIColors;
@@ -26,13 +28,14 @@ import silence.simsool.lucent.ui.utils.nvg.Fonts;
 import silence.simsool.lucent.ui.utils.nvg.Image;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
+import silence.simsool.lucent.ui.widget.ActionButton;
 import silence.simsool.lucent.ui.widget.ColorPickerButton;
 import silence.simsool.lucent.ui.widget.KeyBindButton;
 import silence.simsool.lucent.ui.widget.Selector;
 import silence.simsool.lucent.ui.widget.Slider;
+import silence.simsool.lucent.ui.widget.TextBox;
 import silence.simsool.lucent.ui.widget.ToggleButton;
 import silence.simsool.lucent.ui.widget.base.UIWidget;
-import silence.simsool.lucent.general.data.KeyBind;
 
 public class ConfigScreen extends Screen {
 
@@ -218,34 +221,41 @@ public class ConfigScreen extends Screen {
 		int curY  = scissorY + 66;
 		int itemW = contentW - PAD * 2;
 
-		for (Map.Entry<String, List<Field>> entry : groupSettingFields().entrySet()) {
+		for (Map.Entry<String, List<Object>> entry : groupConfigMembers().entrySet()) {
 			curY += 36; 
 
-			for (Field field : entry.getValue()) {
-				ModConfig cfg = field.getAnnotation(ModConfig.class);
+			for (Object member : entry.getValue()) {
+				ModConfig cfg = (member instanceof Field f) ? f.getAnnotation(ModConfig.class) : ((Method)member).getAnnotation(ModConfig.class);
 				widgets.add(new SettingRowWidget(sx, curY, itemW, 74, cfg.name(), cfg.description()));
 
 				try {
-					field.setAccessible(true);
-					Object val = field.get(currentModSettings);
+					Object val = null;
+					if (member instanceof Field f) {
+						f.setAccessible(true);
+						val = f.get(currentModSettings);
+					}
+					
 					int ux = sx + itemW - PAD; 
 
 					switch (cfg.type()) {
 						case SWITCH -> {
 							ToggleButton t = new ToggleButton(ux - 48, curY + 25, 48, 24, (boolean) val);
-							t.setOnChange(v -> { try { field.set(currentModSettings, v); } catch (Exception e) {} });
+							final Field f = (member instanceof Field field) ? field : null;
+							t.setOnChange(v -> { try { if (f != null) f.set(currentModSettings, v); } catch (Exception e) {} });
 							widgets.add(t);
 						}
 						case SLIDER -> {
 							Slider s = new Slider(ux - 290, curY + 25, 290, 24,
 								cfg.min(), cfg.max(), cfg.step(), (double) val);
-							s.setOnChange(v -> { try { field.set(currentModSettings, v); } catch (Exception e) {} });
+							final Field f = (member instanceof Field field) ? field : null;
+							s.setOnChange(v -> { try { if (f != null) f.set(currentModSettings, v); } catch (Exception e) {} });
 							widgets.add(s);
 						}
 						case SELECTOR -> {
 							Selector sel = new Selector(ux - 148, curY + 17, 148, 38, List.of(cfg.options()));
 							sel.setValue((String) val);
-							sel.setOnChange(v -> { try { field.set(currentModSettings, v); } catch (Exception e) {} });
+							final Field f = (member instanceof Field field) ? field : null;
+							sel.setOnChange(v -> { try { if (f != null) f.set(currentModSettings, v); } catch (Exception e) {} });
 							overlayWidgets.add(sel);
 						}
 						case COLOR -> {
@@ -258,19 +268,31 @@ public class ConfigScreen extends Screen {
 							
 							int width = 64;
 							ColorPickerButton cp = new ColorPickerButton(ux - width, curY + 17, width, 38, initialColor);
+							final Field f = (member instanceof Field field) ? field : null;
 							cp.setOnChange(c -> { 
 								try { 
-									if (field.getType() == Color.class) {
-										field.set(currentModSettings, new Color(c, true));
-									} else {
-										field.set(currentModSettings, c);
+									if (f != null) {
+										if (f.getType() == Color.class) {
+											f.set(currentModSettings, new Color(c, true));
+										} else {
+											f.set(currentModSettings, c);
+										}
 									}
 								} catch (Exception e) {} 
 							});
 							overlayWidgets.add(cp);
 						}
 						case BUTTON -> {
-							// Do nothing for now
+							ActionButton ab = new ActionButton(ux - 100, curY + 19, 100, 34, cfg.name());
+							if (member instanceof Method m) {
+								ab.setOnClick(() -> {
+									try { m.setAccessible(true); m.invoke(currentModSettings); } 
+									catch (Exception e) { e.printStackTrace(); }
+								});
+							} else if (member instanceof Field f && val instanceof Runnable r) {
+								ab.setOnClick(r);
+							}
+							widgets.add(ab);
 						}
 						case KEYBIND -> {
 							KeyBind initialBind = null;
@@ -278,11 +300,18 @@ public class ConfigScreen extends Screen {
 								initialBind = kb;
 							}
 							KeyBindButton kbb = new KeyBindButton(ux - 100, curY + 19, 100, 34, initialBind);
-							kbb.setOnChange(v -> { try { field.set(currentModSettings, v); } catch (Exception e) {} });
+							final Field f = (member instanceof Field field) ? field : null;
+							kbb.setOnChange(v -> { try { if (f != null) f.set(currentModSettings, v); } catch (Exception e) {} });
 							overlayWidgets.add(kbb);
 						}
+						case TEXT -> {
+							TextBox tb = new TextBox(ux - 200, curY + 19, 200, 34, (String) val);
+							final Field f = (member instanceof Field field) ? field : null;
+							tb.setOnChange(v -> { try { if (f != null) f.set(currentModSettings, v); } catch (Exception e) {} });
+							widgets.add(tb);
+						}
 					}
-				} catch (IllegalAccessException e) { e.printStackTrace(); }
+				} catch (Exception e) { e.printStackTrace(); }
 
 				curY += 84;
 			}
@@ -291,22 +320,35 @@ public class ConfigScreen extends Screen {
 		maxScroll = Math.max(0, curY - scissorY + 10 - scissorH);
 	}
 
-	private Map<String, List<Field>> groupSettingFields() {
-		Map<String, List<Field>> map = new java.util.LinkedHashMap<>();
+	private Map<String, List<Object>> groupConfigMembers() {
+		Map<String, List<Object>> map = new java.util.LinkedHashMap<>();
 		String q = (searchField == null) ? "" : searchField.getValue().trim().toLowerCase();
-		for (Field f : currentModSettings.getClass().getDeclaredFields()) {
+		
+		Class<?> clazz = currentModSettings.getClass();
+		for (Field f : clazz.getDeclaredFields()) {
 			if (f.isAnnotationPresent(ModConfig.class)) {
 				ModConfig cfg = f.getAnnotation(ModConfig.class);
-				boolean match = q.isEmpty()
-							 || cfg.name().toLowerCase().contains(q)
-							 || cfg.description().toLowerCase().contains(q)
-							 || cfg.category().toLowerCase().contains(q);
-				if (match) {
+				if (matchesSearch(cfg, q)) {
 					map.computeIfAbsent(cfg.category(), k -> new ArrayList<>()).add(f);
 				}
 			}
 		}
+		for (Method m : clazz.getDeclaredMethods()) {
+			if (m.isAnnotationPresent(ModConfig.class)) {
+				ModConfig cfg = m.getAnnotation(ModConfig.class);
+				if (matchesSearch(cfg, q)) {
+					map.computeIfAbsent(cfg.category(), k -> new ArrayList<>()).add(m);
+				}
+			}
+		}
 		return map;
+	}
+
+	private boolean matchesSearch(ModConfig cfg, String q) {
+		if (q == null || q.isEmpty()) return true;
+		return cfg.name().toLowerCase().contains(q)
+				|| cfg.description().toLowerCase().contains(q)
+				|| cfg.category().toLowerCase().contains(q);
 	}
 
 	// ═══════════════════════════════ 렌더링 ══════════════════════════════════════
@@ -530,7 +572,7 @@ public class ConfigScreen extends Screen {
 		}
 
 		int curY = contentY + 66;
-		for (Map.Entry<String, List<Field>> e : groupSettingFields().entrySet()) {
+		for (Map.Entry<String, List<Object>> e : groupConfigMembers().entrySet()) {
 			float ry = curY + 14 - (float) scrollOffset;
 			if (ry > scissorY - 30 && ry < scissorY + scissorH) {
 				String catName = e.getKey().toUpperCase();
