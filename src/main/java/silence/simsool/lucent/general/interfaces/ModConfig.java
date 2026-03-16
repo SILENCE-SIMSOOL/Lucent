@@ -12,6 +12,7 @@ import silence.simsool.lucent.general.enums.ConfigType;
 public @interface ModConfig {
 	ConfigType type();
 	String name();
+	String display() default "";
 	String description() default "";
 	String category() default "General";
 	double min() default 0.0;

@@ -92,7 +92,8 @@ public class ChattingMod extends Mod {
 
 	@ModConfig(
 		type = ConfigType.BUTTON,
-		name = "Click Me!",
+		name = "Test Button",
+		display = "Click Me!",
 		description = "This button runs a function when clicked.",
 		category = "Test Category"
 	)

@@ -283,7 +283,8 @@ public class ConfigScreen extends Screen {
 							overlayWidgets.add(cp);
 						}
 						case BUTTON -> {
-							ActionButton ab = new ActionButton(ux - 100, curY + 19, 100, 34, cfg.name());
+							String btnText = cfg.display().isEmpty() ? cfg.name() : cfg.display();
+							ActionButton ab = new ActionButton(ux - 100, curY + 19, 100, 34, btnText);
 							if (member instanceof Method m) {
 								ab.setOnClick(() -> {
 									try { m.setAccessible(true); m.invoke(currentModSettings); } 
@@ -390,8 +391,6 @@ public class ConfigScreen extends Screen {
 				renderSearchBarBg();
 				if (currentModSettings == null) {
 					renderCategoryTabs();
-				} else {
-					renderSettingsHeader();
 				}
 			} else {
 				float sx = contentX + PAD;
@@ -400,6 +399,9 @@ public class ConfigScreen extends Screen {
 			}
 
 			NVGRenderer.pushScissor(contentX, scissorY, contentW, scissorH);
+			if (currentSidebarPage.equals("Mods") && currentModSettings != null) {
+				renderSettingsHeader();
+			}
 			NVGRenderer.push();
 			NVGRenderer.translate(0, (float) -scrollOffset);
 
@@ -508,9 +510,10 @@ public class ConfigScreen extends Screen {
 
 			if (txt.isEmpty() && !searchFocused) {
 				// placeholder: 클리핑 불필요
-				NVGRenderer.pushScissor((int) textAreaX, by, (int) textAreaW, bh);
+				NVGRenderer.push();
+				org.lwjgl.nanovg.NanoVG.nvgIntersectScissor(NVGRenderer.getVG(), (int) textAreaX, by, (int) textAreaW, bh);
 				NVGRenderer.text("Search...", textAreaX, textY, Fonts.PRETENDARD_MEDIUM, C_TEXT_SECONDARY, 14f);
-				NVGRenderer.popScissor();
+				NVGRenderer.pop();
 			} else {
 				int cpos = searchField.getCursorPosition();
 				String beforeCursor = txt.substring(0, Math.min(cpos, txt.length()));
@@ -524,7 +527,8 @@ public class ConfigScreen extends Screen {
 				}
 
 				// 텍스트 영역을 scissor로 클리핑
-				NVGRenderer.pushScissor((int) textAreaX, by, (int) textAreaW, bh);
+				NVGRenderer.push();
+				org.lwjgl.nanovg.NanoVG.nvgIntersectScissor(NVGRenderer.getVG(), (int) textAreaX, by, (int) textAreaW, bh);
 				NVGRenderer.text(txt, textAreaX - scrollX, textY, Fonts.PRETENDARD_MEDIUM, C_TEXT_PRIMARY, 14f);
 
 				// 커서 깜빡임
@@ -532,7 +536,7 @@ public class ConfigScreen extends Screen {
 					float cx = textAreaX + cursorX - scrollX;
 					NVGRenderer.rect(cx + 1f, textY - 1f, 1.5f, 16f, C_TEXT_PRIMARY, 0f);
 				}
-				NVGRenderer.popScissor();
+				NVGRenderer.pop();
 			}
 		}
 	}

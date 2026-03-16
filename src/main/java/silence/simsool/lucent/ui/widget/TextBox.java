@@ -35,7 +35,8 @@ public class TextBox extends UIWidget {
 		float textAreaW = width - 20;
 		float textY = y + (height - 14f) / 2f;
 
-		NVGRenderer.pushScissor((int) textAreaX, (int) y, (int) textAreaW, (int) height);
+		NVGRenderer.push();
+		org.lwjgl.nanovg.NanoVG.nvgIntersectScissor(NVGRenderer.getVG(), (int) textAreaX, (int) y, (int) textAreaW, (int) height);
 		
 		String visibleText = value;
 		float cursorX = NVGRenderer.textWidth(value.substring(0, Math.min(cursorPosition, value.length())), Fonts.PRETENDARD_MEDIUM, 14f);
@@ -53,7 +54,7 @@ public class TextBox extends UIWidget {
 			NVGRenderer.rect(cx + 1f, textY - 1f, 1.5f, 16f, UIColors.PURE_WHITE, 0f);
 		}
 		
-		NVGRenderer.popScissor();
+		NVGRenderer.pop();
 	}
 
 	@Override
