@@ -6,5 +6,6 @@ public enum ConfigType {
 	BUTTON,
 	COLOR,
 	SELECTOR,
-	KEYBIND
+	KEYBIND,
+	TEXT
 }

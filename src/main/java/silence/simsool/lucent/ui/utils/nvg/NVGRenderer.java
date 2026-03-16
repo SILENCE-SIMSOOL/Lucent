@@ -936,6 +936,18 @@ public class NVGRenderer {
 	 * @param image The image to draw (must be loaded via {@link #createImage})
 	 * @param x     Left edge
 	 * @param y     Top edge
+	 * @param size  Render pixel size
+	 */
+	public static void image(Image image, float x, float y, float size) {
+		image(image, x, y, size, size, 0f);
+	}
+
+	/**
+	 * Draws a loaded {@link Image} at the given position and size with no corner rounding.
+	 *
+	 * @param image The image to draw (must be loaded via {@link #createImage})
+	 * @param x     Left edge
+	 * @param y     Top edge
 	 * @param w     Render width
 	 * @param h     Render height
 	 */
@@ -954,6 +966,7 @@ public class NVGRenderer {
 	 * @param radius Corner radius in pixels
 	 */
 	public static void image(Image image, float x, float y, float w, float h, float radius) {
+		if (image == null) return;
 		nvgImagePattern(vg, x, y, w, h, 0f, getImage(image), 1f, nvgPaint);
 		nvgBeginPath(vg);
 		nvgRoundedRect(vg, x, y, w, h + .5f, radius);

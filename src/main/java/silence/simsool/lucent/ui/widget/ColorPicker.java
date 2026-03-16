@@ -54,7 +54,7 @@ public class ColorPicker extends UIWidget {
 	private int hueX, hueY;
 	private int alphaX, alphaY;
 
-	private int panelBg     = 0xFF141517;
+	private int panelBg     = 0xED141517;
 	private int inputBorder = 0x883D4049;
 	private int inputFocus  = 0xFF66AAFF;
 	private int inputErr    = 0xFFFF4444;
@@ -189,7 +189,7 @@ public class ColorPicker extends UIWidget {
 	    int boxW = SV_W;
 	    int boxH = getInputBoxH();
 
-	    NVGRenderer.rect(boxX, boxY, boxW, boxH, UIColors.EXTRA_DARK, 12);
+	    NVGRenderer.rect(boxX, boxY, boxW, boxH, 0x801F1F1F, 12);
 	    NVGRenderer.outlineRect(boxX, boxY, boxW, boxH, 1, UIColors.DARK, 12);
 
 	    // ── rect 내부 좌표 (모두 box 기준) ─────────

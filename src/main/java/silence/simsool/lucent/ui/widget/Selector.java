@@ -19,13 +19,13 @@ public class Selector extends UIWidget {
 	private int borderColor      = 0xFF555555;
 	private int textColor        = 0xFFEEEEEE;
 	private int arrowColor       = 0xFFAAAAAA;
-	private int dropdownBgColor  = 0xFF222222;
-	private int itemHoverColor   = 0xFF3A3A3A;
+	private int dropdownBgColor  = 0xED222222;
+	private int itemHoverColor   = 0x803A3A3A;
 	private int separatorColor   = 0xFF333333;
 
 	private static int PADDING     = 14;
 	private static int ARROW_W     = 16;
-	private static int ITEM_HEIGHT = 44;
+	private static int ITEM_HEIGHT = 38;
 	private static int MAX_VISIBLE = 6;
 	private static float ANIM_SPEED = 10f;
 	private static float FONT_SIZE  = 16f;
@@ -70,7 +70,6 @@ public class Selector extends UIWidget {
 	@Override
 	public void renderOverlay(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
 		if (dropdownAnim <= 0.01f) return;
-
 		int visibleCount = Math.min(options.size(), MAX_VISIBLE);
 		int totalH = visibleCount * ITEM_HEIGHT;
 		int visibleH = (int)(totalH * UAnimation.Easing.easeOut(dropdownAnim));
@@ -79,7 +78,7 @@ public class Selector extends UIWidget {
 		int dy = y + height + 2;
 
 		NVGRenderer.pushScissor(dx, dy, width, visibleH);
-		
+
 		NVGRenderer.rect(dx, dy, width, totalH, dropdownBgColor, 10f);
 		NVGRenderer.outlineRect(dx, dy, width, totalH, 1, borderColor, 10f);
 
@@ -96,9 +95,9 @@ public class Selector extends UIWidget {
 			}
 
 			if (isSelected || isItemHovered) {
-				if (i == 0) NVGRenderer.rect(dx, iy, width, ITEM_HEIGHT, isSelected ? UIColors.ACCENT_BLUE : itemHoverColor, 10, 10, 0, 0);
-				else if (i == visibleCount - 1) NVGRenderer.rect(dx, iy, width, ITEM_HEIGHT, isSelected ? UIColors.ACCENT_BLUE : itemHoverColor, 0, 0, 10, 10);
-				else NVGRenderer.rect(dx, iy, width, ITEM_HEIGHT, isSelected ? UIColors.ACCENT_BLUE : itemHoverColor);
+				if (i == 0) NVGRenderer.rect(dx, iy, width, ITEM_HEIGHT, isSelected ? 0x803B82F6 : itemHoverColor, 10, 10, 0, 0);
+				else if (i == visibleCount - 1) NVGRenderer.rect(dx, iy, width, ITEM_HEIGHT, isSelected ? 0x803B82F6 : itemHoverColor, 0, 0, 10, 10);
+				else NVGRenderer.rect(dx, iy, width, ITEM_HEIGHT, isSelected ? 0x803B82F6 : itemHoverColor);
 			}
 
 			String optText = fitText(options.get(idx), width - PADDING * 2, Fonts.PRETENDARD);

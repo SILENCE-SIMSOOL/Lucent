@@ -38,4 +38,28 @@ public class UChat {
 		if (mc.player != null) mc.player.connection.sendChat(text);
 	}
 
+	public static void say(int value) {
+		say(String.valueOf(value));
+	}
+
+	public static void say(long value) {
+		say(String.valueOf(value));
+	}
+
+	public static void say(double value) {
+		say(String.valueOf(value));
+	}
+
+	public static void say(float value) {
+		say(String.valueOf(value));
+	}
+
+	public static void say(boolean value) {
+		say(value ? "true" : "false");
+	}
+
+	public static void say(Object value) {
+		say(value != null ? value.toString() : "null");
+	}
+
 }

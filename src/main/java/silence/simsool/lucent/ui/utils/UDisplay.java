@@ -18,12 +18,12 @@ public class UDisplay {
 		return getWindow().getHeight();
 	}
 
-	public static int getGuiScaledWidth() {
-		return getWindow().getScreenWidth();
+	public static int getWidth2() {
+		return getWindow().getWidth() / 2;
 	}
 
-	public static int getGuiScaledHeight() {
-		return getWindow().getGuiScaledHeight();
+	public static int getHeight2() {
+		return getWindow().getHeight() / 2;
 	}
 
 	public static int getScreenWidth() {
@@ -31,8 +31,33 @@ public class UDisplay {
 	}
 
 	public static int getScreenHeight() {
+		return getWindow().getScreenHeight();
+	}
+
+	public static int getScreenWidth2() {
+		return getWindow().getScreenWidth() / 2;
+	}
+
+	public static int getScreenHeight2() {
+		return getWindow().getScreenHeight() / 2;
+	}
+
+	public static int getGuiScaledWidth() {
+		return getWindow().getGuiScaledWidth();
+	}
+
+	public static int getGuiScaledHeight() {
 		return getWindow().getGuiScaledHeight();
 	}
+
+	public static int getGuiScaledWidth2() {
+		return getWindow().getGuiScaledWidth() / 2;
+	}
+
+	public static int getGuiScaledHeight2() {
+		return getWindow().getGuiScaledHeight() / 2;
+	}
+
 
 	public static int getGuiScale() {
 		return getWindow().getGuiScale();

@@ -10,19 +10,24 @@ import silence.simsool.lucent.general.enums.ConfigType;
 import silence.simsool.lucent.general.interfaces.ModConfig;
 
 public class ChattingMod extends Mod {
+
+	public ChattingMod() {
+		super("Chatting Mod", "Enhances your chat experience with various QOL features.", "QOL", "minecraft, chat", "/assets/lucent/textures/modicons/chatmod.png");
+	}
+
 	@ModConfig(
 		type = ConfigType.SWITCH,
-		name = "Remove Chat Background",
-		description = "채팅창 배경을 지웁니다.",
-		category = "General"
+		name = "Clear Background",
+		description = "Removes the default dark background from the chat window.",
+		category = "Appearance"
 	)
-	public static boolean removeChatBackground = true;
+	public static boolean clearBackground = true;
 
 	@ModConfig(
 		type = ConfigType.SLIDER,
 		name = "Chat Opacity",
-		description = "투명도 조절",
-		category = "General",
+		description = "Adjust the transparency level of the chat text and background.",
+		category = "Appearance",
 		min = 0.0,
 		max = 1.0,
 		step = 0.1
@@ -30,22 +35,51 @@ public class ChattingMod extends Mod {
 	public static double chatOpacity = 0.8;
 
 	@ModConfig(
-		type = ConfigType.COLOR,
-		name = "Background Color",
-		description = "change background color",
-		category = "Quality of Life"
+		type = ConfigType.SELECTOR,
+		name = "Chat Animation",
+		description = "Select the animation style for incoming chat messages.",
+		category = "General",
+		options = {"Smooth", "Classic", "Slide"}
 	)
-	public static Color testColor = new Color(85, 255, 85, 155);
+	public static String chatAnimationStyle = "Smooth";
+
+	@ModConfig(
+		type = ConfigType.COLOR,
+		name = "Mention Color",
+		description = "The highlight color used when someone mentions your name.",
+		category = "General"
+	)
+	public static Color mentionColor = new Color(85, 255, 85, 155);
 
 	@ModConfig(
 		type = ConfigType.KEYBIND,
-		name = "Open Menu",
-		description = "메뉴 열기 키"
+		name = "Open Chat Settings",
+		description = "Keybind to quickly open the mod configuration menu."
 	)
 	public KeyBind openMenuKey = KeyBind.ofKey(GLFW.GLFW_KEY_RIGHT_SHIFT, 0);
 
-	public ChattingMod() {
-		super("Chatting Mod", "채팅 관련 여러 편의 기능을 제공합니다.", "QOL", "minecraft, chat", "/assets/lucent/textures/modicons/chatmod.png");
-	}
+	@ModConfig(
+		type = ConfigType.SWITCH,
+		name = "Test Switch 1",
+		description = "This is test switch.",
+		category = "Test Category"
+	)
+	public static boolean test1 = true;
+	
+	@ModConfig(
+		type = ConfigType.SWITCH,
+		name = "Test Switch 2",
+		description = "This is test switch.",
+		category = "Test Category"
+	)
+	public static boolean test2 = true;
+
+	@ModConfig(
+		type = ConfigType.SWITCH,
+		name = "Test Switch 3",
+		description = "This is test switch.",
+		category = "Test Category"
+	)
+	public static boolean test3 = true;
 
 }

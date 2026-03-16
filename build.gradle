@@ -16,15 +16,11 @@ repositories {
 
 loom {
 	mods {
-		"silenceutils" {
+		"lucent" {
 			sourceSet sourceSets.main
 		}
 	}
 }
-
-//fabricApi {
-//	configureDataGeneration()
-//}
 
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -67,11 +63,26 @@ jar {
 	}
 }
 
+// JIJ Library Version (remove nanovg)
+task remapLibraryJar(type: net.fabricmc.loom.task.RemapJarTask) {
+	dependsOn jar
+	input = jar.archiveFile
+	archiveClassifier = 'library'
+	addNestedDependencies = false 
+}
+
+assemble.dependsOn remapLibraryJar
+
 publishing {
 	publications {
 		create("mavenJava", MavenPublication) {
 			artifactId = project.archives_base_name
 			from components.java
+			
+			// JIJ Library Version
+			artifact(remapLibraryJar) {
+				classifier = "library"
+			}
 		}
 	}
 	repositories {

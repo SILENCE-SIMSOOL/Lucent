@@ -23,7 +23,7 @@ import silence.simsool.lucent.ui.widget.Slider;
 import silence.simsool.lucent.ui.widget.ToggleButton;
 import silence.simsool.lucent.ui.widget.base.UIWidget;
 
-public class ModuleSettingsScreen extends Screen {
+public class TestScreen extends Screen {
 
 	// ── 색상 테마 ──────────────────────────────────
 	private static final int COLOR_WINDOW_BG      = 0xCC121418;
@@ -59,7 +59,7 @@ public class ModuleSettingsScreen extends Screen {
 	private int themeColor = 0xFF5D3FD3;
 	private String releaseChannel = "Pre-Releases";
 
-	public ModuleSettingsScreen() {
+	public TestScreen() {
 		super(Component.literal("Module Settings"));
 	}
 
