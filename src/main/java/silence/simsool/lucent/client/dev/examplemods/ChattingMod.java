@@ -4,6 +4,7 @@ import java.awt.Color;
 
 import org.lwjgl.glfw.GLFW;
 
+import silence.simsool.lucent.general.UChat;
 import silence.simsool.lucent.general.abstracts.Mod;
 import silence.simsool.lucent.general.data.KeyBind;
 import silence.simsool.lucent.general.enums.ConfigType;
@@ -98,7 +99,18 @@ public class ChattingMod extends Mod {
 		category = "Test Category"
 	)
 	public void onTestButtonClicked() {
-		System.out.println("Button clicked!");
+		UChat.chat("Button 1 clicked!");
+	}
+
+	@ModConfig(
+		type = ConfigType.BUTTON,
+		name = "Test Button 2",
+		display = "",
+		description = "This button runs a function when clicked.",
+		category = "Test Category"
+	)
+	public void onTestButtonClicked2() {
+		UChat.chat("Button 2 clicked!");
 	}
 
 }

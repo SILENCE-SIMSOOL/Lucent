@@ -1,7 +1,5 @@
 package silence.simsool.lucent;
 
-import java.io.File;
-
 import com.mojang.brigadier.Command;
 
 import net.fabricmc.api.ClientModInitializer;
@@ -10,10 +8,8 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.SpecialGuiElementRegistry;
 import net.minecraft.client.Minecraft;
-import silence.simsool.lucent.client.dev.examplemods.ChattingMod;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.config.api.LucentAPI;
-import silence.simsool.lucent.general.UChat;
 import silence.simsool.lucent.general.ULog;
 import silence.simsool.lucent.ui.screens.ConfigScreen;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;

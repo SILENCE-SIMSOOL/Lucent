@@ -177,20 +177,18 @@ public class Slider extends UIWidget {
 
 	@Override
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-		if (!inputMode)
-			return false;
+		if (!inputMode) return false;
 
-		// Enter
 		if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
 			confirmInput();
 			return true;
 		}
-		// Escape
+
 		if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
 			cancelInput();
 			return true;
 		}
-		// Backspace
+
 		if (keyCode == GLFW.GLFW_KEY_BACKSPACE) {
 			if (!inputBuffer.isEmpty() && inputCursor > 0) {
 				inputBuffer = inputBuffer.substring(0, inputCursor - 1) + inputBuffer.substring(inputCursor);
@@ -198,29 +196,29 @@ public class Slider extends UIWidget {
 			}
 			return true;
 		}
-		// Delete
+
 		if (keyCode == GLFW.GLFW_KEY_DELETE) {
 			if (inputCursor < inputBuffer.length()) {
 				inputBuffer = inputBuffer.substring(0, inputCursor) + inputBuffer.substring(inputCursor + 1);
 			}
 			return true;
 		}
-		// L-Arrow
+
 		if (keyCode == GLFW.GLFW_KEY_LEFT) {
 			inputCursor = Math.max(0, inputCursor - 1);
 			return true;
 		}
-		// R-Arrow
+
 		if (keyCode == GLFW.GLFW_KEY_RIGHT) {
 			inputCursor = Math.min(inputBuffer.length(), inputCursor + 1);
 			return true;
 		}
-		// Home
+
 		if (keyCode == GLFW.GLFW_KEY_HOME) {
 			inputCursor = 0;
 			return true;
 		}
-		// End
+
 		if (keyCode == GLFW.GLFW_KEY_END) {
 			inputCursor = inputBuffer.length();
 			return true;
@@ -231,8 +229,7 @@ public class Slider extends UIWidget {
 
 	@Override
 	public boolean charTyped(char chr, int modifiers) {
-		if (!inputMode)
-			return false;
+		if (!inputMode) return false;
 		if (Character.isDigit(chr) || chr == '.' || (chr == '-' && inputCursor == 0)) {
 			inputBuffer = inputBuffer.substring(0, inputCursor) + chr + inputBuffer.substring(inputCursor);
 			inputCursor++;

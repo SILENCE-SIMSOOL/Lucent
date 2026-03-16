@@ -3,6 +3,7 @@ package silence.simsool.lucent.ui.widget;
 import java.util.function.Consumer;
 
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.nanovg.NanoVG;
 
 import net.minecraft.client.gui.GuiGraphics;
 import silence.simsool.lucent.ui.utils.UIColors;
@@ -25,8 +26,13 @@ public class TextBox extends UIWidget {
 
 	@Override
 	protected void renderWidget(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
-		int bgColor = 0xFF141416; // C_SEARCHBAR_BG
-		int borderColor = focused ? UIColors.ACCENT_BLUE : 0xFF2A2A2D; // C_SEARCHBAR_BDR
+		int bgColor = UIColors.withAlpha(UIColors.PURE_BLACK, 60);
+		int borderColor = focused ? UIColors.ACCENT_BLUE : UIColors.ITEM_BORDER;
+
+		// Focus glow
+		if (focused) {
+			NVGRenderer.rect(x - 2, y - 2, width + 4, height + 4, UIColors.withAlpha(UIColors.ACCENT_BLUE, 30), 10f);
+		}
 
 		NVGRenderer.rect(x, y, width, height, bgColor, 8f);
 		NVGRenderer.outlineRect(x, y, width, height, 1, borderColor, 8f);
@@ -36,22 +42,19 @@ public class TextBox extends UIWidget {
 		float textY = y + (height - 14f) / 2f;
 
 		NVGRenderer.push();
-		org.lwjgl.nanovg.NanoVG.nvgIntersectScissor(NVGRenderer.getVG(), (int) textAreaX, (int) y, (int) textAreaW, (int) height);
+		NanoVG.nvgIntersectScissor(NVGRenderer.getVG(), (int) textAreaX, (int) y, (int) textAreaW, (int) height);
 		
 		String visibleText = value;
 		float cursorX = NVGRenderer.textWidth(value.substring(0, Math.min(cursorPosition, value.length())), Fonts.PRETENDARD_MEDIUM, 14f);
 		
-		if (cursorX - scrollOffset > textAreaW) {
-			scrollOffset = cursorX - textAreaW + 4f;
-		} else if (cursorX - scrollOffset < 0) {
-			scrollOffset = cursorX;
-		}
+		if (cursorX - scrollOffset > textAreaW) scrollOffset = cursorX - textAreaW + 4f;
+		else if (cursorX - scrollOffset < 0) scrollOffset = cursorX;
 		
-		NVGRenderer.text(visibleText, textAreaX - scrollOffset, textY, Fonts.PRETENDARD_MEDIUM, UIColors.PURE_WHITE, 14f);
+		NVGRenderer.text(visibleText, textAreaX - scrollOffset, textY, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_PRIMARY, 14f);
 
 		if (focused && (System.currentTimeMillis() / 500) % 2 == 0) {
 			float cx = textAreaX + cursorX - scrollOffset;
-			NVGRenderer.rect(cx + 1f, textY - 1f, 1.5f, 16f, UIColors.PURE_WHITE, 0f);
+			NVGRenderer.rect(cx + 1f, textY - 1f, 1.5f, 16f, UIColors.ACCENT_BLUE, 0f);
 		}
 		
 		NVGRenderer.pop();
@@ -64,6 +67,7 @@ public class TextBox extends UIWidget {
 			return true;
 		}
 		focused = false;
+		scrollOffset = 0;
 		return false;
 	}
 
@@ -78,26 +82,33 @@ public class TextBox extends UIWidget {
 				if (onChange != null) onChange.accept(value);
 			}
 			return true;
+
 		} else if (key == GLFW.GLFW_KEY_DELETE) {
 			if (!value.isEmpty() && cursorPosition < value.length()) {
 				value = value.substring(0, cursorPosition) + value.substring(cursorPosition + 1);
 				if (onChange != null) onChange.accept(value);
 			}
 			return true;
+
 		} else if (key == GLFW.GLFW_KEY_LEFT) {
 			if (cursorPosition > 0) cursorPosition--;
 			return true;
+
 		} else if (key == GLFW.GLFW_KEY_RIGHT) {
 			if (cursorPosition < value.length()) cursorPosition++;
 			return true;
+
 		} else if (key == GLFW.GLFW_KEY_HOME) {
 			cursorPosition = 0;
 			return true;
+
 		} else if (key == GLFW.GLFW_KEY_END) {
 			cursorPosition = value.length();
 			return true;
+
 		} else if (key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER || key == GLFW.GLFW_KEY_ESCAPE) {
 			focused = false;
+			scrollOffset = 0;
 			return true;
 		}
 

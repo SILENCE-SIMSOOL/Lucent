@@ -97,6 +97,7 @@ public class ModManager {
 	}
 
 	public void loadConfigs() {
+		loadGlobalConfig();
 		if (!configDirectory.exists()) return;
 
 		for (Mod module : modules) {
@@ -124,12 +125,13 @@ public class ModManager {
 					}
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				// e.printStackTrace();
 			}
 		}
 	}
 
 	public void saveConfigs() {
+		saveGlobalConfig();
 		if (!configDirectory.exists()) configDirectory.mkdirs();
 
 		for (Mod module : modules) {
@@ -150,9 +152,50 @@ public class ModManager {
 			try (FileWriter writer = new FileWriter(file)) {
 				GSON.toJson(json, writer);
 			} catch (Exception e) {
-				e.printStackTrace();
+				// e.printStackTrace();
 			}
 		}
+	}
+
+	public void loadGlobalConfig() {
+		File file = new File(configDirectory, "lucent_global.json");
+		if (!file.exists()) return;
+
+		try (FileReader reader = new FileReader(file)) {
+			JsonObject json = GSON.fromJson(reader, JsonObject.class);
+			if (json == null) return;
+
+			if (json.has("theme")) {
+				String themeName = json.get("theme").getAsString();
+				silence.simsool.lucent.ui.theme.ThemeManager.applyTheme(
+					silence.simsool.lucent.ui.theme.ThemeManager.findTheme(themeName)
+				);
+			}
+			
+			if (json.has("openAnimation")) LucentConfig.openAnimation = json.get("openAnimation").getAsBoolean();
+			if (json.has("uiBlur")) LucentConfig.uiBlur = json.get("uiBlur").getAsBoolean();
+			if (json.has("uiBlurStrength")) LucentConfig.uiBlurStrength = json.get("uiBlurStrength").getAsFloat();
+			if (json.has("setupLanguage")) LucentConfig.setupLanguage = json.get("setupLanguage").getAsString();
+
+		} catch (Exception e) {}
+	}
+
+	public void saveGlobalConfig() {
+		if (!configDirectory.exists()) configDirectory.mkdirs();
+		File file = new File(configDirectory, "lucent_global.json");
+		JsonObject json = new JsonObject();
+		if (silence.simsool.lucent.ui.theme.ThemeManager.currentTheme != null) {
+			json.addProperty("theme", silence.simsool.lucent.ui.theme.ThemeManager.currentTheme.name);
+		}
+
+		json.addProperty("openAnimation", LucentConfig.openAnimation);
+		json.addProperty("uiBlur", LucentConfig.uiBlur);
+		json.addProperty("uiBlurStrength", LucentConfig.uiBlurStrength);
+		json.addProperty("setupLanguage", LucentConfig.setupLanguage);
+
+		try (FileWriter writer = new FileWriter(file)) {
+			GSON.toJson(json, writer);
+		} catch (Exception e) {}
 	}
 
 	private String getFileName(Mod module) {

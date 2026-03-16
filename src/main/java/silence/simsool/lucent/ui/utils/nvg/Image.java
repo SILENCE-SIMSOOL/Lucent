@@ -67,7 +67,7 @@ public class Image {
 				String resourcePath = trimmedPath.startsWith("/") ? trimmedPath.substring(1) : trimmedPath;
 
 				// Thread context classloader 사용: Lucent가 라이브러리로 사용될 때
-				// 다른 모드(SilenceUtils 등)의 리소스도 찾을 수 있도록 함
+				// 다른 모드의 리소스도 찾을 수 있도록 함
 				ClassLoader cl = Thread.currentThread().getContextClassLoader();
 				InputStream stream = (cl != null) ? cl.getResourceAsStream(resourcePath) : null;
 

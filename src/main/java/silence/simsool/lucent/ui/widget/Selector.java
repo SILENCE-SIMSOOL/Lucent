@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import net.minecraft.client.gui.GuiGraphics;
 import silence.simsool.lucent.ui.font.LucentFont;
 import silence.simsool.lucent.ui.utils.UAnimation;
+import silence.simsool.lucent.ui.utils.UColor;
 import silence.simsool.lucent.ui.utils.UIColors;
 import silence.simsool.lucent.ui.utils.ULayout;
 import silence.simsool.lucent.ui.utils.nvg.Fonts;
@@ -14,21 +15,17 @@ import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 import silence.simsool.lucent.ui.widget.base.UIWidget;
 
 public class Selector extends UIWidget {
-	private int bgColor          = 0xFF2A2A2A;
-	private int bgHoverColor     = 0xFF3A3A3A;
-	private int borderColor      = 0xFF555555;
-	private int textColor        = 0xFFEEEEEE;
-	private int arrowColor       = 0xFFAAAAAA;
-	private int dropdownBgColor  = 0xED222222;
-	private int itemHoverColor   = 0x803A3A3A;
-	private int separatorColor   = 0xFF333333;
+	private int borderColor      = UIColors.ITEM_BORDER;
+	private int textColor        = UIColors.TEXT_PRIMARY;
+	private int dropdownBgColor  = UIColors.WIN_BG;
+	private int itemHoverColor   = UIColors.CARD_HOVER;
+	private int separatorColor   = UIColors.DIVIDER;
 
 	private static int PADDING     = 14;
 	private static int ARROW_W     = 16;
 	private static int ITEM_HEIGHT = 38;
 	private static int MAX_VISIBLE = 6;
-	private static float ANIM_SPEED = 10f;
-	private static float FONT_SIZE  = 16f;
+	private static float FONT_SIZE  = 14f;
 
 	private List<String> options = new ArrayList<>();
 	private int selectedIndex = 0;
@@ -51,20 +48,35 @@ public class Selector extends UIWidget {
 
 	@Override
 	protected void renderWidget(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
-		dropdownAnim = UAnimation.stepProgress(dropdownAnim, isOpen, ANIM_SPEED, delta);
+		dropdownAnim = UAnimation.stepProgress(dropdownAnim, isOpen, 12f, delta);
 
-		int bg = hovered ? bgHoverColor : bgColor;
-		NVGRenderer.rect(x, y, width, height, bg, 10f);
-		NVGRenderer.outlineRect(x, y, width, height, 1, borderColor, 10f);
+		int bg = UColor.withAlpha(UIColors.PURE_BLACK, 60);
+		int border = isOpen ? UIColors.ACCENT_BLUE : (hovered ? UColor.withAlpha(UIColors.ACCENT_BLUE, 180) : UIColors.ITEM_BORDER);
+
+		NVGRenderer.rect(x, y, width, height, bg, 8f);
+		NVGRenderer.outlineRect(x, y, width, height, 1, border, 8f);
 
 		String currentText = options.isEmpty() ? "" : options.get(selectedIndex);
 		int textAreaW = width - PADDING * 2 - ARROW_W - 4;
-		String clipped = fitText(currentText, textAreaW, Fonts.PRETENDARD);
+		String clipped = fitText(currentText, textAreaW, Fonts.PRETENDARD_MEDIUM);
 		
-		int ty = y + (height - (int)FONT_SIZE) / 2;
-		NVGRenderer.text(clipped, x + PADDING, ty, Fonts.PRETENDARD, UIColors.GRAY, FONT_SIZE);
+		int ty = y + (height - 14) / 2;
+		NVGRenderer.text(clipped, x + PADDING, ty, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_PRIMARY, 14f);
 
-		drawArrow(x + width - PADDING - ARROW_W, y + height / 2, dropdownAnim);
+		drawChevron(x + width - PADDING - 10, y + height / 2, dropdownAnim);
+	}
+
+	private void drawChevron(float cx, float cy, float openProgress) {
+		float size = 5f;
+		float angle = UAnimation.lerp(0, (float)Math.PI, openProgress);
+		
+		NVGRenderer.push();
+		NVGRenderer.translate(cx, cy);
+		NVGRenderer.rotate(angle);
+		
+		NVGRenderer.outlineTriangle(-size, -size/2, size, -size/2, 0, size/2, 1.5f, UIColors.TEXT_SECONDARY);
+		
+		NVGRenderer.pop();
 	}
 
 	@Override
@@ -95,14 +107,15 @@ public class Selector extends UIWidget {
 			}
 
 			if (isSelected || isItemHovered) {
-				if (i == 0) NVGRenderer.rect(dx, iy, width, ITEM_HEIGHT, isSelected ? 0x803B82F6 : itemHoverColor, 10, 10, 0, 0);
-				else if (i == visibleCount - 1) NVGRenderer.rect(dx, iy, width, ITEM_HEIGHT, isSelected ? 0x803B82F6 : itemHoverColor, 0, 0, 10, 10);
-				else NVGRenderer.rect(dx, iy, width, ITEM_HEIGHT, isSelected ? 0x803B82F6 : itemHoverColor);
+				int targetBg = isSelected ? UColor.withAlpha(UIColors.ACCENT_BLUE, 100) : itemHoverColor;
+				if (i == 0) NVGRenderer.rect(dx, iy, width, ITEM_HEIGHT, targetBg, 10, 10, 0, 0);
+				else if (i == visibleCount - 1) NVGRenderer.rect(dx, iy, width, ITEM_HEIGHT, targetBg, 0, 0, 10, 10);
+				else NVGRenderer.rect(dx, iy, width, ITEM_HEIGHT, targetBg);
 			}
 
-			String optText = fitText(options.get(idx), width - PADDING * 2, Fonts.PRETENDARD);
+			String optText = fitText(options.get(idx), width - PADDING * 2, Fonts.PRETENDARD_MEDIUM);
 			int iTextY = iy + (ITEM_HEIGHT - (int)FONT_SIZE) / 2;
-			NVGRenderer.text(optText, dx + PADDING, iTextY, Fonts.PRETENDARD, textColor, FONT_SIZE);
+			NVGRenderer.text(optText, dx + PADDING, iTextY, Fonts.PRETENDARD_MEDIUM, textColor, FONT_SIZE);
 
 		}
 
@@ -126,14 +139,6 @@ public class Selector extends UIWidget {
 				break;
 			}
 		}
-	}
-
-	private void drawArrow(int ax, int ay, float openProgress) {
-		int size = 8;
-		float tipY = UAnimation.lerp(ay + size / 2f, ay - size / 2f, openProgress);
-		float baseY = UAnimation.lerp(ay - size / 2f, ay + size / 2f, openProgress);
-
-		NVGRenderer.triangle(ax, baseY, ax + size, baseY, ax + size / 2f, tipY, arrowColor);
 	}
 
 	private String fitText(String text, int maxWidth, LucentFont font) {

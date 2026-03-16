@@ -78,12 +78,11 @@ public class NVGRenderer {
 	private static final Map<Image, NVGImage>     images  = new HashMap<>();
 
 	private static final float[] fontBounds = new float[4];
+	static final Map<Long, Integer> checkerCache = new HashMap<>();
 	private static long vg = -1L;
 
 	private static Scissor scissor = null;
 	private static boolean drawing = false;
-
-	private static final Map<Long, Integer> checkerCache = new HashMap<>();
 
 	static {
 		vg = NanoVGGL3.nvgCreate(NanoVGGL3.NVG_ANTIALIAS | NanoVGGL3.NVG_STENCIL_STROKES);
@@ -511,6 +510,24 @@ public class NVGRenderer {
 	}
 
 	/**
+	 * Draws an outlined (stroked) circle.
+	 *
+	 * @param x         Center X coordinate
+	 * @param y         Center Y coordinate
+	 * @param radius    Radius in pixels
+	 * @param thickness Stroke width in pixels
+	 * @param color     ARGB color packed as an int
+	 */
+	public static void outlineCircle(float x, float y, float radius, float thickness, int color) {
+		nvgBeginPath(vg);
+		nvgCircle(vg, x, y, radius);
+		nvgStrokeWidth(vg, thickness);
+		color(color);
+		nvgStrokeColor(vg, nvgColor);
+		nvgStroke(vg);
+	}
+
+	/**
 	 * Draws a filled triangle defined by three vertices.
 	 *
 	 * @param x1    First vertex X
@@ -580,7 +597,7 @@ public class NVGRenderer {
 	}
 
 	public static void drawCheckerboard(float x, float y, float w, float h, float radius) {
-		drawCheckerboard(x, y, w, h, 6, UIColors.WHITE, UIColors.GRAY, radius);
+		drawCheckerboard(x, y, w, h, 6, UIColors.PURE_WHITE, UIColors.GRAY, radius);
 	}
 
 	/**
@@ -990,8 +1007,8 @@ public class NVGRenderer {
 			int id = 0;
 			try {
 				id = img.isSVG ? loadSVG(img) : loadImage(img);
-			} catch (IOException e) {
-				e.printStackTrace();
+			} catch (Exception e) {
+				// e.printStackTrace();
 			}
 			return new NVGImage(0, id);
 		});
@@ -1157,8 +1174,8 @@ public class NVGRenderer {
 	private static void gradient(int color1, int color2, float x, float y, float w, float h, GradientType direction) {
 		color(color1, color2);
 		switch (direction) {
-			case GradientType.LEFT_TO_RIGHT -> nvgLinearGradient(vg, x, y, x + w, y, nvgColor, nvgColor2, nvgPaint);
-			case GradientType.TOP_TO_BOTTOM -> nvgLinearGradient(vg, x, y, x, y + h, nvgColor, nvgColor2, nvgPaint);
+			case LEFT_TO_RIGHT -> nvgLinearGradient(vg, x, y, x + w, y, nvgColor, nvgColor2, nvgPaint);
+			case TOP_TO_BOTTOM -> nvgLinearGradient(vg, x, y, x, y + h, nvgColor, nvgColor2, nvgPaint);
 		}
 	}
 
@@ -1201,6 +1218,5 @@ public class NVGRenderer {
 		if (tl > 0) nvgArcTo(vg, x, y, x + tl, y, tl);
 		else nvgLineTo(vg, x, y);
 
-		nvgClosePath(vg);
 	}
 }

@@ -10,8 +10,8 @@ public class URender {
 	 * @param hoverProgress 0.0(기본) ~ 1.0(호버됨) 상태 진행도
 	 */
 	public static void drawToggleButton(float x, float y, float w, float h, float onProgress, float hoverProgress) {
-		int bgOff = UIColors.SOFT_GRAY;
-		int bgOn = UIColors.SUCCESS;
+		int bgOff = UIColors.DIM_GRAY;
+		int bgOn = UIColors.ACCENT_BLUE;
 		int bgColor = UAnimation.lerpColor(bgOff, bgOn, onProgress);
 
 		float radius = h / 2f;
@@ -32,6 +32,5 @@ public class URender {
 		NVGRenderer.dropShadow(circleX - currentCircleRadius, circleY - currentCircleRadius, currentCircleRadius * 2, currentCircleRadius * 2, 3f, 0f, currentCircleRadius);
 		NVGRenderer.circle(circleX, circleY, currentCircleRadius, UIColors.PURE_WHITE);
 	}
-
 
 }
