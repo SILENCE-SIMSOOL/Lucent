@@ -1,8 +1,9 @@
 # default
+! Compile.bat
 *.md
 *.py
-! Compile.bat
 *.launch
+*.zip
 
 # gradle
 .gradle/
