@@ -4,6 +4,7 @@
 *.py
 *.launch
 *.zip
+backup/
 
 # gradle
 .gradle/

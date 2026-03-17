@@ -24,11 +24,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.general.LucentUtils;
-import silence.simsool.lucent.general.UChat;
 import silence.simsool.lucent.general.abstracts.LucentTheme;
 import silence.simsool.lucent.general.abstracts.Mod;
 import silence.simsool.lucent.general.abstracts.NavState;
 import silence.simsool.lucent.general.data.KeyBind;
+import silence.simsool.lucent.general.enums.ConfigType;
 import silence.simsool.lucent.general.interfaces.ModConfig;
 import silence.simsool.lucent.ui.theme.ThemeManager;
 import silence.simsool.lucent.ui.utils.UAnimation;
@@ -59,11 +59,11 @@ public class ConfigScreen extends Screen {
 		this.moduleManager = moduleManager;
 	}
 
-	private static int WINDOW_W  = 1100;
-	private static int WINDOW_H  = 680;
-	private static int SIDEBAR_W = 210;
-	private static int TOPBAR_H  = 72;
-	private static int PAD       = 24;
+	private static final int WINDOW_W  = 1100;
+	private static final int WINDOW_H  = 680;
+	private static final int SIDEBAR_W = 210;
+	private static final int TOPBAR_H  = 72;
+	private static final int PAD       = 24;
 
 	private boolean iconsLoaded = false;
 	private final Map<String, Image> modIconsMap = new HashMap<>();
@@ -204,11 +204,38 @@ public class ConfigScreen extends Screen {
 			}
 
 			NVGRenderer.text(profileName, x + 20, y + height / 2f - 7f, Fonts.PRETENDARD_SEMIBOLD, active ? UIColors.ACCENT_BLUE : UIColors.TEXT_PRIMARY, 16f);
+			
 			if (active) {
 				NVGRenderer.text("ACTIVE", x + width - 60, y + height / 2f - 4f, Fonts.PRETENDARD_SEMIBOLD, UIColors.ACCENT_BLUE, 10f);
+			} else {
+				//if (!profileName.equals("default") && hovered && mx > x + width - 70) {
+				if (!profileName.equals("default") && hovered) {
+					NVGRenderer.text("DELETE", x + width - 60, y + height / 2f - 4f, Fonts.PRETENDARD_SEMIBOLD, 0xFFFF4444, 10f);
+				}
 			}
 
 			NVGRenderer.outlineRect(x, y, width, height, 1.5f, active ? UIColors.ACCENT_BLUE : UIColors.ITEM_BORDER, 10f);
+		}
+
+		@Override
+		public boolean mouseClicked(double mx, double my, int btn) {
+			if (btn == 0 && isMouseOver(mx, my)) {
+				// Delete check
+				if (!active && !profileName.equals("default") && mx > x + width - 70) {
+					moduleManager.deleteProfile(profileName);
+					refreshUI();
+					return true;
+				}
+				
+				if (!active) {
+					moduleManager.setCurrentProfile(profileName);
+					moduleManager.loadConfigs();
+					moduleManager.saveConfigs();
+					refreshUI();
+					return true;
+				}
+			}
+			return false;
 		}
 	}
 
@@ -216,7 +243,7 @@ public class ConfigScreen extends Screen {
 	protected void init() {
 		super.init();
 
-		float gs      = NVGRenderer.getStandardGuiScale();
+		float gs = NVGRenderer.getStandardGuiScale();
 		float screenW = minecraft.getWindow().getScreenWidth()  / gs;
 		float screenH = minecraft.getWindow().getScreenHeight() / gs;
 
@@ -268,6 +295,11 @@ public class ConfigScreen extends Screen {
 	}
 
 	private void pushNav(String page, Mod mod, String cat) {
+		// Save if we were on 'Mods' page
+		if (currentSidebarPage.equals("Mods")) {
+			moduleManager.saveConfigs();
+		}
+
 		NavState current = new NavState(currentSidebarPage, currentModSettings, currentCategory);
 		if (history.isEmpty() || !isSameState(history.peek(), current)) {
 			history.push(current);
@@ -276,6 +308,12 @@ public class ConfigScreen extends Screen {
 		currentSidebarPage = page;
 		currentModSettings = mod;
 		currentCategory = cat;
+		
+		// Load if we are entering 'Mods' page
+		if (page.equals("Mods")) {
+			moduleManager.loadConfigs();
+		}
+
 		refreshUI();
 	}
 
@@ -286,21 +324,45 @@ public class ConfigScreen extends Screen {
 
 	private void goBack() {
 		if (history.isEmpty()) return;
+		
+		// Save if we are on 'Mods' page
+		if (currentSidebarPage.equals("Mods")) {
+			moduleManager.saveConfigs();
+		}
+
 		forwardHistory.push(new NavState(currentSidebarPage, currentModSettings, currentCategory));
 		NavState prev = history.pop();
 		currentSidebarPage = prev.page;
 		currentModSettings = prev.mod;
 		currentCategory = prev.category;
+		
+		// Load if we entered 'Mods' page
+		if (currentSidebarPage.equals("Mods")) {
+			moduleManager.loadConfigs();
+		}
+
 		refreshUI();
 	}
 
 	private void goForward() {
 		if (forwardHistory.isEmpty()) return;
+		
+		// Save if we are on 'Mods' page
+		if (currentSidebarPage.equals("Mods")) {
+			moduleManager.saveConfigs();
+		}
+
 		history.push(new NavState(currentSidebarPage, currentModSettings, currentCategory));
 		NavState next = forwardHistory.pop();
 		currentSidebarPage = next.page;
 		currentModSettings = next.mod;
 		currentCategory = next.category;
+		
+		// Load if we entered 'Mods' page
+		if (currentSidebarPage.equals("Mods")) {
+			moduleManager.loadConfigs();
+		}
+
 		refreshUI();
 	}
 
@@ -339,13 +401,35 @@ public class ConfigScreen extends Screen {
 		int cardW = contentW - PAD * 2;
 		int cardH = 60;
 
-		widgets.add(new ProfileCardWidget(sx, sy, cardW, cardH, "Default Profile", true));
-		widgets.add(new ProfileCardWidget(sx, sy + cardH + 12, cardW, cardH, "Custom Setup", false));
+		List<String> profiles = moduleManager.getProfiles();
+		String current = moduleManager.getCurrentProfile();
+
+		for (int i = 0; i < profiles.size(); i++) {
+			String p = profiles.get(i);
+			widgets.add(new ProfileCardWidget(sx, sy + i * (cardH + 12), cardW, cardH, p, p.equals(current)));
+		}
 		
-		// Add profile button placeholder
+		int rowY = sy + profiles.size() * (cardH + 12) + 20;
+		
+		int fieldW = 200;
+		TextBox newProfileName = new TextBox(sx, rowY, fieldW, 36, "");
+		widgets.add(newProfileName);
+
 		int btnW = 120;
-		ActionButton addBtn = new ActionButton(sx + cardW - btnW, sy + (cardH + 12) * 2 + 10, btnW, 36, "Create New");
+		ActionButton addBtn = new ActionButton(sx + fieldW + 12, rowY, btnW, 36, "Create New");
+		addBtn.setOnClick(() -> {
+			String name = newProfileName.getValue().trim();
+			if (!name.isEmpty()) {
+				moduleManager.saveConfigs();
+				moduleManager.createProfile(name);
+				moduleManager.setCurrentProfile(name);
+				moduleManager.saveConfigs();
+				refreshUI();
+			}
+		});
 		widgets.add(addBtn);
+
+		maxScroll = Math.max(0, rowY + 60 - scissorY - scissorH);
 	}
 
 	private void buildPreferencesWidgets() {
@@ -631,12 +715,11 @@ public class ConfigScreen extends Screen {
 
 	@Override
 	public void renderBackground(GuiGraphics ctx, int mx, int my, float delta) {
-		float alpha = closing ? (1f - openAnimationProgress) : openAnimationProgress;
-		int baseColor = LucentConfig.uiBlur ? 0x80000000 : 0x50000000;
-		ctx.fill(0, 0, width, height, UColor.withAlpha(baseColor, (int)(UColor.getAlpha(baseColor) * alpha))); 
-		
-		// Real blur would require a shader, which we can implement via Minecraft's post-processing
-		// if LucentConfig.uiBlur is enabled and LucentConfig.uiBlurStrength > 0.
+		if (LucentConfig.uiBlur) {
+			ctx.fill(0, 0, width, height, 0x25000000); 
+			super.renderBackground(ctx, mx, my, delta);
+		}
+		else ctx.fill(0, 0, width, height, 0x80000000);
 	}
 
 	@Override

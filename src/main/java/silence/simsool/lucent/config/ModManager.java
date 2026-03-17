@@ -1,10 +1,5 @@
 package silence.simsool.lucent.config;
 
-import silence.simsool.lucent.client.dev.examplemods.ChattingMod;
-import silence.simsool.lucent.general.abstracts.Mod;
-import silence.simsool.lucent.general.data.KeyBind;
-import silence.simsool.lucent.general.interfaces.ModConfig;
-
 import java.awt.Color;
 import java.io.File;
 import java.io.FileReader;
@@ -12,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.google.gson.Gson;
@@ -22,9 +18,81 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 
+import silence.simsool.lucent.client.dev.examplemods.ChattingMod;
+import silence.simsool.lucent.general.abstracts.Mod;
+import silence.simsool.lucent.general.data.KeyBind;
+import silence.simsool.lucent.general.interfaces.ModConfig;
+
 public class ModManager {
 	public final List<Mod> modules = new ArrayList<>();
 	private final File configDirectory;
+	private String currentProfile = "default";
+
+	public String getCurrentProfile() {
+		return currentProfile;
+	}
+
+	public void setCurrentProfile(String profile) {
+		this.currentProfile = profile;
+		saveGlobalConfig();
+		loadConfigs();
+	}
+
+	public List<String> getProfiles() {
+		File profilesDir = new File(configDirectory, "profiles");
+		if (!profilesDir.exists()) {
+			profilesDir.mkdirs();
+		}
+		
+		List<String> list = new ArrayList<>();
+		File[] files = profilesDir.listFiles(File::isDirectory);
+		if (files != null) {
+			for (File f : files) {
+				String name = f.getName();
+				if (!name.equals("default")) {
+					list.add(name);
+				}
+			}
+		}
+		Collections.sort(list);
+		list.add(0, "default");
+
+		// Ensure default folder exists physically
+		new File(profilesDir, "default").mkdirs();
+		
+		return list;
+	}
+
+	public void createProfile(String name) {
+		File profilesDir = new File(configDirectory, "profiles");
+		File profileDir = new File(profilesDir, name);
+		if (!profileDir.exists()) {
+			profileDir.mkdirs();
+		}
+	}
+
+	public void deleteProfile(String name) {
+		if (name.equals("default")) return;
+		File profilesDir = new File(configDirectory, "profiles");
+		File profileDir = new File(profilesDir, name);
+		if (profileDir.exists()) {
+			deleteDirectory(profileDir);
+		}
+		if (currentProfile.equals(name)) {
+			setCurrentProfile("default");
+		}
+	}
+
+	private void deleteDirectory(File dir) {
+		File[] children = dir.listFiles();
+		if (children != null) {
+			for (File child : children) {
+				if (child.isDirectory()) deleteDirectory(child);
+				else child.delete();
+			}
+		}
+		dir.delete();
+	}
 
 	private static final Gson GSON = new GsonBuilder()
 		.registerTypeAdapter(Color.class, new TypeAdapter<Color>() {
@@ -76,6 +144,11 @@ public class ModManager {
 		if (!this.configDirectory.exists()) {
 			this.configDirectory.mkdirs();
 		}
+		// Ensure profiles directory and default profile exist
+		File profilesDir = new File(configDirectory, "profiles");
+		if (!profilesDir.exists()) profilesDir.mkdirs();
+		File defaultProfile = new File(profilesDir, "default");
+		if (!defaultProfile.exists()) defaultProfile.mkdirs();
 	}
 
 	public void register(Mod module) {
@@ -85,7 +158,7 @@ public class ModManager {
 	public void registerAll() {
 		register(new ChattingMod());
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public <T extends Mod> T getModule(Class<T> moduleClass) {
 		for (Mod m : modules) {
@@ -97,11 +170,13 @@ public class ModManager {
 	}
 
 	public void loadConfigs() {
-		loadGlobalConfig();
-		if (!configDirectory.exists()) return;
+
+		File profilesDir = new File(configDirectory, "profiles");
+		File profileDir = new File(profilesDir, currentProfile);
+		if (!profileDir.exists()) profileDir.mkdirs();
 
 		for (Mod module : modules) {
-			File file = new File(configDirectory, getFileName(module));
+			File file = new File(profileDir, getFileName(module));
 			if (!file.exists()) continue;
 
 			try (FileReader reader = new FileReader(file)) {
@@ -131,11 +206,13 @@ public class ModManager {
 	}
 
 	public void saveConfigs() {
-		saveGlobalConfig();
-		if (!configDirectory.exists()) configDirectory.mkdirs();
+		
+		File profilesDir = new File(configDirectory, "profiles");
+		File profileDir = new File(profilesDir, currentProfile);
+		if (!profileDir.exists()) profileDir.mkdirs();
 
 		for (Mod module : modules) {
-			File file = new File(configDirectory, getFileName(module));
+			File file = new File(profileDir, getFileName(module));
 			JsonObject json = new JsonObject();
 
 			json.addProperty("isEnabled", module.isEnabled);
@@ -165,6 +242,10 @@ public class ModManager {
 			JsonObject json = GSON.fromJson(reader, JsonObject.class);
 			if (json == null) return;
 
+			if (json.has("currentProfile")) {
+				this.currentProfile = json.get("currentProfile").getAsString();
+			}
+
 			if (json.has("theme")) {
 				String themeName = json.get("theme").getAsString();
 				silence.simsool.lucent.ui.theme.ThemeManager.applyTheme(
@@ -184,6 +265,9 @@ public class ModManager {
 		if (!configDirectory.exists()) configDirectory.mkdirs();
 		File file = new File(configDirectory, "lucent_global.json");
 		JsonObject json = new JsonObject();
+		
+		json.addProperty("currentProfile", currentProfile);
+
 		if (silence.simsool.lucent.ui.theme.ThemeManager.currentTheme != null) {
 			json.addProperty("theme", silence.simsool.lucent.ui.theme.ThemeManager.currentTheme.name);
 		}
