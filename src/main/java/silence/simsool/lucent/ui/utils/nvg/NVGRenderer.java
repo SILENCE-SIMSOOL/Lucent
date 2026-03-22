@@ -1,5 +1,16 @@
 package silence.simsool.lucent.ui.utils.nvg;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.lwjgl.nanovg.NSVGImage;
+import org.lwjgl.nanovg.NVGColor;
+import org.lwjgl.nanovg.NVGPaint;
+import org.lwjgl.nanovg.NanoSVG;
+import org.lwjgl.nanovg.NanoVG;
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_LEFT;
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_TOP;
 import static org.lwjgl.nanovg.NanoVG.NVG_HOLE;
@@ -42,25 +53,13 @@ import static org.lwjgl.nanovg.NanoVG.nvgTextBox;
 import static org.lwjgl.nanovg.NanoVG.nvgTextBoxBounds;
 import static org.lwjgl.nanovg.NanoVG.nvgTextLineHeight;
 import static org.lwjgl.nanovg.NanoVG.nvgTranslate;
-import static org.lwjgl.nanovg.NanoVGGL3.NVG_IMAGE_NODELETE;
-import static silence.simsool.lucent.Lucent.mc;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.lwjgl.nanovg.NSVGImage;
-import org.lwjgl.nanovg.NVGColor;
-import org.lwjgl.nanovg.NVGPaint;
-import org.lwjgl.nanovg.NanoSVG;
-import org.lwjgl.nanovg.NanoVG;
 import org.lwjgl.nanovg.NanoVGGL3;
+import static org.lwjgl.nanovg.NanoVGGL3.NVG_IMAGE_NODELETE;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
+import static silence.simsool.lucent.Lucent.mc;
 import silence.simsool.lucent.general.data.nvg.NVGFont;
 import silence.simsool.lucent.general.data.nvg.NVGImage;
 import silence.simsool.lucent.general.enums.Direction;

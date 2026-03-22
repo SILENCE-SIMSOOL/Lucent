@@ -3,9 +3,9 @@ package silence.simsool.lucent.ui.widget;
 import java.util.function.Consumer;
 
 import net.minecraft.client.gui.GuiGraphics;
+import silence.simsool.lucent.general.utils.UDisplay;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UColor;
-import silence.simsool.lucent.ui.utils.UDisplay;
 import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 import silence.simsool.lucent.ui.widget.base.UIWidget;
 

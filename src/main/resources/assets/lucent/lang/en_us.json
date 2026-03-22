@@ -1,4 +1,5 @@
 {
 	"key.category.lucent.main": "Lucent",
-	"key.lucent.config": "Open Config Screen"
+	"key.lucent.config": "Open Config Screen",
+	"key.lucent.edithud": "Open EditHUD Screen"
 }

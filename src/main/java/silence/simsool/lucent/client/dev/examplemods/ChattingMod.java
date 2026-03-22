@@ -4,11 +4,11 @@ import java.awt.Color;
 
 import org.lwjgl.glfw.GLFW;
 
-import silence.simsool.lucent.general.UChat;
 import silence.simsool.lucent.general.abstracts.Mod;
 import silence.simsool.lucent.general.data.KeyBind;
 import silence.simsool.lucent.general.enums.ConfigType;
 import silence.simsool.lucent.general.interfaces.ModConfig;
+import silence.simsool.lucent.general.utils.UChat;
 
 public class ChattingMod extends Mod {
 

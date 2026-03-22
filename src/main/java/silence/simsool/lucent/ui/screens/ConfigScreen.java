@@ -1,6 +1,9 @@
 package silence.simsool.lucent.ui.screens;
 
+import static silence.simsool.lucent.Lucent.mc;
+
 import java.awt.Color;
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -22,19 +25,21 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
+import silence.simsool.lucent.Lucent;
+import silence.simsool.lucent.config.LucentConfig;
 import silence.simsool.lucent.config.ModManager;
-import silence.simsool.lucent.general.LucentUtils;
 import silence.simsool.lucent.general.abstracts.LucentTheme;
 import silence.simsool.lucent.general.abstracts.Mod;
 import silence.simsool.lucent.general.abstracts.NavState;
 import silence.simsool.lucent.general.data.KeyBind;
-import silence.simsool.lucent.general.enums.ConfigType;
 import silence.simsool.lucent.general.interfaces.ModConfig;
+import silence.simsool.lucent.general.utils.LucentUtils;
+import silence.simsool.lucent.general.utils.UDisplay;
+import silence.simsool.lucent.general.utils.UMouse;
 import silence.simsool.lucent.ui.theme.ThemeManager;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UColor;
 import silence.simsool.lucent.ui.utils.UIColors;
-import silence.simsool.lucent.ui.utils.UMouse;
 import silence.simsool.lucent.ui.utils.nvg.Fonts;
 import silence.simsool.lucent.ui.utils.nvg.Image;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
@@ -47,10 +52,6 @@ import silence.simsool.lucent.ui.widget.Slider;
 import silence.simsool.lucent.ui.widget.TextBox;
 import silence.simsool.lucent.ui.widget.ToggleButton;
 import silence.simsool.lucent.ui.widget.base.UIWidget;
-import silence.simsool.lucent.config.LucentConfig;
-import silence.simsool.lucent.Lucent;
-import static silence.simsool.lucent.Lucent.mc;
-import java.io.File;
 
 public class ConfigScreen extends Screen {
 
@@ -243,9 +244,9 @@ public class ConfigScreen extends Screen {
 	protected void init() {
 		super.init();
 
-		float gs = NVGRenderer.getStandardGuiScale();
-		float screenW = minecraft.getWindow().getScreenWidth()  / gs;
-		float screenH = minecraft.getWindow().getScreenHeight() / gs;
+		float standardScale = NVGRenderer.getStandardGuiScale();
+		float screenW = UDisplay.getScreenWidth() / standardScale;
+		float screenH = UDisplay.getScreenHeight() / standardScale;
 
 		float pad = 40f;
 		float scaleX = (screenW - pad) / WINDOW_W;
@@ -295,24 +296,17 @@ public class ConfigScreen extends Screen {
 	}
 
 	private void pushNav(String page, Mod mod, String cat) {
-		// Save if we were on 'Mods' page
-		if (currentSidebarPage.equals("Mods")) {
-			moduleManager.saveConfigs();
-		}
+		if (currentSidebarPage.equals("Mods")) moduleManager.saveConfigs();
 
 		NavState current = new NavState(currentSidebarPage, currentModSettings, currentCategory);
-		if (history.isEmpty() || !isSameState(history.peek(), current)) {
-			history.push(current);
-		}
+		if (history.isEmpty() || !isSameState(history.peek(), current)) history.push(current);
+
 		forwardHistory.clear();
 		currentSidebarPage = page;
 		currentModSettings = mod;
 		currentCategory = cat;
-		
-		// Load if we are entering 'Mods' page
-		if (page.equals("Mods")) {
-			moduleManager.loadConfigs();
-		}
+
+		if (page.equals("Mods")) moduleManager.loadConfigs();
 
 		refreshUI();
 	}
@@ -324,44 +318,32 @@ public class ConfigScreen extends Screen {
 
 	private void goBack() {
 		if (history.isEmpty()) return;
-		
-		// Save if we are on 'Mods' page
-		if (currentSidebarPage.equals("Mods")) {
-			moduleManager.saveConfigs();
-		}
+
+		if (currentSidebarPage.equals("Mods")) moduleManager.saveConfigs();
 
 		forwardHistory.push(new NavState(currentSidebarPage, currentModSettings, currentCategory));
 		NavState prev = history.pop();
 		currentSidebarPage = prev.page;
 		currentModSettings = prev.mod;
 		currentCategory = prev.category;
-		
-		// Load if we entered 'Mods' page
-		if (currentSidebarPage.equals("Mods")) {
-			moduleManager.loadConfigs();
-		}
+
+		if (currentSidebarPage.equals("Mods")) moduleManager.loadConfigs();
 
 		refreshUI();
 	}
 
 	private void goForward() {
 		if (forwardHistory.isEmpty()) return;
-		
-		// Save if we are on 'Mods' page
-		if (currentSidebarPage.equals("Mods")) {
-			moduleManager.saveConfigs();
-		}
+
+		if (currentSidebarPage.equals("Mods")) moduleManager.saveConfigs();
 
 		history.push(new NavState(currentSidebarPage, currentModSettings, currentCategory));
 		NavState next = forwardHistory.pop();
 		currentSidebarPage = next.page;
 		currentModSettings = next.mod;
 		currentCategory = next.category;
-		
-		// Load if we entered 'Mods' page
-		if (currentSidebarPage.equals("Mods")) {
-			moduleManager.loadConfigs();
-		}
+
+		if (currentSidebarPage.equals("Mods")) moduleManager.loadConfigs();
 
 		refreshUI();
 	}
@@ -730,9 +712,7 @@ public class ConfigScreen extends Screen {
 				super.onClose(); // Actually close
 				return;
 			}
-		} else {
-			openAnimationProgress = 1f;
-		}
+		} else openAnimationProgress = 1f;
 
 		if (searchField != null) {
 			boolean showSearch = currentSidebarPage.equals("Mods");
@@ -1041,6 +1021,13 @@ public class ConfigScreen extends Screen {
 					}
 					return true;
 				}
+			}
+
+			float editHudY = winY + WINDOW_H - 100;
+			if (mx >= winX + 16 && mx <= winX + SIDEBAR_W - 16 && my >= editHudY && my <= editHudY + 36) {
+				this.onClose();
+				minecraft.setScreen(new EditHudScreen(true));
+				return true;
 			}
 
 			float closeY = winY + WINDOW_H - 100 + 38;

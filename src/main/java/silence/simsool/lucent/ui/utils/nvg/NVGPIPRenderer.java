@@ -42,6 +42,8 @@ public class NVGPIPRenderer extends PictureInPictureRenderer<NVGPIPRenderer.NVGR
 			GlStateManager._viewport(0, 0, width, height);
 		}
 
+		if (width <= 0 || height <= 0) return;
+
 		GL33C.glBindSampler(0, 0);
 		NVGRenderer.beginFrame(width, height);
 		state.renderContent.run();

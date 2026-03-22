@@ -2,6 +2,7 @@ package silence.simsool.lucent;
 
 import org.lwjgl.glfw.GLFW;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.brigadier.Command;
 
 import net.fabricmc.api.ClientModInitializer;
@@ -9,14 +10,18 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.SpecialGuiElementRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
+import silence.simsool.lucent.client.dev.examplemods.ChattingHud;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.config.api.LucentAPI;
-import silence.simsool.lucent.general.ULog;
-import silence.simsool.lucent.ui.screens.ConfigScreen;
+import silence.simsool.lucent.general.utils.UDisplay;
+import silence.simsool.lucent.general.utils.ULog;
+import silence.simsool.lucent.hud.HudManager;
+import silence.simsool.lucent.ui.screens.EditHudScreen;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 
 public class Lucent implements ClientModInitializer {
@@ -31,13 +36,22 @@ public class Lucent implements ClientModInitializer {
 
 	public static final KeyMapping.Category KEYBINDING_CATEGORY = KeyMapping.Category.register(id("main"));
 	private static final KeyMapping CONFIG_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
-			"key.lucent.config", 
+			"key.lucent.config",
 			GLFW.GLFW_KEY_RIGHT_SHIFT, 
+			KEYBINDING_CATEGORY
+	));
+	private static final KeyMapping EDIT_HUD_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+			"key.lucent.edithud",
+			InputConstants.UNKNOWN.getValue(),
 			KEYBINDING_CATEGORY
 	));
 
 	public static void init() {
 		
+	}
+
+	private static void registerHuds() {
+		HudManager.INSTANCE.register(new ChattingHud());
 	}
 
 	@Override
@@ -47,9 +61,18 @@ public class Lucent implements ClientModInitializer {
 		config.loadGlobalConfig();
 		config.loadConfigs();
 
-		SpecialGuiElementRegistry.register(context -> 
-	   		new NVGPIPRenderer(context.vertexConsumers())
+		registerHuds();
+		HudManager.INSTANCE.loadAll();
+
+		SpecialGuiElementRegistry.register(context ->
+			new NVGPIPRenderer(context.vertexConsumers())
 		);
+
+		HudRenderCallback.EVENT.register((guiGraphics, tickDelta) -> {
+			int sw = UDisplay.getWidth();
+			int sh = UDisplay.getHeight();
+			HudManager.INSTANCE.render(guiGraphics, sw, sh);
+		});
 
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
 			String[] commands = {"lucent", "config"};
@@ -68,15 +91,23 @@ public class Lucent implements ClientModInitializer {
 			while (CONFIG_KEY.consumeClick()) {
 				ScreenOpenHelper.shouldOpen = true;
 			}
+			while (EDIT_HUD_KEY.consumeClick()) {
+				ScreenOpenHelper.shouldOpenEditHud = true;
+			}
 			if (ScreenOpenHelper.shouldOpen) {
-				client.setScreen(new ConfigScreen(config));
+				client.setScreen(new EditHudScreen(true));
 				ScreenOpenHelper.shouldOpen = false;
+			}
+			if (ScreenOpenHelper.shouldOpenEditHud) {
+				client.setScreen(new EditHudScreen());
+				ScreenOpenHelper.shouldOpenEditHud = false;
 			}
 		});
 	}
 
 	private static class ScreenOpenHelper {
 		static boolean shouldOpen = false;
+		static boolean shouldOpenEditHud = false;
 	}
 
 	public static Identifier id(String path) {

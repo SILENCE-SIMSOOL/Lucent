@@ -1,4 +1,5 @@
 {
 	"key.category.lucent.main": "Lucent",
-	"key.lucent.config": "설정 메뉴 열기"
+	"key.lucent.config": "설정 메뉴 열기",
+	"key.lucent.edithud": "HUD 수정 메뉴 열기"
 }

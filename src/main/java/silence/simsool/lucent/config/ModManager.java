@@ -22,6 +22,7 @@ import silence.simsool.lucent.client.dev.examplemods.ChattingMod;
 import silence.simsool.lucent.general.abstracts.Mod;
 import silence.simsool.lucent.general.data.KeyBind;
 import silence.simsool.lucent.general.interfaces.ModConfig;
+import silence.simsool.lucent.hud.HudManager;
 
 public class ModManager {
 	public final List<Mod> modules = new ArrayList<>();
@@ -36,6 +37,7 @@ public class ModManager {
 		this.currentProfile = profile;
 		saveGlobalConfig();
 		loadConfigs();
+		HudManager.INSTANCE.loadAll();
 	}
 
 	public List<String> getProfiles() {
