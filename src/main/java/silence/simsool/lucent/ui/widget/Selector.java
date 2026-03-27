@@ -15,17 +15,17 @@ import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 import silence.simsool.lucent.ui.widget.base.UIWidget;
 
 public class Selector extends UIWidget {
-	private int borderColor      = UIColors.ITEM_BORDER;
-	private int textColor        = UIColors.TEXT_PRIMARY;
-	private int dropdownBgColor  = UIColors.WIN_BG;
-	private int itemHoverColor   = UIColors.CARD_HOVER;
-	private int separatorColor   = UIColors.DIVIDER;
+	private int borderColor = UIColors.ITEM_BORDER;
+	private int textColor = UIColors.TEXT_PRIMARY;
+	private int dropdownBgColor = UIColors.WIN_BG;
+	private int itemHoverColor = UIColors.CARD_HOVER;
+	private int separatorColor = UIColors.DIVIDER;
 
-	private static int PADDING     = 14;
-	private static int ARROW_W     = 16;
+	private static int PADDING = 14;
+	private static int ARROW_W = 16;
 	private static int ITEM_HEIGHT = 38;
 	private static int MAX_VISIBLE = 6;
-	private static float FONT_SIZE  = 14f;
+	private static float FONT_SIZE = 14f;
 
 	private List<String> options = new ArrayList<>();
 	private int selectedIndex = 0;
@@ -48,6 +48,7 @@ public class Selector extends UIWidget {
 
 	@Override
 	protected void renderWidget(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+		NVGRenderer.push();
 		dropdownAnim = UAnimation.stepProgress(dropdownAnim, isOpen, 12f, delta);
 
 		int bg = UColor.withAlpha(UIColors.PURE_BLACK, 60);
@@ -64,6 +65,7 @@ public class Selector extends UIWidget {
 		NVGRenderer.text(clipped, x + PADDING, ty, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_PRIMARY, 14f);
 
 		drawChevron(x + width - PADDING - 10, y + height / 2, dropdownAnim);
+		NVGRenderer.pop();
 	}
 
 	private void drawChevron(float cx, float cy, float openProgress) {
@@ -82,6 +84,7 @@ public class Selector extends UIWidget {
 	@Override
 	public void renderOverlay(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
 		if (dropdownAnim <= 0.01f) return;
+		NVGRenderer.push();
 		int visibleCount = Math.min(options.size(), MAX_VISIBLE);
 		int totalH = visibleCount * ITEM_HEIGHT;
 		int visibleH = (int)(totalH * UAnimation.Easing.easeOut(dropdownAnim));
@@ -90,7 +93,6 @@ public class Selector extends UIWidget {
 		int dy = y + height + 2;
 
 		NVGRenderer.pushScissor(dx, dy, width, visibleH);
-
 		NVGRenderer.rect(dx, dy, width, totalH, dropdownBgColor, 10f);
 		NVGRenderer.outlineRect(dx, dy, width, totalH, 1, borderColor, 10f);
 
@@ -139,6 +141,7 @@ public class Selector extends UIWidget {
 				break;
 			}
 		}
+		NVGRenderer.pop();
 	}
 
 	private String fitText(String text, int maxWidth, LucentFont font) {

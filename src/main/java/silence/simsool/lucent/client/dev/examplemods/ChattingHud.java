@@ -2,7 +2,7 @@ package silence.simsool.lucent.client.dev.examplemods;
 
 import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.general.abstracts.LucentHUD;
-import silence.simsool.lucent.general.enums.HudAlignment;
+import silence.simsool.lucent.general.enums.HUDAlignment;
 import silence.simsool.lucent.general.enums.RenderType;
 import silence.simsool.lucent.general.utils.UDisplay;
 import silence.simsool.lucent.ui.utils.UIColors;
@@ -15,7 +15,7 @@ public class ChattingHud extends LucentHUD {
 	private static final float BASE_H = 24f;
 
 	public ChattingHud() {
-		super("chatting_hud", 0.01f, 0.05f, 1.0f, HudAlignment.LEFT);
+		super("chatting_hud", 0.01f, 0.05f, 1.0f, HUDAlignment.LEFT);
 	}
 
 	@Override
@@ -34,18 +34,19 @@ public class ChattingHud extends LucentHUD {
 	}
 
 	@Override
+	public boolean isEnabled() {
+		return Lucent.config.getModule(ChattingMod.class).isEnabled;
+	}
+
+	@Override
 	public void draw() {
-		if (Lucent.config.getModule(ChattingMod.class).isEnabled) {
-			if (LucentHUD.isEditHudOpen || UDisplay.isDebugScreen()) return;
-			renderPanel("Hello World");
-		}
+		if (LucentHUD.isEditHudOpen || UDisplay.isDebugScreen()) return;
+		renderPanel("Hello World");
 	}
 
 	@Override
 	public void preview() {
-		if (Lucent.config.getModule(ChattingMod.class).isEnabled) {
-			renderPanel("Chat & Emote");
-		}
+		renderPanel("Chat & Emote");
 	}
 
 	private void renderPanel(String text) {

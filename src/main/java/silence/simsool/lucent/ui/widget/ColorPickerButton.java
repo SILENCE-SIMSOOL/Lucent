@@ -29,6 +29,7 @@ public class ColorPickerButton extends UIWidget {
 
 	@Override
 	protected void renderWidget(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+		NVGRenderer.push();
 		hoverAnim = UAnimation.lerpSnap(hoverAnim, hovered ? 1f : 0f, HOVER_SPEED, delta);
 		int round = 8;
 		int border = pickerOpen ? borderFocusColor : UColor.lerpColor(borderColor, borderHoverColor, hoverAnim);
@@ -41,6 +42,7 @@ public class ColorPickerButton extends UIWidget {
 			int overlayAlpha = (int)(hoverAnim * 30);
 			NVGRenderer.rect(x, y, width, height, UColor.withAlpha(0xFFFFFFFF, overlayAlpha), round);
 		}
+		NVGRenderer.pop();
 	}
 
 	@Override

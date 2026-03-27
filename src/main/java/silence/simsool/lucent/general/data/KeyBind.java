@@ -3,163 +3,165 @@ package silence.simsool.lucent.general.data;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * KeyBind 데이터 클래스.
- * <p>키보드 키 또는 마우스 버튼 하나와 수식키(Ctrl/Shift/Alt)를 함께 저장합니다.</p>
+ * Represents a single key binding: one keyboard key or mouse button, plus optional modifier keys.
  *
- * <ul>
- *   <li>{@code keyCode}  : GLFW 키코드 (예: GLFW_KEY_R). 마우스 버튼이면 -1.</li>
- *   <li>{@code mouseButton} : GLFW 마우스 버튼 인덱스 (0=Left, 1=Right, 2=Middle...). 키보드면 -1.</li>
- *   <li>{@code mods}     : GLFW modifier 비트마스크 (SHIFT | CONTROL | ALT | SUPER).</li>
- * </ul>
+ * <p>Exactly one of {@code keyCode} or {@code mouseButton} should be active at a time.
+ * Use the factory methods {@link #ofKey}, {@link #ofMouse}, or {@link #none} instead of
+ * constructing directly.</p>
  */
 public class KeyBind {
 
-    public static final int MOUSE_LEFT   = 0;
-    public static final int MOUSE_RIGHT  = 1;
-    public static final int MOUSE_MIDDLE = 2;
+	public static final int MOUSE_LEFT = 0;
+	public static final int MOUSE_RIGHT = 1;
+	public static final int MOUSE_MIDDLE = 2;
 
-    /** GLFW 키코드. 마우스 바인딩인 경우 -1. */
-    public int keyCode;
+	/** GLFW key code. {@code GLFW_KEY_UNKNOWN} when this is a mouse binding. */
+	public int keyCode;
 
-    /** GLFW 마우스 버튼. 키보드 바인딩인 경우 -1. */
-    public int mouseButton;
+	/** GLFW mouse button index. {@code -1} when this is a keyboard binding. */
+	public int mouseButton;
 
-    /** GLFW modifier 비트마스크 (GLFW_MOD_SHIFT | GLFW_MOD_CONTROL | GLFW_MOD_ALT). */
-    public int mods;
+	/** GLFW modifier bitmask (GLFW_MOD_SHIFT | GLFW_MOD_CONTROL | GLFW_MOD_ALT). */
+	public int mods;
 
-    /** 바인딩 없음 상태 (None) */
-    public KeyBind() {
-        this.keyCode     = GLFW.GLFW_KEY_UNKNOWN;
-        this.mouseButton = -1;
-        this.mods        = 0;
-    }
+	/** Constructs an unbound (None) key bind. */
+	public KeyBind() {
+		this.keyCode = GLFW.GLFW_KEY_UNKNOWN;
+		this.mouseButton = -1;
+		this.mods = 0;
+	}
 
-    public KeyBind(int keyCode, int mouseButton, int mods) {
-        this.keyCode     = keyCode;
-        this.mouseButton = mouseButton;
-        this.mods        = mods;
-    }
+	public KeyBind(int keyCode, int mouseButton, int mods) {
+		this.keyCode = keyCode;
+		this.mouseButton = mouseButton;
+		this.mods = mods;
+	}
 
-    // ─── Factory ──────────────────────────────────────────────────────────────
+	// ── Factory ───────────────────────────────────────────────────────────────
 
-    public static KeyBind ofKey(int keyCode, int mods) {
-        return new KeyBind(keyCode, -1, mods);
-    }
+	public static KeyBind ofKey(int keyCode, int mods) {
+		return new KeyBind(keyCode, -1, mods);
+	}
 
-    public static KeyBind ofMouse(int mouseButton, int mods) {
-        return new KeyBind(GLFW.GLFW_KEY_UNKNOWN, mouseButton, mods);
-    }
+	public static KeyBind ofMouse(int mouseButton, int mods) {
+		return new KeyBind(GLFW.GLFW_KEY_UNKNOWN, mouseButton, mods);
+	}
 
-    public static KeyBind none() {
-        return new KeyBind();
-    }
+	public static KeyBind none() {
+		return new KeyBind();
+	}
 
-    // ─── Query ────────────────────────────────────────────────────────────────
+	// ── Query ─────────────────────────────────────────────────────────────────
 
-    public boolean isBound() {
-        return isKey() || isMouse();
-    }
+	public boolean isBound() {
+		return isKey() || isMouse();
+	}
 
-    public boolean isKey() {
-        return keyCode != GLFW.GLFW_KEY_UNKNOWN && mouseButton == -1;
-    }
+	public boolean isKey() {
+		return keyCode != GLFW.GLFW_KEY_UNKNOWN && mouseButton == -1;
+	}
 
-    public boolean isMouse() {
-        return mouseButton >= 0;
-    }
+	public boolean isMouse() {
+		return mouseButton >= 0;
+	}
 
-    public static boolean isShift(int key) {
-        return key == GLFW.GLFW_KEY_LEFT_SHIFT || key == GLFW.GLFW_KEY_RIGHT_SHIFT;
-    }
+	// Checks both left/right variants so callers don't need to handle that.
+	public static boolean isShift(int key) {
+		return key == GLFW.GLFW_KEY_LEFT_SHIFT || key == GLFW.GLFW_KEY_RIGHT_SHIFT;
+	}
 
-    public static boolean isControl(int key) {
-        return key == GLFW.GLFW_KEY_LEFT_CONTROL || key == GLFW.GLFW_KEY_RIGHT_CONTROL;
-    }
+	public static boolean isControl(int key) {
+		return key == GLFW.GLFW_KEY_LEFT_CONTROL || key == GLFW.GLFW_KEY_RIGHT_CONTROL;
+	}
 
-    public static boolean isAlt(int key) {
-        return key == GLFW.GLFW_KEY_LEFT_ALT || key == GLFW.GLFW_KEY_RIGHT_ALT;
-    }
+	public static boolean isAlt(int key) {
+		return key == GLFW.GLFW_KEY_LEFT_ALT || key == GLFW.GLFW_KEY_RIGHT_ALT;
+	}
 
-    // ─── Display ──────────────────────────────────────────────────────────────
+	// ── Display ───────────────────────────────────────────────────────────────
 
-    /**
-     * 사람이 읽을 수 있는 키 이름 반환.
-     * 예: "Ctrl+Shift+R", "Mouse4", "None"
-     */
-    public String getDisplayName() {
-        if (!isBound()) return "None";
+	/**
+	 * Returns a human-readable label, e.g. {@code "Ctrl+Shift+R"}, {@code "Mouse2"}, {@code "None"}.
+	 *
+	 * <p>Modifier prefixes are suppressed when the main key itself is that modifier
+	 * (e.g. binding Shift alone shows "Shift", not "Shift+Shift").</p>
+	 */
+	public String getDisplayName() {
+		if (!isBound()) return "None";
 
-        StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder();
 
-        // 수식키 접두사 (메인 키가 해당 수식키인 경우 중복 출력 방지)
-        if ((mods & GLFW.GLFW_MOD_CONTROL) != 0 && !isControl(keyCode)) sb.append("Ctrl+");
-        if ((mods & GLFW.GLFW_MOD_SHIFT)   != 0 && !isShift(keyCode))   sb.append("Shift+");
-        if ((mods & GLFW.GLFW_MOD_ALT)     != 0 && !isAlt(keyCode))     sb.append("Alt+");
+		if ((mods & GLFW.GLFW_MOD_CONTROL) != 0 && !isControl(keyCode)) sb.append("Ctrl+");
+		if ((mods & GLFW.GLFW_MOD_SHIFT)   != 0 && !isShift(keyCode))   sb.append("Shift+");
+		if ((mods & GLFW.GLFW_MOD_ALT)     != 0 && !isAlt(keyCode))     sb.append("Alt+");
 
-        if (isMouse()) {
-            switch (mouseButton) {
-                case MOUSE_LEFT   -> sb.append("Mouse1");
-                case MOUSE_RIGHT  -> sb.append("Mouse2");
-                case MOUSE_MIDDLE -> sb.append("Mouse3");
-                default           -> sb.append("Mouse").append(mouseButton + 1);
-            }
-        } else {
-            sb.append(glfwKeyName(keyCode));
-        }
+		if (isMouse()) {
+			switch (mouseButton) {
+				case MOUSE_LEFT   -> sb.append("Mouse1");
+				case MOUSE_RIGHT  -> sb.append("Mouse2");
+				case MOUSE_MIDDLE -> sb.append("Mouse3");
+				default           -> sb.append("Mouse").append(mouseButton + 1);
+			}
+		} else {
+			sb.append(glfwKeyName(keyCode));
+		}
 
-        return sb.toString();
-    }
+		return sb.toString();
+	}
 
-    // ─── Internals ────────────────────────────────────────────────────────────
+	// ── Internals ─────────────────────────────────────────────────────────────
 
-    private static String glfwKeyName(int key) {
-        // GLFW 자체 이름이 있으면 사용
-        String glfwName = GLFW.glfwGetKeyName(key, 0);
-        if (glfwName != null && !glfwName.isEmpty()) {
-            return glfwName.toUpperCase();
-        }
-        // 특수 키 매핑
-        return switch (key) {
-            case GLFW.GLFW_KEY_SPACE         -> "Space";
-            case GLFW.GLFW_KEY_ENTER         -> "Enter";
-            case GLFW.GLFW_KEY_TAB           -> "Tab";
-            case GLFW.GLFW_KEY_BACKSPACE     -> "Backspace";
-            case GLFW.GLFW_KEY_DELETE        -> "Delete";
-            case GLFW.GLFW_KEY_INSERT        -> "Insert";
-            case GLFW.GLFW_KEY_HOME          -> "Home";
-            case GLFW.GLFW_KEY_END           -> "End";
-            case GLFW.GLFW_KEY_PAGE_UP       -> "PgUp";
-            case GLFW.GLFW_KEY_PAGE_DOWN     -> "PgDn";
-            case GLFW.GLFW_KEY_UP            -> "↑";
-            case GLFW.GLFW_KEY_DOWN          -> "↓";
-            case GLFW.GLFW_KEY_LEFT          -> "←";
-            case GLFW.GLFW_KEY_RIGHT         -> "→";
-            case GLFW.GLFW_KEY_LEFT_SHIFT    -> "Shift";
-            case GLFW.GLFW_KEY_RIGHT_SHIFT   -> "Shift";
-            case GLFW.GLFW_KEY_LEFT_CONTROL  -> "Ctrl";
-            case GLFW.GLFW_KEY_RIGHT_CONTROL -> "Ctrl";
-            case GLFW.GLFW_KEY_LEFT_ALT      -> "Alt";
-            case GLFW.GLFW_KEY_RIGHT_ALT     -> "Alt";
-            case GLFW.GLFW_KEY_ESCAPE        -> "Esc";
-            case GLFW.GLFW_KEY_CAPS_LOCK     -> "CapsLk";
-            case GLFW.GLFW_KEY_F1            -> "F1";
-            case GLFW.GLFW_KEY_F2            -> "F2";
-            case GLFW.GLFW_KEY_F3            -> "F3";
-            case GLFW.GLFW_KEY_F4            -> "F4";
-            case GLFW.GLFW_KEY_F5            -> "F5";
-            case GLFW.GLFW_KEY_F6            -> "F6";
-            case GLFW.GLFW_KEY_F7            -> "F7";
-            case GLFW.GLFW_KEY_F8            -> "F8";
-            case GLFW.GLFW_KEY_F9            -> "F9";
-            case GLFW.GLFW_KEY_F10           -> "F10";
-            case GLFW.GLFW_KEY_F11           -> "F11";
-            case GLFW.GLFW_KEY_F12           -> "F12";
-            default                          -> "Key" + key;
-        };
-    }
+	/**
+	 * Resolves a GLFW key code to a display name.
+	 * Prefers {@code glfwGetKeyName} for printable keys; falls back to a hardcoded map
+	 * for special keys that GLFW doesn't name, and finally "Key{code}" as a last resort.
+	 */
+	private static String glfwKeyName(int key) {
+		String glfwName = GLFW.glfwGetKeyName(key, 0);
+		if (glfwName != null && !glfwName.isEmpty()) {
+			return glfwName.toUpperCase();
+		}
+		return switch (key) {
+			case GLFW.GLFW_KEY_SPACE         -> "Space";
+			case GLFW.GLFW_KEY_ENTER         -> "Enter";
+			case GLFW.GLFW_KEY_TAB           -> "Tab";
+			case GLFW.GLFW_KEY_BACKSPACE     -> "Backspace";
+			case GLFW.GLFW_KEY_DELETE        -> "Delete";
+			case GLFW.GLFW_KEY_INSERT        -> "Insert";
+			case GLFW.GLFW_KEY_HOME          -> "Home";
+			case GLFW.GLFW_KEY_END           -> "End";
+			case GLFW.GLFW_KEY_PAGE_UP       -> "PgUp";
+			case GLFW.GLFW_KEY_PAGE_DOWN     -> "PgDn";
+			case GLFW.GLFW_KEY_UP            -> "↑";
+			case GLFW.GLFW_KEY_DOWN          -> "↓";
+			case GLFW.GLFW_KEY_LEFT          -> "←";
+			case GLFW.GLFW_KEY_RIGHT         -> "→";
+			case GLFW.GLFW_KEY_LEFT_SHIFT,
+			     GLFW.GLFW_KEY_RIGHT_SHIFT   -> "Shift";
+			case GLFW.GLFW_KEY_LEFT_CONTROL,
+			     GLFW.GLFW_KEY_RIGHT_CONTROL -> "Ctrl";
+			case GLFW.GLFW_KEY_LEFT_ALT,
+			     GLFW.GLFW_KEY_RIGHT_ALT     -> "Alt";
+			case GLFW.GLFW_KEY_ESCAPE        -> "Esc";
+			case GLFW.GLFW_KEY_CAPS_LOCK     -> "CapsLk";
+			case GLFW.GLFW_KEY_F1            -> "F1";
+			case GLFW.GLFW_KEY_F2            -> "F2";
+			case GLFW.GLFW_KEY_F3            -> "F3";
+			case GLFW.GLFW_KEY_F4            -> "F4";
+			case GLFW.GLFW_KEY_F5            -> "F5";
+			case GLFW.GLFW_KEY_F6            -> "F6";
+			case GLFW.GLFW_KEY_F7            -> "F7";
+			case GLFW.GLFW_KEY_F8            -> "F8";
+			case GLFW.GLFW_KEY_F9            -> "F9";
+			case GLFW.GLFW_KEY_F10           -> "F10";
+			case GLFW.GLFW_KEY_F11           -> "F11";
+			case GLFW.GLFW_KEY_F12           -> "F12";
+			default                          -> "Key" + key;
+		};
+	}
 
-    @Override
-    public String toString() {
-        return getDisplayName();
-    }
+	@Override
+	public String toString() {
+		return getDisplayName();
+	}
 }

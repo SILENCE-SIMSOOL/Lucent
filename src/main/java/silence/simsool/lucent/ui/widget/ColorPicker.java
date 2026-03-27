@@ -6,6 +6,8 @@ import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.gui.GuiGraphics;
 import silence.simsool.lucent.general.enums.GradientType;
+import silence.simsool.lucent.general.enums.colorpicker.DragTarget;
+import silence.simsool.lucent.general.enums.colorpicker.InputField;
 import silence.simsool.lucent.ui.font.LucentFont;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UColor;
@@ -16,19 +18,19 @@ import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 import silence.simsool.lucent.ui.widget.base.UIWidget;
 
 public class ColorPicker extends UIWidget {
-	private static int PADDING        = 24;
-	private static int SV_W           = 360;
-	private static int SV_H           = 260;
-	private static int BAR_H          = 22;
-	private static int PREVIEW_H      = 36;
-	private static int INPUT_H        = 24;
-	private static int GAP            = 16;
-	private static float FONT_SIZE    = 14f;
+	private static int PADDING = 24;
+	private static int SV_W = 360;
+	private static int SV_H = 260;
+	private static int BAR_H = 22;
+	private static int PREVIEW_H = 36;
+	private static int INPUT_H = 24;
+	private static int GAP = 16;
+	private static float FONT_SIZE = 14f;
 
 	private static int INPUT_INNER_PAD = 10;
-	private static int LABEL_W         = 20;
-	private static int LABEL_GAP       = 6;
-	private static int INPUT_ROW_GAP   = 8;
+	private static int LABEL_W = 20;
+	private static int LABEL_GAP = 6;
+	private static int INPUT_ROW_GAP = 8;
 
 	private static int TOTAL_W = PADDING * 2 + SV_W;
 	private static int TOTAL_H = PADDING + SV_H + GAP + BAR_H + GAP + BAR_H + GAP + PREVIEW_H + GAP + INPUT_INNER_PAD + INPUT_H + INPUT_ROW_GAP + INPUT_H + INPUT_INNER_PAD + PADDING;
@@ -40,11 +42,9 @@ public class ColorPicker extends UIWidget {
 
 	private final int originalColor;
 
-	private enum DragTarget { NONE, SV_PANEL, HUE_BAR, ALPHA_BAR }
 	private DragTarget dragging = DragTarget.NONE;
-
-	private enum InputField { NONE, R, G, B, A, HEX }
 	private InputField activeInput = InputField.NONE;
+
 	private String inputBuffer = "";
 	private int inputCursor = 0;
 	private boolean inputError = false;
@@ -53,10 +53,10 @@ public class ColorPicker extends UIWidget {
 	private int hueX, hueY;
 	private int alphaX, alphaY;
 
-	private int panelBg     = UIColors.WIN_BG;
+	private int panelBg = UIColors.WIN_BG;
 	private int inputBorder = UIColors.ITEM_BORDER;
-	private int inputFocus  = UIColors.ACCENT_BLUE;
-	private int inputErr    = 0xFFFF4444;
+	private int inputFocus = UIColors.ACCENT_BLUE;
+	private int inputErr = 0xFFFF4444;
 
 	private Consumer<Integer> onConfirm;
 	private Runnable onCancel;
@@ -69,10 +69,10 @@ public class ColorPicker extends UIWidget {
 	}
 
 	private void recalcLayout() {
-		svX    = x + PADDING;
-		svY    = y + PADDING;
-		hueX   = svX;
-		hueY   = svY + SV_H + GAP;
+		svX = x + PADDING;
+		svY = y + PADDING;
+		hueX = svX;
+		hueY = svY + SV_H + GAP;
 		alphaX = svX;
 		alphaY = hueY + BAR_H + GAP;
 	}
@@ -199,11 +199,11 @@ public class ColorPicker extends UIWidget {
 
 	    int colW3 = (innerW - COL_GAP * 2) / 3;
 	    int[] rgb = hsvToRGB();
-	    renderLabeledInput(InputField.R, innerX,                          row1Y, colW3, INPUT_SHRINK, String.valueOf(rgb[0]), "R:");
-	    renderLabeledInput(InputField.G, innerX + colW3 + COL_GAP,        row1Y, colW3, INPUT_SHRINK, String.valueOf(rgb[1]), "G:");
-	    renderLabeledInput(InputField.B, innerX + (colW3 + COL_GAP) * 2,  row1Y, colW3, INPUT_SHRINK, String.valueOf(rgb[2]), "B:");
-	    renderLabeledInput(InputField.A,   innerX,                   row2Y, colW3,              INPUT_SHRINK, String.valueOf((int) Math.round(alpha * 100)), "A:");
-	    renderLabeledInput(InputField.HEX, innerX + colW3 + COL_GAP, row2Y, colW3 * 2 + COL_GAP, 0,          getHexString(), "H:");
+	    renderLabeledInput(InputField.R,   innerX,                          row1Y, colW3, INPUT_SHRINK, String.valueOf(rgb[0]), "R:");
+	    renderLabeledInput(InputField.G,   innerX + colW3 + COL_GAP,        row1Y, colW3, INPUT_SHRINK, String.valueOf(rgb[1]), "G:");
+	    renderLabeledInput(InputField.B,   innerX + (colW3 + COL_GAP) * 2,  row1Y, colW3, INPUT_SHRINK, String.valueOf(rgb[2]), "B:");
+	    renderLabeledInput(InputField.A,   innerX,                          row2Y, colW3, INPUT_SHRINK, String.valueOf((int) Math.round(alpha * 100)), "A:");
+	    renderLabeledInput(InputField.HEX, innerX + colW3 + COL_GAP,        row2Y, colW3 * 2 + COL_GAP, 0, getHexString(), "H:");
 	}
 
 	private void renderLabeledInput(InputField field, int cellX, int cellY, int cellW, int shrink, String defaultValue, String label) {
@@ -216,9 +216,9 @@ public class ColorPicker extends UIWidget {
 	}
 
 	private void renderSmallInput(InputField field, int ix, int iy, int iw, String defaultValue) {
-		boolean active      = (activeInput == field);
-		String  displayText = active ? inputBuffer : defaultValue;
-		int     border      = active ? (inputError ? inputErr : inputFocus) : inputBorder;
+		boolean active = (activeInput == field);
+		String displayText = active ? inputBuffer : defaultValue;
+		int border = active ? (inputError ? inputErr : inputFocus) : inputBorder;
 
 		NVGRenderer.rect(ix, iy, iw, INPUT_H, UIColors.withAlpha(UIColors.PURE_BLACK, 120), 8);
 		if (active) NVGRenderer.outlineRect(ix, iy, iw, INPUT_H, 1, border, 8);
@@ -252,15 +252,15 @@ public class ColorPicker extends UIWidget {
 	    int COL_GAP = 14;
 	    int INPUT_SHRINK = 8;
 
-	    int boxX   = svX;
-	    int boxY   = getInputBoxY();
-	    int boxW   = SV_W;
+	    int boxX = svX;
+	    int boxY = getInputBoxY();
+	    int boxW  = SV_W;
 	    int innerX = boxX + INPUT_INNER_PAD;
 	    int innerW = boxW - INPUT_INNER_PAD * 2;
-	    int row1Y  = boxY + INPUT_INNER_PAD;
-	    int row2Y  = row1Y + INPUT_H + INPUT_ROW_GAP;
-	    int colW3  = (innerW - COL_GAP * 2) / 3;
-	    int[] rgb  = hsvToRGB();
+	    int row1Y = boxY + INPUT_INNER_PAD;
+	    int row2Y = row1Y + INPUT_H + INPUT_ROW_GAP;
+	    int colW3 = (innerW - COL_GAP * 2) / 3;
+	    int[] rgb = hsvToRGB();
 
 	    if (clickLabeledField(mx, my, InputField.R,   innerX,                         row1Y, colW3,               INPUT_SHRINK, String.valueOf(rgb[0])))                        return true;
 	    if (clickLabeledField(mx, my, InputField.G,   innerX + colW3 + COL_GAP,       row1Y, colW3,               INPUT_SHRINK, String.valueOf(rgb[1])))                        return true;
@@ -487,17 +487,17 @@ public class ColorPicker extends UIWidget {
 
 	private void setFromARGB(int color) {
 		float[] hsv = UColor.toHSV(color);
-		hue        = hsv[0];
+		hue = hsv[0];
 		saturation = hsv[1];
-		value      = hsv[2];
-		alpha      = UColor.getAlphaF(color);
+		value = hsv[2];
+		alpha = UColor.getAlphaF(color);
 	}
 
 	private void setFromRGB(int r, int g, int b) {
 		float[] hsv = UColor.toHSV(UColor.rgb(r, g, b));
-		hue        = hsv[0];
+		hue = hsv[0];
 		saturation = hsv[1];
-		value      = hsv[2];
+		value = hsv[2];
 	}
 
 	private int[] hsvToRGB() {
@@ -516,13 +516,11 @@ public class ColorPicker extends UIWidget {
 	}
 
 	private void confirm() {
-		if (onConfirm != null)
-			onConfirm.accept(getCurrentARGB());
+		if (onConfirm != null) onConfirm.accept(getCurrentARGB());
 	}
 
 	private void cancel() {
-		if (onCancel != null)
-			onCancel.run();
+		if (onCancel != null) onCancel.run();
 	}
 
 	public int getColor() {

@@ -42,6 +42,7 @@ public class Slider extends UIWidget {
 	private int inputCursor = 0;
 
 	private Consumer<Double> onChange;
+	private Consumer<Double> onRelease;
 	private int trackX, trackW;
 
 	public Slider(int x, int y, int width, int height, double min, double max, double step, double initialValue) {
@@ -170,6 +171,7 @@ public class Slider extends UIWidget {
 	public boolean mouseReleased(double mouseX, double mouseY, int button) {
 		if (isDragging) {
 			isDragging = false;
+			if (onRelease != null) onRelease.accept(value);
 			return true;
 		}
 		return false;
@@ -263,6 +265,7 @@ public class Slider extends UIWidget {
 			double parsed = Double.parseDouble(inputBuffer);
 			double clamped = UAnimation.clamp(parsed, min, max);
 			setValue(UAnimation.snapToStep(clamped, step), true);
+			if (onRelease != null) onRelease.accept(this.value);
 			inputMode = false;
 			setFocused(false);
 		} catch (NumberFormatException e) {
@@ -305,6 +308,10 @@ public class Slider extends UIWidget {
 
 	public void setOnChange(Consumer<Double> onChange) {
 		this.onChange = onChange;
+	}
+
+	public void setOnRelease(Consumer<Double> onRelease) {
+		this.onRelease = onRelease;
 	}
 
 // Later..

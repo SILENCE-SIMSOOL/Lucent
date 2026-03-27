@@ -9,19 +9,21 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import silence.simsool.lucent.Lucent;
+import silence.simsool.lucent.config.LucentConfig;
 import silence.simsool.lucent.general.abstracts.LucentHUD;
-import silence.simsool.lucent.general.enums.HudAlignment;
+import silence.simsool.lucent.general.enums.HUDAlignment;
 import silence.simsool.lucent.general.enums.RenderType;
+import silence.simsool.lucent.general.utils.LucentUtils;
 import silence.simsool.lucent.general.utils.UDisplay;
 import silence.simsool.lucent.general.utils.UMouse;
-import silence.simsool.lucent.hud.HudManager;
+import silence.simsool.lucent.hud.HUDManager;
+import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UIColors;
 import silence.simsool.lucent.ui.utils.nvg.Fonts;
+import silence.simsool.lucent.ui.utils.nvg.Image;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
-import silence.simsool.lucent.Lucent;
-import silence.simsool.lucent.ui.utils.nvg.Image;
-import silence.simsool.lucent.general.utils.LucentUtils;
 
 public class EditHudScreen extends Screen {
 	private static final int SNAP_PX        = 10;
@@ -48,6 +50,10 @@ public class EditHudScreen extends Screen {
 	private boolean iconsLoaded = false;
 	private Image iconProfiles, iconEditHud;
 
+	private long startTime = -1L;
+	private long closeStartTime = -1L;
+	private boolean closing = false;
+
 	public EditHudScreen() {
 		this(false);
 	}
@@ -59,9 +65,26 @@ public class EditHudScreen extends Screen {
 	}
 
 	@Override
+	protected void init() {
+		super.init();
+		this.startTime = System.currentTimeMillis();
+		this.closing = false;
+		this.closeStartTime = -1L;
+	}
+
+	@Override
 	public void onClose() {
+		if (LucentConfig.openAnimation && !closing) {
+			closing = true;
+			closeStartTime = System.currentTimeMillis();
+		} else {
+			exit();
+		}
+	}
+
+	private void exit() {
 		LucentHUD.isEditHudOpen = false;
-		HudManager.INSTANCE.save();
+		HUDManager.INSTANCE.save();
 		super.onClose();
 	}
 
@@ -72,8 +95,30 @@ public class EditHudScreen extends Screen {
 
 	@Override
 	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-		for (LucentHUD hud : HudManager.INSTANCE.getHuds()) {
-			if (hud.getRenderType() == RenderType.MINECRAFT) {
+		float animP;
+		if (LucentConfig.openAnimation) {
+			if (closing) {
+				if (closeStartTime == -1L) closeStartTime = System.currentTimeMillis();
+				float elapsed = (float) (System.currentTimeMillis() - closeStartTime);
+				animP = 1f - Math.min(1f, elapsed / 300f);
+				if (animP <= 0f) {
+					exit();
+					return;
+				}
+			} else {
+				float elapsed = (float) (System.currentTimeMillis() - startTime);
+				animP = Math.min(1f, elapsed / 450f);
+			}
+		} else {
+			animP = 1f;
+			if (closing) {
+				exit();
+				return;
+			}
+		}
+
+		for (LucentHUD hud : HUDManager.INSTANCE.getHuds()) {
+			if (hud.isEnabled() && hud.getRenderType() == RenderType.MINECRAFT) {
 				hud.preview();
 			}
 		}
@@ -82,19 +127,23 @@ public class EditHudScreen extends Screen {
 			NVGRenderer.push();
 			NVGRenderer.scale(gs, gs);
 
-			for (LucentHUD hud : HudManager.INSTANCE.getHuds()) {
-				if (hud.getRenderType() == RenderType.NANOVG) {
-					hud.preview();
-				}
+			if (LucentConfig.openAnimation) {
+				NVGRenderer.globalAlpha(UAnimation.clamp(animP * 1.5f, 0, 1));
 			}
-			renderOverlay();
+
+		for (LucentHUD hud : HUDManager.INSTANCE.getHuds()) {
+			if (hud.isEnabled() && hud.getRenderType() == RenderType.NANOVG) {
+				hud.preview();
+			}
+		}
+		renderOverlay(animP);
 
 			NVGRenderer.pop();
 		});
 		super.render(guiGraphics, mouseX, mouseY, partialTick);
 	}
 
-	private void renderOverlay() {
+	private void renderOverlay(float animP) {
 		float gs  = NVGRenderer.getStandardGuiScale();
 		float vw  = UDisplay.getScreenWidth()  / gs;
 		float vh  = UDisplay.getScreenHeight() / gs;
@@ -105,15 +154,15 @@ public class EditHudScreen extends Screen {
 
 		drawCrosshair(vw, vh);
 
-		for (LucentHUD hud : HudManager.INSTANCE.getHuds()) {
-			drawHudBorder(hud, mx, my);
+		for (LucentHUD hud : HUDManager.INSTANCE.getHuds()) {
+			if (hud.isEnabled()) drawHudBorder(hud, mx, my);
 		}
 
 		drawCrosshair(vw, vh);
 
 		if (draggingMove == null && draggingScale == null && contextMenuHud == null) {
-			for (LucentHUD hud : HudManager.INSTANCE.getHuds()) {
-				if (isInsideHud(hud, mx, my)) {
+			for (LucentHUD hud : HUDManager.INSTANCE.getHuds()) {
+				if (hud.isEnabled() && isInsideHud(hud, mx, my)) {
 					drawTooltip(hud, mx, my, vw, vh);
 					break;
 				}
@@ -121,10 +170,10 @@ public class EditHudScreen extends Screen {
 		}
 		if (draggingScale != null) drawScaleBadge(draggingScale);
 		if (contextMenuHud != null) drawContextMenu(vw, vh);
-		if (showModsButton)  drawModsButton(vw, vh, mx, my);
+		if (showModsButton)  drawModsButton(vw, vh, mx, my, animP);
 	}
 
-	private void drawModsButton(float vw, float vh, float mx, float my) {
+	private void drawModsButton(float vw, float vh, float mx, float my, float animP) {
 		if (!iconsLoaded) {
 			try {
 				iconProfiles = LucentUtils.createIcon("profiles");
@@ -140,48 +189,73 @@ public class EditHudScreen extends Screen {
 		float gap = 10f;
 
 		float logoY = by - 100;
-		drawBrandLogo(vw / 2f, logoY);
+		// Staggered progress based on animP
+		float logoP = UAnimation.clamp(animP * 1.4f, 0f, 1f);
+		float btn1P = UAnimation.clamp((animP - 0.15f) * 1.5f, 0f, 1f);
+		float btn2P = UAnimation.clamp((animP - 0.3f) * 1.5f, 0f, 1f);
+		float btn3P = UAnimation.clamp((animP - 0.45f) * 1.5f, 0f, 1f);
 
-		drawIconButton(bx - sideS - gap, by, sideS, sideS, iconEditHud, mx, my); // Left: HUD Settings
-		drawIconButton(bx + bw + gap,    by, sideS, sideS, iconProfiles, mx, my); // Right: Profiles
+		float logoEase = UAnimation.Easing.spring(logoP);
+		float alpha = UAnimation.clamp(logoP * 2f, 0f, 1f);
 
-		boolean hov = mx >= bx && mx <= bx + bw && my >= by && my <= by + bh;
-		int bg = UIColors.withAlpha(hov ? UIColors.CARD_HOVER : UIColors.CARD_BG, 180);
-		
-		NVGRenderer.rect(bx, by, bw, bh, bg, round);
-		NVGRenderer.outlineRect(bx, by, bw, bh, 1.5f, UIColors.withAlpha(0xFFFFFFFF, hov ? 60 : 30), round);
+		// 1. Logo Pop
+		NVGRenderer.push();
+		NVGRenderer.translate(vw / 2f, logoY);
+		NVGRenderer.scale(0.7f + 0.3f * logoEase, 0.7f + 0.3f * logoEase);
+		drawBrandLogo(0, 0, alpha);
+		NVGRenderer.pop();
 
-		int size = 18;
-		float tw = NVGRenderer.textWidth("M O D S", Fonts.PRETENDARD_SEMIBOLD, size);
-		NVGRenderer.text("M O D S", bx + (bw - tw) / 2f, by + (bh - size) / 2f + 1, Fonts.PRETENDARD_SEMIBOLD, UIColors.withAlpha(UIColors.PURE_WHITE, hov ? 255 : 185), size);
-	}
+		// 2. Buttons Staggered Slide
+		if (btn1P > 0) {
+			float e = UAnimation.Easing.spring(btn1P);
+			drawIconButton(bx - sideS - gap - (1f - e) * 60f, by, sideS, sideS, iconEditHud, mx, my, btn1P);
+		}
+		if (btn3P > 0) {
+			float e = UAnimation.Easing.spring(btn3P);
+			drawIconButton(bx + bw + gap + (1f - e) * 60f, by, sideS, sideS, iconProfiles, mx, my, btn3P);
+		}
+		if (btn2P > 0) {
+			float e = UAnimation.Easing.spring(btn2P);
+			float curBy = by + (1f - e) * 40f;
+			
+			boolean hov = mx >= bx && mx <= bx + bw && my >= curBy && my <= curBy + bh;
+			int bg = UIColors.withAlpha(hov ? UIColors.CARD_HOVER : UIColors.CARD_BG, (int) (180 * btn2P));
 
-	private void drawIconButton(float x, float y, float w, float h, Image icon, float mx, float my) {
-		boolean hov = mx >= x && mx <= x + w && my >= y && my <= y + h;
-		int bg = UIColors.withAlpha(hov ? UIColors.CARD_HOVER : UIColors.CARD_BG, 180);
-		
-		NVGRenderer.rect(x, y, w, h, bg, 8f);
-		NVGRenderer.outlineRect(x, y, w, h, 1.5f, UIColors.withAlpha(0xFFFFFFFF, hov ? 60 : 30), 8f);
-		
-		if (icon != null) {
-			float is = 20f;
-			NVGRenderer.image(icon, x + (w - is) / 2f, y + (h - is) / 2f, is, is);
+			NVGRenderer.rect(bx, curBy, bw, bh, bg, round);
+			NVGRenderer.outlineRect(bx, curBy, bw, bh, 1.5f, UIColors.withAlpha(0xFFFFFFFF, (int) ((hov ? 60 : 30) * btn2P)), round);
+
+			int size = 18;
+			float tw = NVGRenderer.textWidth("M O D S", Fonts.PRETENDARD_SEMIBOLD, size);
+			NVGRenderer.text("M O D S", bx + (bw - tw) / 2f, curBy + (bh - size) / 2f + 1, Fonts.PRETENDARD_SEMIBOLD, UIColors.withAlpha(UIColors.PURE_WHITE, (int) ((hov ? 255 : 185) * btn2P)), size);
 		}
 	}
 
-	private void drawBrandLogo(float cx, float cy) {
+	private void drawIconButton(float x, float y, float w, float h, Image icon, float mx, float my, float alpha) {
+		boolean hov = mx >= x && mx <= x + w && my >= y && my <= y + h;
+		int bg = UIColors.withAlpha(hov ? UIColors.CARD_HOVER : UIColors.CARD_BG, (int) (180 * alpha));
+
+		NVGRenderer.rect(x, y, w, h, bg, 8f);
+		NVGRenderer.outlineRect(x, y, w, h, 1.5f, UIColors.withAlpha(0xFFFFFFFF, (int) ((hov ? 60 : 30) * alpha)), 8f);
+
+		if (icon != null) {
+			float is = 20f;
+			NVGRenderer.image(icon, x + (w - is) / 2f, y + (h - is) / 2f, is, is, alpha);
+		}
+	}
+
+	private void drawBrandLogo(float cx, float cy, float alpha) {
 		float size = 50f;
 
-		NVGRenderer.outlineCircle(cx, cy, size / 2f + 5, 2.5f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 180));
-		NVGRenderer.circle(cx, cy, size / 2f - 2, UIColors.withAlpha(UIColors.ACCENT_BLUE, 40));
+		NVGRenderer.outlineCircle(cx, cy, size / 2f + 5, 2.5f, UIColors.withAlpha(UIColors.ACCENT_BLUE, (int) (180 * alpha)));
+		NVGRenderer.circle(cx, cy, size / 2f - 2, UIColors.withAlpha(UIColors.ACCENT_BLUE, (int) (40 * alpha)));
 
 		float fs = 32f;
 		float tw = NVGRenderer.textWidth("LUCENT", Fonts.PRETENDARD_SEMIBOLD, fs);
-		NVGRenderer.text("LUCENT", cx - tw / 2f, cy + 44, Fonts.PRETENDARD_SEMIBOLD, UIColors.PURE_WHITE, fs);
+		NVGRenderer.text("LUCENT", cx - tw / 2f, cy + 44, Fonts.PRETENDARD_SEMIBOLD, UIColors.withAlpha(UIColors.PURE_WHITE, (int) (255 * alpha)), fs);
 
 		float sfs = 10f;
 		float stw = NVGRenderer.textWidth("U L T I M A T E   C O N F I G", Fonts.PRETENDARD_MEDIUM, sfs);
-		NVGRenderer.text("U L T I M A T E   C O N F I G", cx - stw / 2f, cy + 76, Fonts.PRETENDARD_MEDIUM, UIColors.withAlpha(UIColors.PURE_WHITE, 120), sfs);
+		NVGRenderer.text("U L T I M A T E   C O N F I G", cx - stw / 2f, cy + 76, Fonts.PRETENDARD_MEDIUM, UIColors.withAlpha(UIColors.PURE_WHITE, (int) (120 * alpha)), sfs);
 	}
 
 	private void drawCrosshair(float vw, float vh) {
@@ -196,12 +270,41 @@ public class EditHudScreen extends Screen {
 		float hcx = rx + rw / 2f;
 		float hcy = ry + rh / 2f;
 
-		float eps = 1.0f;
+		float eps = SNAP_PX;
 		boolean matchX = Math.abs(hcx - cx) < eps;
 		boolean matchY = Math.abs(hcy - cy) < eps;
 
 		if (matchY) NVGRenderer.line(0, cy, vw, cy, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 150));
 		if (matchX) NVGRenderer.line(cx, 0, cx, vh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 150));
+
+		// Requirement 2: Alignment with other HUDs
+		for (LucentHUD other : HUDManager.INSTANCE.getHuds()) {
+			if (!other.isEnabled() || other == draggingMove) continue;
+
+			float orx = other.getRenderX(), ory = other.getRenderY();
+			float orw = other.getScaledWidth(), orh = other.getScaledHeight();
+			float ohcx = orx + orw / 2f;
+			float ohcy = ory + orh / 2f;
+
+			// Match X (Left, Center, Right)
+			if (Math.abs(rx - orx) < eps) {
+				NVGRenderer.line(orx, 0, orx, vh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
+			} else if (Math.abs(hcx - ohcx) < eps) {
+				NVGRenderer.line(ohcx, 0, ohcx, vh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
+			} else if (Math.abs((rx + rw) - (orx + orw)) < eps) {
+				NVGRenderer.line(orx + orw, 0, orx + orw, vh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
+			}
+
+			// Match Y (Top, Center, Bottom)
+			if (Math.abs(ry - ory) < eps) {
+				NVGRenderer.line(0, ory, vw, ory, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
+			} else if (Math.abs(hcy - ohcy) < eps) {
+				NVGRenderer.line(0, ohcy, vw, ohcy, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
+			} else if (Math.abs((ry + rh) - (ory + orh)) < eps) {
+				NVGRenderer.line(0, ory + orh, vw, ory + orh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
+			}
+		}
+
 		if (matchX && matchY) NVGRenderer.outlineCircle(cx, cy, 4f, 2f, UIColors.PURE_WHITE);
 	}
 
@@ -210,7 +313,6 @@ public class EditHudScreen extends Screen {
 		float rw = hud.getScaledWidth(), rh = hud.getScaledHeight();
 
 		int handleIndex = getHandleUnderMouse(hud, mx, my);
-		boolean inInner    = isInsideInner(hud, mx, my);
 		boolean scaleDrag  = draggingScale == hud;
 		boolean moveDrag   = draggingMove  == hud;
 
@@ -277,7 +379,7 @@ public class EditHudScreen extends Screen {
 	}
 
 	private void drawContextMenu(float vw, float vh) {
-		HudAlignment[] opts = HudAlignment.values();
+		HUDAlignment[] opts = HUDAlignment.values();
 		float iH = 28f, iW = 120f, pad = 8f;
 		float totalH = iH * opts.length + pad * 2;
 
@@ -288,7 +390,7 @@ public class EditHudScreen extends Screen {
 		NVGRenderer.outlineRect(cx, cy, iW, totalH, 1f, UIColors.withAlpha(0xFFFFFFFF, 15), 8f);
 
 		for (int i = 0; i < opts.length; i++) {
-			HudAlignment opt = opts[i];
+			HUDAlignment opt = opts[i];
 			float iy  = cy + pad + i * iH;
 			boolean selected = contextMenuHud.alignment == opt;
 
@@ -316,11 +418,13 @@ public class EditHudScreen extends Screen {
 			return true;
 		}
 
-		List<LucentHUD> huds = HudManager.INSTANCE.getHuds();
+		List<LucentHUD> huds = HUDManager.INSTANCE.getHuds();
 
 		if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
 			for (int i = huds.size() - 1; i >= 0; i--) {
 				LucentHUD hud = huds.get(i);
+				if (!hud.isEnabled()) continue;
+				
 				int handle = getHandleUnderMouse(hud, mx, my);
 				if (handle != -1) {
 					draggingScale      = hud;
@@ -378,7 +482,7 @@ public class EditHudScreen extends Screen {
 	@Override
 	public boolean mouseReleased(MouseButtonEvent event) {
 		if (event.button() == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-			if (draggingMove != null || draggingScale != null) HudManager.INSTANCE.save();
+			if (draggingMove != null || draggingScale != null) HUDManager.INSTANCE.save();
 			draggingMove  = null;
 			draggingScale = null;
 		}
@@ -442,6 +546,50 @@ public class EditHudScreen extends Screen {
 			}
 			if (Math.abs(hcy_raw - vh / 2f) < SNAP_PX) snappedY = vh / 2f - scaledH / 2f;
 
+			// Snapping to other HUDs
+			for (LucentHUD other : HUDManager.INSTANCE.getHuds()) {
+				if (other == draggingMove) continue;
+
+				float orx = other.getRenderX(), ory = other.getRenderY();
+				float orw = other.getScaledWidth(), orh = other.getScaledHeight();
+				float ohcx = orx + orw / 2f;
+				float ohcy = ory + orh / 2f;
+
+				// Current renderX with snappedX
+				float curRx;
+				switch (draggingMove.alignment) {
+					case CENTER: curRx = snappedX - scaledW / 2f; break;
+					case RIGHT:  curRx = snappedX - scaledW;      break;
+					default:     curRx = snappedX;                break;
+				}
+
+				// Snap X
+				if (Math.abs(curRx - orx) < SNAP_PX) {
+					switch (draggingMove.alignment) {
+						case CENTER: snappedX = orx + scaledW / 2f; break;
+						case RIGHT:  snappedX = orx + scaledW;      break;
+						default:     snappedX = orx;                break;
+					}
+				} else if (Math.abs((curRx + scaledW / 2f) - ohcx) < SNAP_PX) {
+					switch (draggingMove.alignment) {
+						case CENTER: snappedX = ohcx;                break;
+						case RIGHT:  snappedX = ohcx + scaledW / 2f; break;
+						default:     snappedX = ohcx - scaledW / 2f; break;
+					}
+				} else if (Math.abs((curRx + scaledW) - (orx + orw)) < SNAP_PX) {
+					switch (draggingMove.alignment) {
+						case CENTER: snappedX = orx + orw - scaledW / 2f; break;
+						case RIGHT:  snappedX = orx + orw;                break;
+						default:     snappedX = orx + orw - scaledW;      break;
+					}
+				}
+
+				// Snap Y
+				if (Math.abs(snappedY - ory) < SNAP_PX) snappedY = ory;
+				else if (Math.abs((snappedY + scaledH / 2f) - ohcy) < SNAP_PX) snappedY = ohcy - scaledH / 2f;
+				else if (Math.abs((snappedY + scaledH) - (ory + orh)) < SNAP_PX) snappedY = ory + orh - scaledH;
+			}
+
 			draggingMove.x = snappedX / vw;
 			draggingMove.y = snappedY / vh;
 			return true;
@@ -489,7 +637,7 @@ public class EditHudScreen extends Screen {
 
 	private void handleContextMenuClick(float mx, float my) {
 		if (contextMenuHud == null) return;
-		HudAlignment[] opts = HudAlignment.values();
+		HUDAlignment[] opts = HUDAlignment.values();
 		float iH = 28f, iW = 120f, pad = 8f, totalH = iH * opts.length + pad * 2;
 
 		float gs = NVGRenderer.getStandardGuiScale();
@@ -503,7 +651,7 @@ public class EditHudScreen extends Screen {
 		int idx = (int)((my - cy - pad) / iH);
 		if (idx >= 0 && idx < opts.length) {
 			contextMenuHud.alignment = opts[idx];
-			HudManager.INSTANCE.save();
+			HUDManager.INSTANCE.save();
 		}
 	}
 

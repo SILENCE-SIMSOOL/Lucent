@@ -10,6 +10,9 @@ import silence.simsool.lucent.general.enums.ConfigType;
 import silence.simsool.lucent.general.interfaces.ModConfig;
 import silence.simsool.lucent.general.utils.UChat;
 
+@ModConfig.CategoryPriority(name = "General", priority = 1000)
+@ModConfig.CategoryPriority(name = "Appearance", priority = 500)
+@ModConfig.CategoryPriority(name = "Test Category", priority = 100)
 public class ChattingMod extends Mod {
 
 	public ChattingMod() {
@@ -20,7 +23,8 @@ public class ChattingMod extends Mod {
 		type = ConfigType.SWITCH,
 		name = "Clear Background",
 		description = "Removes the default dark background from the chat window.",
-		category = "Appearance"
+		category = "Appearance",
+		priority = 500
 	)
 	public static boolean clearBackground = true;
 
@@ -31,7 +35,8 @@ public class ChattingMod extends Mod {
 		category = "Appearance",
 		min = 0.0,
 		max = 1.0,
-		step = 0.1
+		step = 0.1,
+		priority = 490
 	)
 	public static double chatOpacity = 0.8;
 
@@ -40,7 +45,8 @@ public class ChattingMod extends Mod {
 		name = "Chat Animation",
 		description = "Select the animation style for incoming chat messages.",
 		category = "General",
-		options = {"Smooth", "Classic", "Slide"}
+		options = {"Smooth", "Classic", "Slide"},
+		priority = 1000
 	)
 	public static String chatAnimationStyle = "Smooth";
 
@@ -48,38 +54,53 @@ public class ChattingMod extends Mod {
 		type = ConfigType.COLOR,
 		name = "Mention Color",
 		description = "The highlight color used when someone mentions your name.",
-		category = "General"
+		category = "General",
+		priority = 990
 	)
 	public static Color mentionColor = new Color(85, 255, 85, 155);
 
 	@ModConfig(
 		type = ConfigType.KEYBIND,
-		name = "Open Chat Settings",
-		description = "Keybind to quickly open the mod configuration menu."
+		name = "Open Chat Keybind",
+		description = "Keybind to quickly open the mod configuration menu.",
+		priority = 980
 	)
 	public KeyBind openMenuKey = KeyBind.ofKey(GLFW.GLFW_KEY_RIGHT_SHIFT, 0);
 
 	@ModConfig(
+		type = ConfigType.KEYBIND,
+		name = "Test Settings",
+		description = "Keybind to quickly open the mod configuration menu.",
+		priority = 970
+	)
+	public KeyBind testKey = KeyBind.ofKey(GLFW.GLFW_KEY_H, 0);
+
+	@ModConfig(
 		type = ConfigType.SWITCH,
-		name = "Test Switch 1",
-		description = "This is test switch.",
-		category = "Test Category"
+		name = "Test Switch 1 (Parent)",
+		description = "Enabling this will show Test Switch 2 and 3.",
+		category = "Test Category",
+		priority = 100
 	)
 	public static boolean test1 = true;
 	
 	@ModConfig(
 		type = ConfigType.SWITCH,
 		name = "Test Switch 2",
-		description = "This is test switch.",
-		category = "Test Category"
+		description = "This is a child of Test Switch 1.",
+		category = "Test Category",
+		parent = "test1",
+		priority = 90
 	)
 	public static boolean test2 = true;
 
 	@ModConfig(
 		type = ConfigType.SWITCH,
 		name = "Test Switch 3",
-		description = "This is test switch.",
-		category = "Test Category"
+		description = "This is also a child of Test Switch 1.",
+		category = "Test Category",
+		parent = "test1",
+		priority = 80
 	)
 	public static boolean test3 = true;
 
@@ -87,7 +108,8 @@ public class ChattingMod extends Mod {
 		type = ConfigType.TEXT,
 		name = "Test Text Input",
 		description = "This is a text input config.",
-		category = "Test Category"
+		category = "Test Category",
+		priority = 70
 	)
 	public static String testText = "Default Text";
 
@@ -96,7 +118,8 @@ public class ChattingMod extends Mod {
 		name = "Test Button",
 		display = "Click Me!",
 		description = "This button runs a function when clicked.",
-		category = "Test Category"
+		category = "Test Category",
+		priority = 60
 	)
 	public void onTestButtonClicked() {
 		UChat.chat("Button 1 clicked!");
@@ -107,7 +130,8 @@ public class ChattingMod extends Mod {
 		name = "Test Button 2",
 		display = "",
 		description = "This button runs a function when clicked.",
-		category = "Test Category"
+		category = "Test Category",
+		priority = 50
 	)
 	public void onTestButtonClicked2() {
 		UChat.chat("Button 2 clicked!");

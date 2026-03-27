@@ -1,12 +1,12 @@
 package silence.simsool.lucent.general.enums;
 
-public enum HudAlignment {
+public enum HUDAlignment {
     LEFT,
     CENTER,
     RIGHT;
 
-    public HudAlignment next() {
-        HudAlignment[] values = values();
+    public HUDAlignment next() {
+        HUDAlignment[] values = values();
         return values[(ordinal() + 1) % values.length];
     }
 

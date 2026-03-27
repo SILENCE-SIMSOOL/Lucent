@@ -13,18 +13,18 @@ import com.google.gson.JsonObject;
 import net.minecraft.client.gui.GuiGraphics;
 import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.general.abstracts.LucentHUD;
-import silence.simsool.lucent.general.enums.HudAlignment;
+import silence.simsool.lucent.general.enums.HUDAlignment;
 import silence.simsool.lucent.general.enums.RenderType;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 
-public class HudManager {
-	public static final HudManager INSTANCE = new HudManager();
+public class HUDManager {
+	public static final HUDManager INSTANCE = new HUDManager();
 
 	private final List<LucentHUD> huds = new ArrayList<>();
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private boolean cachedHasNanoVG = false;
 
-	private HudManager() {}
+	private HUDManager() {}
 
 	public void register(LucentHUD hud) {
 		huds.add(hud);
@@ -48,14 +48,14 @@ public class HudManager {
 
 		// mc draw
 		for (LucentHUD hud : huds) {
-			if (hud.getRenderType() == RenderType.MINECRAFT) hud.draw();
+			if (hud.isEnabled() && hud.getRenderType() == RenderType.MINECRAFT) hud.draw();
 		}
 
 		// nano draw
 		if (cachedHasNanoVG) {
 			NVGPIPRenderer.draw(guiGraphics, 0, 0, screenW, screenH, () -> {
 				for (LucentHUD hud : huds) {
-					if (hud.getRenderType() == RenderType.NANOVG) hud.draw();
+					if (hud.isEnabled() && hud.getRenderType() == RenderType.NANOVG) hud.draw();
 				}
 			});
 		}
@@ -66,14 +66,14 @@ public class HudManager {
 
 		// mc preview
 		for (LucentHUD hud : huds) {
-			if (hud.getRenderType() == RenderType.MINECRAFT) hud.preview();
+			if (hud.isEnabled() && hud.getRenderType() == RenderType.MINECRAFT) hud.preview();
 		}
 
 		// nano preview
 		if (cachedHasNanoVG) {
 			NVGPIPRenderer.draw(guiGraphics, 0, 0, screenW, screenH, () -> {
 				for (LucentHUD hud : huds) {
-					if (hud.getRenderType() == RenderType.NANOVG) hud.preview();
+					if (hud.isEnabled() && hud.getRenderType() == RenderType.NANOVG) hud.preview();
 				}
 			});
 		}
@@ -99,7 +99,7 @@ public class HudManager {
 				}
 				if (entry.has("alignment")) {
 					try {
-						hud.alignment = HudAlignment.valueOf(entry.get("alignment").getAsString());
+						hud.alignment = HUDAlignment.valueOf(entry.get("alignment").getAsString());
 					} catch (IllegalArgumentException ignored) {}
 				}
 

@@ -20,7 +20,7 @@ import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.config.api.LucentAPI;
 import silence.simsool.lucent.general.utils.UDisplay;
 import silence.simsool.lucent.general.utils.ULog;
-import silence.simsool.lucent.hud.HudManager;
+import silence.simsool.lucent.hud.HUDManager;
 import silence.simsool.lucent.ui.screens.EditHudScreen;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 
@@ -31,16 +31,16 @@ public class Lucent implements ClientModInitializer {
 	public static final String VERSION = "0.0.1";
 
 	public static Minecraft mc = Minecraft.getInstance();
-	public static final ULog LOG = new ULog("Lucent");
-	public static final ModManager config = LucentAPI.createModManager("lucent");
+	public static ULog LOG = new ULog("Lucent");
+	public static ModManager config = LucentAPI.createModManager("lucent");
 
-	public static final KeyMapping.Category KEYBINDING_CATEGORY = KeyMapping.Category.register(id("main"));
-	private static final KeyMapping CONFIG_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+	public static KeyMapping.Category KEYBINDING_CATEGORY = KeyMapping.Category.register(id("main"));
+	private static KeyMapping CONFIG_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
 			"key.lucent.config",
 			GLFW.GLFW_KEY_RIGHT_SHIFT, 
 			KEYBINDING_CATEGORY
 	));
-	private static final KeyMapping EDIT_HUD_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+	private static KeyMapping EDIT_HUD_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
 			"key.lucent.edithud",
 			InputConstants.UNKNOWN.getValue(),
 			KEYBINDING_CATEGORY
@@ -51,18 +51,18 @@ public class Lucent implements ClientModInitializer {
 	}
 
 	private static void registerHuds() {
-		HudManager.INSTANCE.register(new ChattingHud());
+		HUDManager.INSTANCE.register(new ChattingHud());
 	}
 
 	@Override
 	public void onInitializeClient() {
 		LOG.info("Lucent library initializing..");
-		config.registerAll();
+		config.registerExampleMods();
 		config.loadGlobalConfig();
 		config.loadConfigs();
 
 		registerHuds();
-		HudManager.INSTANCE.loadAll();
+		HUDManager.INSTANCE.loadAll();
 
 		SpecialGuiElementRegistry.register(context ->
 			new NVGPIPRenderer(context.vertexConsumers())
@@ -71,7 +71,7 @@ public class Lucent implements ClientModInitializer {
 		HudRenderCallback.EVENT.register((guiGraphics, tickDelta) -> {
 			int sw = UDisplay.getWidth();
 			int sh = UDisplay.getHeight();
-			HudManager.INSTANCE.render(guiGraphics, sw, sh);
+			HUDManager.INSTANCE.render(guiGraphics, sw, sh);
 		});
 
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {

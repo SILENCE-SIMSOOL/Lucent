@@ -19,10 +19,11 @@ import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 
 import silence.simsool.lucent.client.dev.examplemods.ChattingMod;
+import silence.simsool.lucent.client.dev.examplemods.ExampleMod;
 import silence.simsool.lucent.general.abstracts.Mod;
 import silence.simsool.lucent.general.data.KeyBind;
 import silence.simsool.lucent.general.interfaces.ModConfig;
-import silence.simsool.lucent.hud.HudManager;
+import silence.simsool.lucent.hud.HUDManager;
 
 public class ModManager {
 	public final List<Mod> modules = new ArrayList<>();
@@ -37,7 +38,7 @@ public class ModManager {
 		this.currentProfile = profile;
 		saveGlobalConfig();
 		loadConfigs();
-		HudManager.INSTANCE.loadAll();
+		HUDManager.INSTANCE.loadAll();
 	}
 
 	public List<String> getProfiles() {
@@ -82,6 +83,20 @@ public class ModManager {
 		}
 		if (currentProfile.equals(name)) {
 			setCurrentProfile("default");
+		}
+	}
+
+	public void renameProfile(String oldName, String newName) {
+		if (oldName.equals("default") || newName.equals("default") || newName.isEmpty()) return;
+		File profilesDir = new File(configDirectory, "profiles");
+		File oldDir = new File(profilesDir, oldName);
+		File newDir = new File(profilesDir, newName);
+		if (oldDir.exists() && !newDir.exists()) {
+			oldDir.renameTo(newDir);
+		}
+		if (currentProfile.equals(oldName)) {
+			currentProfile = newName;
+			saveGlobalConfig();
 		}
 	}
 
@@ -157,8 +172,9 @@ public class ModManager {
 		modules.add(module);
 	}
 
-	public void registerAll() {
+	public void registerExampleMods() {
 		register(new ChattingMod());
+		register(new ExampleMod());
 	}
 
 	@SuppressWarnings("unchecked")

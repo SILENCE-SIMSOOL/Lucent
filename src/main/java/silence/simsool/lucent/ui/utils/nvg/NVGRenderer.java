@@ -982,8 +982,12 @@ public class NVGRenderer {
 	 * @param radius Corner radius in pixels
 	 */
 	public static void image(Image image, float x, float y, float w, float h, float radius) {
+		image(image, x, y, w, h, radius, 1f);
+	}
+
+	public static void image(Image image, float x, float y, float w, float h, float radius, float alpha) {
 		if (image == null) return;
-		nvgImagePattern(vg, x, y, w, h, 0f, getImage(image), 1f, nvgPaint);
+		nvgImagePattern(vg, x, y, w, h, 0f, getImage(image), alpha, nvgPaint);
 		nvgBeginPath(vg);
 		nvgRoundedRect(vg, x, y, w, h + .5f, radius);
 		nvgFillPaint(vg, nvgPaint);

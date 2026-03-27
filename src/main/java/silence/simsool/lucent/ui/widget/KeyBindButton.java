@@ -30,6 +30,8 @@ public class KeyBindButton extends UIWidget {
 
 	@Override
 	protected void renderWidget(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
+		NVGRenderer.push();
+		
 		hoverAnim = UAnimation.stepProgress(hoverAnim, hovered && !waiting, ANIM_SPEED, delta);
 
 		if (waiting) waitAnim = (float) ((System.currentTimeMillis() - waitStart) % 1500) / 1500f;
@@ -52,7 +54,7 @@ public class KeyBindButton extends UIWidget {
 		if (waiting || hovered) {
 			NVGRenderer.pushScissor(x, y, width, height);
 			for (int i = -width; i < width + height; i += 12) {
-				NVGRenderer.rect(x + i + (waitAnim * 12), y, 2, height * 2, UColor.withAlpha(UIColors.PURE_WHITE, 10), 0);
+				NVGRenderer.rect(x + i + (waitAnim * 12), y, 2, height, UColor.withAlpha(UIColors.PURE_WHITE, 10), 0);
 			}
 			NVGRenderer.popScissor();
 		}
@@ -86,6 +88,8 @@ public class KeyBindButton extends UIWidget {
 			float hintAlpha = 0.5f + 0.3f * (float) Math.sin(waitAnim * Math.PI * 2);
 			NVGRenderer.text(hint, x + (width - hw) / 2f, y + height + 6f, Fonts.PRETENDARD, UColor.withAlpha(UIColors.TEXT_PRIMARY, (int) (hintAlpha * 255)), 10f);
 		}
+		
+		NVGRenderer.pop();
 	}
 
 	@Override

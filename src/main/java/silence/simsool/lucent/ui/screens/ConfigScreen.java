@@ -1,7 +1,5 @@
 package silence.simsool.lucent.ui.screens;
 
-import static silence.simsool.lucent.Lucent.mc;
-
 import java.awt.Color;
 import java.io.File;
 import java.lang.reflect.Field;
@@ -26,6 +24,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
 import silence.simsool.lucent.Lucent;
+import static silence.simsool.lucent.Lucent.mc;
 import silence.simsool.lucent.config.LucentConfig;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.general.abstracts.LucentTheme;
@@ -36,6 +35,7 @@ import silence.simsool.lucent.general.interfaces.ModConfig;
 import silence.simsool.lucent.general.utils.LucentUtils;
 import silence.simsool.lucent.general.utils.UDisplay;
 import silence.simsool.lucent.general.utils.UMouse;
+import silence.simsool.lucent.hud.HUDManager;
 import silence.simsool.lucent.ui.theme.ThemeManager;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UColor;
@@ -66,50 +66,23 @@ public class ConfigScreen extends Screen {
 	private static final int TOPBAR_H  = 72;
 	private static final int PAD       = 24;
 
-	private boolean iconsLoaded = false;
-	private final Map<String, Image> modIconsMap = new HashMap<>();
-	private Image iconMods, iconProfiles, iconThemes, iconPreferences, iconEditHud, iconClose, iconSearch, iconSettings;
-
-	private void loadIconsIfNeeded() {
-		if (iconsLoaded) return;
-		iconsLoaded = true;
-
-		try {
-			iconMods        = LucentUtils.createIcon("mods");
-			iconProfiles    = LucentUtils.createIcon("profiles");
-			iconThemes      = LucentUtils.createIcon("themes");
-			iconPreferences = LucentUtils.createIcon("preferences");
-			iconEditHud     = LucentUtils.createIcon("edithud");
-			iconClose       = LucentUtils.createIcon("close");
-			iconSearch      = LucentUtils.createIcon("search");
-			iconSettings    = LucentUtils.createIcon("settings");
-
-			if (moduleManager != null) {
-				for (Mod m : moduleManager.modules) {
-					if (m.icon != null && !m.icon.isEmpty() && !modIconsMap.containsKey(m.name)) {
-						try {
-							modIconsMap.put(m.name, NVGRenderer.createImage(m.icon));
-						} catch (Exception ex) {}
-					}
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	private final ModManager moduleManager;
-	private Mod currentModSettings = null;
-	private String currentCategory    = "All";
-	private String currentSidebarPage = "Mods";
-	private String lastSearchQuery    = "";
-
-	private final Stack<NavState> history = new Stack<>();
-	private final Stack<NavState> forwardHistory = new Stack<>();
-
 	private int winX, winY;
 	private int contentX, contentY, contentW, contentH;
 	private int scissorY, scissorH;
+
+	private final Map<String, Image> modIconsMap = new HashMap<>();
+	private Image iconMods, iconProfiles, iconThemes, iconPreferences, iconEditHud, iconClose, iconSearch, iconSettings, iconDelete, iconEdit;
+	private boolean iconsLoaded = false;
+
+	private final Map<String, Float> toggleAnimCache = new HashMap<>();
+	private final ModManager moduleManager;
+	private Mod currentModSettings = null;
+	private String currentCategory = "All";
+	private String currentSidebarPage = "Mods";
+	private String lastSearchQuery = "";
+
+	private final Stack<NavState> history = new Stack<>();
+	private final Stack<NavState> forwardHistory = new Stack<>();
 
 	private final List<UIWidget> widgets = new ArrayList<>();
 	private final List<UIWidget> overlayWidgets = new ArrayList<>();
@@ -119,9 +92,11 @@ public class ConfigScreen extends Screen {
 
 	private double scrollOffset = 0;
 	private double maxScroll    = 0;
-	
+
 	private float uiScale = 1.0f;
 	private float openAnimationProgress = 0f;
+	private long startTime = -1L;
+	private long closeStartTime = -1L;
 	private boolean closing = false;
 
 	private class ThemeCardWidget extends UIWidget {
@@ -185,58 +160,185 @@ public class ConfigScreen extends Screen {
 		}
 	}
 
+	private class ProfileHeaderWidget extends UIWidget {
+		private final TextBox input;
+		private final ActionButton createBtn;
+
+		public ProfileHeaderWidget(int x, int y, int w) {
+			super(x, y, w, 44);
+			this.input = new TextBox(x, y, w - 110, 38, "");
+			this.createBtn = new ActionButton(x + w - 100, y, 100, 38, "Create");
+			this.createBtn.setOnClick(this::handleCreate);
+		}
+
+		private void handleCreate() {
+			String name = input.getValue().trim();
+			if (!name.isEmpty()) {
+				moduleManager.createProfile(name);
+				moduleManager.setCurrentProfile(name);
+				input.setValue("");
+				refreshUI();
+			}
+		}
+
+		@Override
+		protected void renderWidget(GuiGraphics ctx, int mx, int my, float delta) {
+			input.render(ctx, mx, my, delta);
+			createBtn.render(ctx, mx, my, delta);
+		}
+
+		@Override
+		public boolean mouseClicked(double mx, double my, int btn) {
+			return input.mouseClicked(mx, my, btn) || createBtn.mouseClicked(mx, my, btn);
+		}
+
+		@Override
+		public boolean keyPressed(int key, int scancode, int mods) {
+			if (input.isFocused() && (key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER)) {
+				handleCreate();
+				return true;
+			}
+			return input.keyPressed(key, scancode, mods);
+		}
+
+		@Override
+		public boolean charTyped(char chr, int mods) {
+			return input.charTyped(chr, mods);
+		}
+	}
+
 	private class ProfileCardWidget extends UIWidget {
-		private final String profileName;
+		private String profileName;
 		private final boolean active;
-		private float hoverAnim = 0f;
+		private static final int BAR_H = 34;
+		private boolean editing = false;
+		private final TextBox renameBox;
 
 		public ProfileCardWidget(int x, int y, int w, int h, String name, boolean active) {
 			super(x, y, w, h);
 			this.profileName = name;
 			this.active = active;
+			this.renameBox = new TextBox(x + 10, y + (h - BAR_H) / 2 - 15, w - 20, 30, name);
+			this.renameBox.setFocused(false);
+			this.renameBox.setVisible(false);
 		}
 
 		@Override
 		protected void renderWidget(GuiGraphics ctx, int mx, int my, float delta) {
-			hoverAnim = UAnimation.stepProgress(hoverAnim, hovered, 10f, delta);
-			NVGRenderer.rect(x, y, width, height, active ? UColor.withAlpha(UIColors.ACCENT_BLUE, 40) : UIColors.CARD_BG, 10f);
-			if (hoverAnim > 0) {
-				NVGRenderer.rect(x, y, width, height, UColor.withAlpha(UIColors.CARD_HOVER, (int)(hoverAnim * 255)), 10f);
+			boolean hov = isMouseOver(mx, my);
+			
+			int topBg = hov ? UIColors.CARD_HOVER : UIColors.CARD_BG;
+			int barBg = active ? UIColors.ACCENT_BLUE : UIColors.TAB_BG;
+			if (hov && !active) barBg = UIColors.withAlphaFloat(UIColors.TAB_BG, 0.75f);
+
+			// Backgrounds
+			NVGRenderer.rect(x, y, width, height - BAR_H, topBg, 12, 12, 0, 0);
+			NVGRenderer.rect(x, y + height - BAR_H, width, BAR_H, barBg, 0, 0, 12, 12);
+
+			if (editing) {
+				renameBox.render(ctx, mx, my, delta);
+			} else {
+				float fontSize = 20f;
+				float tw = NVGRenderer.textWidth(profileName, Fonts.PRETENDARD_SEMIBOLD, fontSize);
+				NVGRenderer.text(profileName, x + (width - tw) / 2f, y + (height - BAR_H) / 2f - fontSize / 2f, Fonts.PRETENDARD_SEMIBOLD, UIColors.TEXT_PRIMARY, fontSize);
 			}
 
-			NVGRenderer.text(profileName, x + 20, y + height / 2f - 7f, Fonts.PRETENDARD_SEMIBOLD, active ? UIColors.ACCENT_BLUE : UIColors.TEXT_PRIMARY, 16f);
-			
-			if (active) {
-				NVGRenderer.text("ACTIVE", x + width - 60, y + height / 2f - 4f, Fonts.PRETENDARD_SEMIBOLD, UIColors.ACCENT_BLUE, 10f);
-			} else {
-				//if (!profileName.equals("default") && hovered && mx > x + width - 70) {
-				if (!profileName.equals("default") && hovered) {
-					NVGRenderer.text("DELETE", x + width - 60, y + height / 2f - 4f, Fonts.PRETENDARD_SEMIBOLD, 0xFFFF4444, 10f);
+			// Footer Content (Split into two halves)
+			float barTop = y + height - BAR_H;
+			float midX = x + width / 2f;
+			float iconS = 16f;
+
+			if (!editing) {
+				if (profileName.equals("default")) {
+					// No divider, center Edit icon
+					boolean hovEdit = mx > x && mx < x + width && my > barTop && my < barTop + BAR_H;
+					NVGRenderer.image(iconEdit, midX - (iconS/2f), barTop + (BAR_H - iconS) / 2f, iconS, iconS, 0f, hovEdit ? 1.0f : 0.6f);
+				} else {
+					// Divider line
+					NVGRenderer.rect(midX - 0.5f, barTop + 6f, 1f, BAR_H - 12f, 0x33FFFFFF, 0f);
+
+					// Left Half: Edit
+					boolean hovEdit = mx > x && mx < midX && my > barTop && my < barTop + BAR_H;
+					NVGRenderer.image(iconEdit, x + (width/4f) - (iconS/2f), barTop + (BAR_H - iconS) / 2f, iconS, iconS, 0f, hovEdit ? 1.0f : 0.6f);
+
+					// Right Half: Delete
+					boolean hovDel = mx > midX && mx < x + width && my > barTop && my < barTop + BAR_H;
+					NVGRenderer.image(iconDelete, x + (3*width/4f) - (iconS/2f), barTop + (BAR_H - iconS) / 2f, iconS, iconS, 0f, hovDel ? 1.0f : 0.6f);
 				}
 			}
 
-			NVGRenderer.outlineRect(x, y, width, height, 1.5f, active ? UIColors.ACCENT_BLUE : UIColors.ITEM_BORDER, 10f);
+			NVGRenderer.outlineRect(x, y, width, height, 1.5f, active ? UIColors.ACCENT_BLUE : UIColors.ITEM_BORDER, 12f);
 		}
 
 		@Override
 		public boolean mouseClicked(double mx, double my, int btn) {
+			if (editing) {
+				if (renameBox.mouseClicked(mx, my, btn)) return true;
+				if (btn == 0 && !isMouseOver(mx, my)) { finishEditing(); return true; }
+				return false;
+			}
+
 			if (btn == 0 && isMouseOver(mx, my)) {
-				// Delete check
-				if (!active && !profileName.equals("default") && mx > x + width - 70) {
-					moduleManager.deleteProfile(profileName);
-					refreshUI();
-					return true;
+				float barTop = y + height - BAR_H;
+				float midX = x + width / 2f;
+
+				if (my > barTop && !editing) {
+					if (profileName.equals("default")) {
+						// Entire bar click (Edit)
+						editing = true;
+						renameBox.setVisible(true);
+						renameBox.setFocused(true);
+						return true;
+					} else {
+						// Left half click (Edit)
+						if (mx < midX) {
+							editing = true;
+							renameBox.setVisible(true);
+							renameBox.setFocused(true);
+							return true;
+						}
+						// Right half click (Delete)
+						if (mx >= midX) {
+							moduleManager.deleteProfile(profileName);
+							refreshUI();
+							return true;
+						}
+					}
 				}
-				
+
 				if (!active) {
 					moduleManager.setCurrentProfile(profileName);
-					moduleManager.loadConfigs();
-					moduleManager.saveConfigs();
 					refreshUI();
 					return true;
 				}
 			}
 			return false;
+		}
+
+		@Override
+		public boolean keyPressed(int key, int scancode, int mods) {
+			if (editing) {
+				if (key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER) { finishEditing(); return true; }
+				if (key == GLFW.GLFW_KEY_ESCAPE) { editing = false; renameBox.setVisible(false); return true; }
+				return renameBox.keyPressed(key, scancode, mods);
+			}
+			return false;
+		}
+
+		@Override
+		public boolean charTyped(char chr, int mods) {
+			return editing && renameBox.charTyped(chr, mods);
+		}
+
+		private void finishEditing() {
+			String newName = renameBox.getValue().trim();
+			if (!newName.isEmpty() && !newName.equals(profileName)) {
+				moduleManager.renameProfile(profileName, newName);
+				profileName = newName;
+			}
+			editing = false;
+			renameBox.setVisible(false);
+			refreshUI();
 		}
 	}
 
@@ -251,7 +353,9 @@ public class ConfigScreen extends Screen {
 		float pad = 40f;
 		float scaleX = (screenW - pad) / WINDOW_W;
 		float scaleY = (screenH - pad) / WINDOW_H;
-		uiScale = Math.min(1.0f, Math.min(scaleX, scaleY));
+		float autoFit = Math.min(1.0f, Math.min(scaleX, scaleY));
+		
+		uiScale = autoFit * LucentConfig.uiScale;
 
 		float virtScreenW = screenW / uiScale;
 		float virtScreenH = screenH / uiScale;
@@ -273,9 +377,21 @@ public class ConfigScreen extends Screen {
 	}
 
 	private void refreshUI() {
+		refreshUI(false);
+	}
+
+	private void refreshUI(boolean keepScroll) {
+		// Save animation states
+		for (UIWidget w : widgets) {
+			if (w instanceof ToggleButton tb && tb.getId() != null) {
+				toggleAnimCache.put(tb.getId(), tb.getAnimProgress());
+			}
+		}
+
 		widgets.clear();
 		overlayWidgets.clear();
-		scrollOffset = 0;
+		if (!keepScroll) scrollOffset = 0;
+
 		if (currentSidebarPage.equals("Mods")) {
 			if (currentModSettings == null) buildMainWidgets();
 			else buildSettingsWidgets();
@@ -284,6 +400,36 @@ public class ConfigScreen extends Screen {
 		else if (currentSidebarPage.equals("Profiles")) buildProfilesWidgets();
 		else if (currentSidebarPage.equals("Preferences")) buildPreferencesWidgets();
 		else buildPlaceholderWidgets(currentSidebarPage);
+	}
+
+	private void loadIcon() {
+		if (iconsLoaded) return;
+		iconsLoaded = true;
+
+		try {
+			iconMods        = LucentUtils.createIcon("mods");
+			iconProfiles    = LucentUtils.createIcon("profiles");
+			iconThemes      = LucentUtils.createIcon("themes");
+			iconPreferences = LucentUtils.createIcon("preferences");
+			iconEditHud     = LucentUtils.createIcon("edithud");
+			iconClose       = LucentUtils.createIcon("close");
+			iconSearch      = LucentUtils.createIcon("search");
+			iconSettings    = LucentUtils.createIcon("settings");
+			iconDelete      = LucentUtils.createIcon("delete");
+			iconEdit        = LucentUtils.createIcon("edit");
+
+			if (moduleManager != null) {
+				for (Mod m : moduleManager.modules) {
+					if (m.icon != null && !m.icon.isEmpty() && !modIconsMap.containsKey(m.name)) {
+						try {
+							modIconsMap.put(m.name, NVGRenderer.createImage(m.icon));
+						} catch (Exception ex) {}
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void applyTheme(LucentTheme theme) {
@@ -376,42 +522,35 @@ public class ConfigScreen extends Screen {
 	}
 
 	private void buildProfilesWidgets() {
-		scissorY = contentY + 20;
-		scissorH = contentH - 20;
 		int sx = contentX + PAD;
-		int sy = scissorY;
-		int cardW = contentW - PAD * 2;
-		int cardH = 60;
+		int sy = contentY + 20;
+		int fullW = contentW - PAD * 2;
+		
+		// 1. Create Profile Header (Long input bar + Create button)
+		overlayWidgets.add(new ProfileHeaderWidget(sx, sy, fullW));
+
+		// 2. Profile Grid below
+		int gridY = sy + 64;
+		scissorY = gridY;
+		scissorH = contentY + contentH - gridY - 20;
+
+		int cols = 3; 
+		int gap = 16;
+		int cardW = (fullW - gap * (cols - 1)) / cols;
+		int cardH = 130; 
+		int maxRow = 0;
 
 		List<String> profiles = moduleManager.getProfiles();
 		String current = moduleManager.getCurrentProfile();
 
 		for (int i = 0; i < profiles.size(); i++) {
-			String p = profiles.get(i);
-			widgets.add(new ProfileCardWidget(sx, sy + i * (cardH + 12), cardW, cardH, p, p.equals(current)));
+			int col = i % cols;
+			int row = i / cols;
+			maxRow = Math.max(maxRow, row);
+			widgets.add(new ProfileCardWidget(sx + col * (cardW + gap), gridY + row * (cardH + gap), cardW, cardH, profiles.get(i), profiles.get(i).equals(current)));
 		}
 		
-		int rowY = sy + profiles.size() * (cardH + 12) + 20;
-		
-		int fieldW = 200;
-		TextBox newProfileName = new TextBox(sx, rowY, fieldW, 36, "");
-		widgets.add(newProfileName);
-
-		int btnW = 120;
-		ActionButton addBtn = new ActionButton(sx + fieldW + 12, rowY, btnW, 36, "Create New");
-		addBtn.setOnClick(() -> {
-			String name = newProfileName.getValue().trim();
-			if (!name.isEmpty()) {
-				moduleManager.saveConfigs();
-				moduleManager.createProfile(name);
-				moduleManager.setCurrentProfile(name);
-				moduleManager.saveConfigs();
-				refreshUI();
-			}
-		});
-		widgets.add(addBtn);
-
-		maxScroll = Math.max(0, rowY + 60 - scissorY - scissorH);
+		maxScroll = Math.max(0, (maxRow + 1) * (cardH + gap) + 40 - scissorH);
 	}
 
 	private void buildPreferencesWidgets() {
@@ -446,9 +585,19 @@ public class ConfigScreen extends Screen {
 		langSel.setOnChange(v -> { LucentConfig.setupLanguage = v; Lucent.config.saveGlobalConfig(); });
 		overlayWidgets.add(langSel);
 
+		// 5. UI Scale
+		widgets.add(new SettingRowWidget(sx, sy + 336, itemW, 74, "UI Scale", "Adjust the overall size of the configuration interface."));
+		Slider scaleSlider = new Slider(sx + itemW - PAD - 200, sy + 25 + 336, 200, 24, 1.0, 2.0, 0.1, (double) LucentConfig.uiScale);
+		scaleSlider.setOnRelease(v -> { 
+			LucentConfig.uiScale = (float)(double)v; 
+			Lucent.config.saveGlobalConfig();
+			init(); // Re-calculate dimensions immediately
+		});
+		widgets.add(scaleSlider);
+
 		// Action Buttons
 		int btnW = 120;
-		int rowY = sy + 336 + 20;
+		int rowY = sy + 420 + 20;
 		
 		ActionButton openConfig = new ActionButton(sx, rowY, btnW, 36, "Open Config");
 		openConfig.setOnClick(() -> {
@@ -482,7 +631,7 @@ public class ConfigScreen extends Screen {
 			Util.getPlatform().openUri(LucentConfig.LICENSE_LINK);
 		});
 		widgets.add(license);
-
+		
 		maxScroll = Math.max(0, rowY + 60 - scissorY - scissorH);
 	}
 
@@ -562,9 +711,17 @@ public class ConfigScreen extends Screen {
 						case SWITCH -> {
 							ToggleButton toggleButton = new ToggleButton(ux - 48, curY + 25, 48, 24, (boolean) val);
 							final Field field = (member instanceof Field f) ? f : null;
+							if (field != null) {
+								String fid = field.getName();
+								toggleButton.setId(fid);
+								if (toggleAnimCache.containsKey(fid)) {
+									toggleButton.setAnimProgress(toggleAnimCache.get(fid));
+								}
+							}
 							toggleButton.setOnChange(v -> {
 								try {
 									if (field != null) field.set(currentModSettings, v);
+									refreshUI(true); // Preserve scroll position and animation state
 								} catch (Exception e) {}
 							});
 							widgets.add(toggleButton);
@@ -664,27 +821,80 @@ public class ConfigScreen extends Screen {
 	}
 
 	private Map<String, List<Object>> groupConfigMembers() {
-		Map<String, List<Object>> map = new LinkedHashMap<>();
 		String query = (searchField == null) ? "" : searchField.getValue().trim().toLowerCase();
-
 		Class<?> clazz = currentModSettings.getClass();
+		
+		List<Object> allMembers = new ArrayList<>();
 		for (Field field : clazz.getDeclaredFields()) {
-			if (field.isAnnotationPresent(ModConfig.class)) {
-				ModConfig cfg = field.getAnnotation(ModConfig.class);
-				if (matchesSearch(cfg, query)) {
-					map.computeIfAbsent(cfg.category(), k -> new ArrayList<>()).add(field);
-				}
-			}
+			if (field.isAnnotationPresent(ModConfig.class)) allMembers.add(field);
 		}
 		for (Method method : clazz.getDeclaredMethods()) {
-			if (method.isAnnotationPresent(ModConfig.class)) {
-				ModConfig cfg = method.getAnnotation(ModConfig.class);
-				if (matchesSearch(cfg, query)) {
-					map.computeIfAbsent(cfg.category(), k -> new ArrayList<>()).add(method);
-				}
-			}
+			if (method.isAnnotationPresent(ModConfig.class)) allMembers.add(method);
 		}
-		return map;
+
+		// Sort by priority (higher first), then name
+		allMembers.sort((a, b) -> {
+			ModConfig c1 = (a instanceof Field f) ? f.getAnnotation(ModConfig.class) : ((Method)a).getAnnotation(ModConfig.class);
+			ModConfig c2 = (b instanceof Field f) ? f.getAnnotation(ModConfig.class) : ((Method)b).getAnnotation(ModConfig.class);
+			if (c1.priority() != c2.priority()) return Integer.compare(c2.priority(), c1.priority());
+			return c1.name().compareToIgnoreCase(c2.name());
+		});
+
+		Map<String, List<Object>> map = new LinkedHashMap<>();
+		for (Object member : allMembers) {
+			ModConfig cfg = (member instanceof Field f) ? f.getAnnotation(ModConfig.class) : ((Method)member).getAnnotation(ModConfig.class);
+			
+			// Handle Search
+			if (!matchesSearch(cfg, query)) continue;
+
+			// Handle Parent Dependency
+			if (!cfg.parent().isEmpty()) {
+				if (!isParentActive(cfg.parent())) continue;
+			}
+
+			map.computeIfAbsent(cfg.category(), k -> new ArrayList<>()).add(member);
+		}
+
+		// Sort Categories by their max element priority
+		List<String> sortedCats = new ArrayList<>(map.keySet());
+		sortedCats.sort((cat1, cat2) -> {
+			int p1 = getCategoryPriority(cat1, map.get(cat1));
+			int p2 = getCategoryPriority(cat2, map.get(cat2));
+			if (p1 != p2) return Integer.compare(p2, p1);
+			return cat1.compareToIgnoreCase(cat2);
+		});
+
+		Map<String, List<Object>> finalMap = new LinkedHashMap<>();
+		for (String cat : sortedCats) finalMap.put(cat, map.get(cat));
+		
+		return finalMap;
+	}
+
+	private int getCategoryPriority(String category, List<Object> members) {
+		// 1. Check for explicit @CategoryPriority on the class
+		Class<?> clazz = currentModSettings.getClass();
+		ModConfig.CategoryPriority[] annos = clazz.getAnnotationsByType(ModConfig.CategoryPriority.class);
+		for (ModConfig.CategoryPriority cp : annos) {
+			if (cp.name().equalsIgnoreCase(category)) return cp.priority();
+		}
+
+		// 2. Fallback to max element priority
+		int max = Integer.MIN_VALUE;
+		for (Object m : members) {
+			ModConfig cfg = (m instanceof Field f) ? f.getAnnotation(ModConfig.class) : ((Method)m).getAnnotation(ModConfig.class);
+			if (cfg.priority() > max) max = cfg.priority();
+		}
+		return max == Integer.MIN_VALUE ? 0 : max;
+	}
+
+	private boolean isParentActive(String parentFieldName) {
+		try {
+			Field f = currentModSettings.getClass().getDeclaredField(parentFieldName);
+			f.setAccessible(true);
+			Object val = f.get(currentModSettings);
+			if (val instanceof Boolean b) return b;
+		} catch (Exception e) {}
+		return false;
 	}
 
 	private boolean matchesSearch(ModConfig cfg, String q) {
@@ -697,22 +907,40 @@ public class ConfigScreen extends Screen {
 
 	@Override
 	public void renderBackground(GuiGraphics ctx, int mx, int my, float delta) {
+		float alpha = LucentConfig.openAnimation ? openAnimationProgress : 1f;
 		if (LucentConfig.uiBlur) {
-			ctx.fill(0, 0, width, height, 0x25000000); 
+			ctx.fill(0, 0, width, height, UIColors.withAlpha(0x25000000, (int)(20 * alpha))); 
 			super.renderBackground(ctx, mx, my, delta);
 		}
-		else ctx.fill(0, 0, width, height, 0x80000000);
+		else {
+			ctx.fill(0, 0, width, height, UIColors.withAlpha(0x80000000, (int)(80 * alpha)));
+		}
 	}
 
 	@Override
 	public void render(GuiGraphics ctx, int mx, int my, float delta) {
+		if (startTime == -1L) startTime = System.currentTimeMillis();
+
 		if (LucentConfig.openAnimation) {
-			openAnimationProgress = UAnimation.stepProgress(openAnimationProgress, !closing, 10f, delta);
-			if (closing && openAnimationProgress <= 0.01f) {
-				super.onClose(); // Actually close
+			if (closing) {
+				if (closeStartTime == -1L) closeStartTime = System.currentTimeMillis();
+				float elapsed = (float)(System.currentTimeMillis() - closeStartTime);
+				openAnimationProgress = 1f - Math.min(1f, elapsed / 300f);
+				if (openAnimationProgress <= 0f) {
+					super.onClose();
+					return;
+				}
+			} else {
+				float elapsed = (float)(System.currentTimeMillis() - startTime);
+				openAnimationProgress = Math.min(1f, elapsed / 400f);
+			}
+		} else {
+			openAnimationProgress = 1f;
+			if (closing) {
+				super.onClose();
 				return;
 			}
-		} else openAnimationProgress = 1f;
+		}
 
 		if (searchField != null) {
 			boolean showSearch = currentSidebarPage.equals("Mods");
@@ -730,9 +958,19 @@ public class ConfigScreen extends Screen {
 			float smy = UMouse.getScaledY(uiScale);
 
 			NVGRenderer.push();
+			
+			// Apply Animation
+			if (LucentConfig.openAnimation) {
+				float ease = UAnimation.Easing.spring(openAnimationProgress);
+				NVGRenderer.translate(width / 2f, height / 2f);
+				NVGRenderer.scale(0.9f + 0.1f * ease, 0.9f + 0.1f * ease);
+				NVGRenderer.translate(-width / 2f, -height / 2f);
+				NVGRenderer.globalAlpha(UAnimation.clamp(openAnimationProgress * 1.5f, 0f, 1f));
+			}
+
 			NVGRenderer.scale(gs * uiScale, gs * uiScale);
 
-			loadIconsIfNeeded();
+			loadIcon();
 
 			drawFrame();
 			renderSidebar();
@@ -745,27 +983,48 @@ public class ConfigScreen extends Screen {
  
 			NVGRenderer.pushScissor(contentX - 2, scissorY - 2, contentW + 4, scissorH + 4);
 			if (currentSidebarPage.equals("Mods") && currentModSettings != null) renderSettingsHeader();
+			
 			NVGRenderer.push();
 			NVGRenderer.translate(0, (float) -scrollOffset);
-
 			for (UIWidget w : widgets) w.render(ctx, (int) smx, (int) (smy + scrollOffset), delta);
-			for (UIWidget w : overlayWidgets) w.render(ctx, (int) smx, (int) (smy + scrollOffset), delta);
-
+			// Also render those that stay in the list when closed
+			for (UIWidget w : overlayWidgets) {
+				if (shouldSkipOverlay(w)) w.render(ctx, (int) smx, (int) (smy + scrollOffset), delta);
+			}
 			NVGRenderer.pop();
 			NVGRenderer.popScissor();
 
+			// For OPEN overlays, render them without scissor so dropdown is visible
 			for (UIWidget w : overlayWidgets) {
-				if (shouldSkipOverlay(w)) continue;
-				int oy = w.getY();
-				w.setPosition(w.getX(), (int) (oy - scrollOffset));
-				w.renderOverlay(ctx, (int) smx, (int) smy, delta);
-				w.setPosition(w.getX(), oy);
+				if (!shouldSkipOverlay(w)) {
+					int oy = w.getY();
+					w.setPosition(w.getX(), (int)(oy - scrollOffset));
+					w.render(ctx, (int) smx, (int) (smy + scrollOffset), delta);
+					w.renderOverlay(ctx, (int) smx, (int) (smy + scrollOffset), delta);
+					w.setPosition(w.getX(), oy);
+				}
 			}
 
 			NVGRenderer.pop();
 		});
 
 		super.render(ctx, mx, my, delta);
+	}
+
+	@Override
+	public void onClose() {
+		if (LucentConfig.openAnimation && !closing) {
+			closing = true;
+			closeStartTime = System.currentTimeMillis();
+		} else {
+			super.onClose();
+		}
+	}
+
+	@Override
+	public void removed() {
+		super.removed();
+		if (moduleManager != null) moduleManager.saveConfigs();
 	}
 
 	private void drawFrame() {
@@ -1241,21 +1500,5 @@ public class ConfigScreen extends Screen {
 			NVGRenderer.text(label,       x + 16, y + 18, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_PRIMARY,   18f);
 			NVGRenderer.text(description, x + 16, y + 43, Fonts.PRETENDARD_LIGHT, UIColors.TEXT_SECONDARY, 14f);
 		}
-	}
-
-	@Override
-	public void onClose() {
-		if (LucentConfig.openAnimation && !closing) {
-			closing = true;
-			// Final close will be handled in render() when progress reaches 0
-		} else {
-			super.onClose();
-		}
-	}
-
-	@Override
-	public void removed() {
-		super.removed();
-		if (moduleManager != null) moduleManager.saveConfigs();
 	}
 }

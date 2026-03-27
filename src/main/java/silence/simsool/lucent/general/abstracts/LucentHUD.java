@@ -1,8 +1,10 @@
 package silence.simsool.lucent.general.abstracts;
 
-import silence.simsool.lucent.general.enums.HudAlignment;
+import silence.simsool.lucent.general.enums.HUDAlignment;
 import silence.simsool.lucent.general.enums.RenderType;
-import silence.simsool.lucent.hud.HudManager;
+import silence.simsool.lucent.general.utils.UDisplay;
+import silence.simsool.lucent.hud.HUDManager;
+import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 
 public abstract class LucentHUD {
 	public static boolean isEditHudOpen = false;
@@ -10,9 +12,9 @@ public abstract class LucentHUD {
 	public float x;
 	public float y;
 	public float scale; // (0.5 ~ 2.0 / 0.1 unit)
-	public HudAlignment alignment;
+	public HUDAlignment alignment;
 
-	protected LucentHUD(String id, float defaultX, float defaultY, float defaultScale, HudAlignment defaultAlignment) {
+	protected LucentHUD(String id, float defaultX, float defaultY, float defaultScale, HUDAlignment defaultAlignment) {
 		this.id = id;
 		this.x = defaultX;
 		this.y = defaultY;
@@ -28,6 +30,14 @@ public abstract class LucentHUD {
 	 * </ul>
 	 */
 	public abstract RenderType getRenderType();
+	
+	/**
+	 * Determines if this HUD element should be rendered.
+	 * Subclasses can override this to tie visibility to mod settings.
+	 */
+	public boolean isEnabled() {
+		return true;
+	}
 
 	/**
 	 * Renders the actual HUD in-game.
@@ -79,8 +89,8 @@ public abstract class LucentHUD {
 	 * @return The calculated X coordinate.
 	 */
 	public float getRenderX() {
-		float sw = silence.simsool.lucent.general.utils.UDisplay.getScreenWidth();
-		float gs = silence.simsool.lucent.ui.utils.nvg.NVGRenderer.getStandardGuiScale();
+		float sw = UDisplay.getScreenWidth();
+		float gs = NVGRenderer.getStandardGuiScale();
 		float virtualW = sw / gs;
 
 		return switch (alignment) {
@@ -95,8 +105,8 @@ public abstract class LucentHUD {
 	 * @return The Y coordinate.
 	 */
 	public float getRenderY() {
-		float sh = silence.simsool.lucent.general.utils.UDisplay.getScreenHeight();
-		float gs = silence.simsool.lucent.ui.utils.nvg.NVGRenderer.getStandardGuiScale();
+		float sh = UDisplay.getScreenHeight();
+		float gs = NVGRenderer.getStandardGuiScale();
 		float virtualH = sh / gs;
 
 		return y * virtualH;
@@ -104,6 +114,6 @@ public abstract class LucentHUD {
 
 	/** Saves the current HUD state to the configuration file. */
 	public void save() {
-		HudManager.INSTANCE.save();
+		HUDManager.INSTANCE.save();
 	}
 }
