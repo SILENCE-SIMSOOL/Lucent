@@ -13,17 +13,16 @@ import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 import silence.simsool.lucent.ui.widget.base.UIWidget;
 
 public class Slider extends UIWidget {
-	int TRACK_H = 6;
-	int THUMB_R = 10;
-	int THUMB_HOVER_R = 11;
-	int LABEL_TO_TRACK = 14; // min/max 텍스트 ~ 트랙 사이 여백
-	int TRACK_TO_LABEL = 14; // 트랙 ~ max 텍스트 사이 여백
-	int LABEL_TO_BOX = 22;   // max 텍스트 ~ 값 상자 사이 여백
-	float LABEL_FONT = 16f;
-	float VALUE_FONT = 16f;
-	int VALUE_BOX_H = 22;
-	int VALUE_BOX_PAD = 12;
-	int VALUE_BOX_W = 0;
+	private final int   TRACK_H =          6;
+	private final int   THUMB_R =         10;
+	private final int   THUMB_HOVER_R =   11;
+	private final int   LABEL_TO_TRACK =  14; // min/max 텍스트 ~ 트랙 사이 여백
+	private final int   TRACK_TO_LABEL =  14; // 트랙 ~ max 텍스트 사이 여백
+	private final int   LABEL_TO_BOX =    22;   // max 텍스트 ~ 값 상자 사이 여백
+	private final float LABEL_FONT =      16;
+	private final float VALUE_FONT =      16;
+	private final int   VALUE_BOX_H =     22;
+	private final int   VALUE_BOX_PAD =   12;
 
 	private double min;
 	private double max;

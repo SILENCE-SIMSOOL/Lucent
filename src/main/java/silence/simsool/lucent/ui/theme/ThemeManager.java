@@ -3,7 +3,7 @@ package silence.simsool.lucent.ui.theme;
 import java.util.ArrayList;
 import java.util.List;
 
-import silence.simsool.lucent.general.abstracts.LucentTheme;
+import silence.simsool.lucent.general.models.LucentTheme;
 import silence.simsool.lucent.ui.utils.UIColors;
 
 public class ThemeManager {

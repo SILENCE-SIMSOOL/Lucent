@@ -134,14 +134,9 @@ public class UColor {
 	/** "#RRGGBB", "#RRGGBBAA", "RRGGBB", "RRGGBBAA" 모두 처리 */
 	public static int fromHex(String hex) {
 		hex = hex.trim().replace("#", "");
-		if (hex.length() == 6) {
-			hex = "FF" + hex; // 알파 없으면 불투명으로
-		} else if (hex.length() == 8) {
-			// RRGGBBAA → AARRGGBB
-			hex = hex.substring(6, 8) + hex.substring(0, 6);
-		} else {
-			throw new IllegalArgumentException("Invalid hex color: " + hex);
-		}
+		if (hex.length() == 6) hex = "FF" + hex; // 알파 없으면 불투명으로
+		else if (hex.length() == 8) hex = hex.substring(6, 8) + hex.substring(0, 6); // RRGGBBAA → AARRGGBB
+		else throw new IllegalArgumentException("Invalid hex color: " + hex);
 		return (int) Long.parseLong(hex, 16);
 	}
 
@@ -153,4 +148,5 @@ public class UColor {
 			return fallback;
 		}
 	}
+
 }

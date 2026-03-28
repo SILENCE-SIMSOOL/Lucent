@@ -20,10 +20,11 @@ import com.google.gson.stream.JsonWriter;
 
 import silence.simsool.lucent.client.dev.examplemods.ChattingMod;
 import silence.simsool.lucent.client.dev.examplemods.ExampleMod;
-import silence.simsool.lucent.general.abstracts.Mod;
-import silence.simsool.lucent.general.data.KeyBind;
 import silence.simsool.lucent.general.interfaces.ModConfig;
+import silence.simsool.lucent.general.models.KeyBind;
+import silence.simsool.lucent.general.models.Mod;
 import silence.simsool.lucent.hud.HUDManager;
+import silence.simsool.lucent.ui.theme.ThemeManager;
 
 public class ModManager {
 	public final List<Mod> modules = new ArrayList<>();
@@ -43,18 +44,14 @@ public class ModManager {
 
 	public List<String> getProfiles() {
 		File profilesDir = new File(configDirectory, "profiles");
-		if (!profilesDir.exists()) {
-			profilesDir.mkdirs();
-		}
-		
+		if (!profilesDir.exists()) profilesDir.mkdirs();
+
 		List<String> list = new ArrayList<>();
 		File[] files = profilesDir.listFiles(File::isDirectory);
 		if (files != null) {
 			for (File f : files) {
 				String name = f.getName();
-				if (!name.equals("default")) {
-					list.add(name);
-				}
+				if (!name.equals("default")) list.add(name);
 			}
 		}
 		Collections.sort(list);
@@ -62,28 +59,22 @@ public class ModManager {
 
 		// Ensure default folder exists physically
 		new File(profilesDir, "default").mkdirs();
-		
+
 		return list;
 	}
 
 	public void createProfile(String name) {
 		File profilesDir = new File(configDirectory, "profiles");
 		File profileDir = new File(profilesDir, name);
-		if (!profileDir.exists()) {
-			profileDir.mkdirs();
-		}
+		if (!profileDir.exists()) profileDir.mkdirs();
 	}
 
 	public void deleteProfile(String name) {
 		if (name.equals("default")) return;
 		File profilesDir = new File(configDirectory, "profiles");
 		File profileDir = new File(profilesDir, name);
-		if (profileDir.exists()) {
-			deleteDirectory(profileDir);
-		}
-		if (currentProfile.equals(name)) {
-			setCurrentProfile("default");
-		}
+		if (profileDir.exists()) deleteDirectory(profileDir);
+		if (currentProfile.equals(name)) setCurrentProfile("default");
 	}
 
 	public void renameProfile(String oldName, String newName) {
@@ -91,9 +82,8 @@ public class ModManager {
 		File profilesDir = new File(configDirectory, "profiles");
 		File oldDir = new File(profilesDir, oldName);
 		File newDir = new File(profilesDir, newName);
-		if (oldDir.exists() && !newDir.exists()) {
-			oldDir.renameTo(newDir);
-		}
+
+		if (oldDir.exists() && !newDir.exists()) oldDir.renameTo(newDir);
 		if (currentProfile.equals(oldName)) {
 			currentProfile = newName;
 			saveGlobalConfig();
@@ -158,12 +148,12 @@ public class ModManager {
 
 	public ModManager(File configDirectory) {
 		this.configDirectory = configDirectory;
-		if (!this.configDirectory.exists()) {
-			this.configDirectory.mkdirs();
-		}
+		if (!this.configDirectory.exists()) this.configDirectory.mkdirs();
+
 		// Ensure profiles directory and default profile exist
 		File profilesDir = new File(configDirectory, "profiles");
 		if (!profilesDir.exists()) profilesDir.mkdirs();
+
 		File defaultProfile = new File(profilesDir, "default");
 		if (!defaultProfile.exists()) defaultProfile.mkdirs();
 	}
@@ -188,7 +178,6 @@ public class ModManager {
 	}
 
 	public void loadConfigs() {
-
 		File profilesDir = new File(configDirectory, "profiles");
 		File profileDir = new File(profilesDir, currentProfile);
 		if (!profileDir.exists()) profileDir.mkdirs();
@@ -198,12 +187,9 @@ public class ModManager {
 			if (!file.exists()) continue;
 
 			try (FileReader reader = new FileReader(file)) {
-				JsonObject json = GSON.fromJson(reader, JsonObject.class);
-				if (json == null) continue;
-				
-				if (json.has("isEnabled")) {
-					module.isEnabled = json.get("isEnabled").getAsBoolean();
-				}
+				JsonObject json = GSON.fromJson(reader, JsonObject.class); if (json == null) continue;
+
+				if (json.has("isEnabled")) module.isEnabled = json.get("isEnabled").getAsBoolean();
 
 				for (Field field : module.getClass().getDeclaredFields()) {
 					if (field.isAnnotationPresent(ModConfig.class)) {
@@ -224,7 +210,6 @@ public class ModManager {
 	}
 
 	public void saveConfigs() {
-		
 		File profilesDir = new File(configDirectory, "profiles");
 		File profileDir = new File(profilesDir, currentProfile);
 		if (!profileDir.exists()) profileDir.mkdirs();
@@ -253,24 +238,18 @@ public class ModManager {
 	}
 
 	public void loadGlobalConfig() {
-		File file = new File(configDirectory, "lucent_global.json");
-		if (!file.exists()) return;
+		File file = new File(configDirectory, "lucent_global.json"); if (!file.exists()) return;
 
 		try (FileReader reader = new FileReader(file)) {
-			JsonObject json = GSON.fromJson(reader, JsonObject.class);
-			if (json == null) return;
+			JsonObject json = GSON.fromJson(reader, JsonObject.class); if (json == null) return;
 
-			if (json.has("currentProfile")) {
-				this.currentProfile = json.get("currentProfile").getAsString();
-			}
+			if (json.has("currentProfile")) this.currentProfile = json.get("currentProfile").getAsString();
 
 			if (json.has("theme")) {
 				String themeName = json.get("theme").getAsString();
-				silence.simsool.lucent.ui.theme.ThemeManager.applyTheme(
-					silence.simsool.lucent.ui.theme.ThemeManager.findTheme(themeName)
-				);
+				ThemeManager.applyTheme(ThemeManager.findTheme(themeName));
 			}
-			
+
 			if (json.has("openAnimation")) LucentConfig.openAnimation = json.get("openAnimation").getAsBoolean();
 			if (json.has("uiBlur")) LucentConfig.uiBlur = json.get("uiBlur").getAsBoolean();
 			if (json.has("uiBlurStrength")) LucentConfig.uiBlurStrength = json.get("uiBlurStrength").getAsFloat();
@@ -283,13 +262,10 @@ public class ModManager {
 		if (!configDirectory.exists()) configDirectory.mkdirs();
 		File file = new File(configDirectory, "lucent_global.json");
 		JsonObject json = new JsonObject();
-		
+
 		json.addProperty("currentProfile", currentProfile);
 
-		if (silence.simsool.lucent.ui.theme.ThemeManager.currentTheme != null) {
-			json.addProperty("theme", silence.simsool.lucent.ui.theme.ThemeManager.currentTheme.name);
-		}
-
+		if (ThemeManager.currentTheme != null) json.addProperty("theme", ThemeManager.currentTheme.name);
 		json.addProperty("openAnimation", LucentConfig.openAnimation);
 		json.addProperty("uiBlur", LucentConfig.uiBlur);
 		json.addProperty("uiBlurStrength", LucentConfig.uiBlurStrength);

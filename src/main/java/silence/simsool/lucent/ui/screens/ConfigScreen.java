@@ -1,5 +1,7 @@
 package silence.simsool.lucent.ui.screens;
 
+import static silence.simsool.lucent.Lucent.mc;
+
 import java.awt.Color;
 import java.io.File;
 import java.lang.reflect.Field;
@@ -24,18 +26,16 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
 import silence.simsool.lucent.Lucent;
-import static silence.simsool.lucent.Lucent.mc;
 import silence.simsool.lucent.config.LucentConfig;
 import silence.simsool.lucent.config.ModManager;
-import silence.simsool.lucent.general.abstracts.LucentTheme;
-import silence.simsool.lucent.general.abstracts.Mod;
-import silence.simsool.lucent.general.abstracts.NavState;
-import silence.simsool.lucent.general.data.KeyBind;
 import silence.simsool.lucent.general.interfaces.ModConfig;
+import silence.simsool.lucent.general.models.KeyBind;
+import silence.simsool.lucent.general.models.LucentTheme;
+import silence.simsool.lucent.general.models.Mod;
+import silence.simsool.lucent.general.models.NavState;
 import silence.simsool.lucent.general.utils.LucentUtils;
 import silence.simsool.lucent.general.utils.UDisplay;
 import silence.simsool.lucent.general.utils.UMouse;
-import silence.simsool.lucent.hud.HUDManager;
 import silence.simsool.lucent.ui.theme.ThemeManager;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UColor;

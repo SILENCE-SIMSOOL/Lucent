@@ -12,9 +12,9 @@ import com.google.gson.JsonObject;
 
 import net.minecraft.client.gui.GuiGraphics;
 import silence.simsool.lucent.Lucent;
-import silence.simsool.lucent.general.abstracts.LucentHUD;
 import silence.simsool.lucent.general.enums.HUDAlignment;
 import silence.simsool.lucent.general.enums.RenderType;
+import silence.simsool.lucent.general.models.LucentHUD;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 
 public class HUDManager {

@@ -104,9 +104,7 @@ public class Selector extends UIWidget {
 			boolean isSelected = (idx == selectedIndex);
 			boolean isItemHovered = (hoveredItem == idx);
 
-			if (i < visibleCount - 1) {
-				NVGRenderer.rect(dx + 4, iy + ITEM_HEIGHT - 1, width - 8, 1, separatorColor);
-			}
+			if (i < visibleCount - 1) NVGRenderer.rect(dx + 4, iy + ITEM_HEIGHT - 1, width - 8, 1, separatorColor);
 
 			if (isSelected || isItemHovered) {
 				int targetBg = isSelected ? UColor.withAlpha(UIColors.ACCENT_BLUE, 100) : itemHoverColor;

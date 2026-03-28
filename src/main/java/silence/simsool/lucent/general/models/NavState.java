@@ -1,4 +1,4 @@
-package silence.simsool.lucent.general.abstracts;
+package silence.simsool.lucent.general.models;
 
 public class NavState {
 	public final String page;

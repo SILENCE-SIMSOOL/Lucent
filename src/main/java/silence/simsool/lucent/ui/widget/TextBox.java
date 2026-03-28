@@ -30,9 +30,7 @@ public class TextBox extends UIWidget {
 		int borderColor = focused ? UIColors.ACCENT_BLUE : UIColors.ITEM_BORDER;
 
 		// Focus glow
-		if (focused) {
-			NVGRenderer.rect(x - 2, y - 2, width + 4, height + 4, UIColors.withAlpha(UIColors.ACCENT_BLUE, 30), 10f);
-		}
+		if (focused) NVGRenderer.rect(x - 2, y - 2, width + 4, height + 4, UIColors.withAlpha(UIColors.ACCENT_BLUE, 30), 10f);
 
 		NVGRenderer.rect(x, y, width, height, bgColor, 8f);
 		NVGRenderer.outlineRect(x, y, width, height, 1, borderColor, 8f);

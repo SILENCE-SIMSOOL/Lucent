@@ -1,4 +1,4 @@
-package silence.simsool.lucent.general.data;
+package silence.simsool.lucent.general.models;
 
 import org.lwjgl.glfw.GLFW;
 
@@ -37,8 +37,6 @@ public class KeyBind {
 		this.mods = mods;
 	}
 
-	// ── Factory ───────────────────────────────────────────────────────────────
-
 	public static KeyBind ofKey(int keyCode, int mods) {
 		return new KeyBind(keyCode, -1, mods);
 	}
@@ -50,8 +48,6 @@ public class KeyBind {
 	public static KeyBind none() {
 		return new KeyBind();
 	}
-
-	// ── Query ─────────────────────────────────────────────────────────────────
 
 	public boolean isBound() {
 		return isKey() || isMouse();
@@ -78,8 +74,6 @@ public class KeyBind {
 		return key == GLFW.GLFW_KEY_LEFT_ALT || key == GLFW.GLFW_KEY_RIGHT_ALT;
 	}
 
-	// ── Display ───────────────────────────────────────────────────────────────
-
 	/**
 	 * Returns a human-readable label, e.g. {@code "Ctrl+Shift+R"}, {@code "Mouse2"}, {@code "None"}.
 	 *
@@ -90,7 +84,6 @@ public class KeyBind {
 		if (!isBound()) return "None";
 
 		StringBuilder sb = new StringBuilder();
-
 		if ((mods & GLFW.GLFW_MOD_CONTROL) != 0 && !isControl(keyCode)) sb.append("Ctrl+");
 		if ((mods & GLFW.GLFW_MOD_SHIFT)   != 0 && !isShift(keyCode))   sb.append("Shift+");
 		if ((mods & GLFW.GLFW_MOD_ALT)     != 0 && !isAlt(keyCode))     sb.append("Alt+");
@@ -102,14 +95,10 @@ public class KeyBind {
 				case MOUSE_MIDDLE -> sb.append("Mouse3");
 				default           -> sb.append("Mouse").append(mouseButton + 1);
 			}
-		} else {
-			sb.append(glfwKeyName(keyCode));
-		}
+		} else sb.append(glfwKeyName(keyCode));
 
 		return sb.toString();
 	}
-
-	// ── Internals ─────────────────────────────────────────────────────────────
 
 	/**
 	 * Resolves a GLFW key code to a display name.

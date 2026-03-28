@@ -1,5 +1,8 @@
 package silence.simsool.lucent.ui.utils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 /**
  * Animation related utilities.
  * Includes easing functions, interpolation, and time-based effects.
@@ -57,18 +60,26 @@ public class UAnimation {
 		public static float bounce(float t) {
 			float n1 = 7.5625f;
 			float d1 = 2.75f;
+
 			if (t < 1f / d1) {
 				return n1 * t * t;
-			} else if (t < 2f / d1) {
+			}
+
+			else if (t < 2f / d1) {
 				t -= 1.5f / d1;
 				return n1 * t * t + 0.75f;
-			} else if (t < 2.5f / d1) {
+			}
+
+			else if (t < 2.5f / d1) {
 				t -= 2.25f / d1;
 				return n1 * t * t + 0.9375f;
-			} else {
+			}
+
+			else {
 				t -= 2.625f / d1;
 				return n1 * t * t + 0.984375f;
 			}
+
 		}
 	}
 
@@ -158,8 +169,8 @@ public class UAnimation {
 			decimals++;
 		}
 		
-		java.math.BigDecimal bd = new java.math.BigDecimal(Double.toString(snapped));
-		bd = bd.setScale(decimals, java.math.RoundingMode.HALF_UP);
+		BigDecimal bd = new BigDecimal(Double.toString(snapped));
+		bd = bd.setScale(decimals, RoundingMode.HALF_UP);
 		return bd.doubleValue();
 	}
 

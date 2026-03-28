@@ -1,4 +1,4 @@
-package silence.simsool.lucent.general.abstracts;
+package silence.simsool.lucent.general.models;
 
 import silence.simsool.lucent.general.enums.HUDAlignment;
 import silence.simsool.lucent.general.enums.RenderType;

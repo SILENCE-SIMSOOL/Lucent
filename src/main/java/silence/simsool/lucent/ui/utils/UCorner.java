@@ -72,4 +72,5 @@ public record UCorner(float tl, float tr, float bl, float br) {
 		float maxR = Math.min(w, h) / 2f;
 		return clamp(maxR);
 	}
+
 }

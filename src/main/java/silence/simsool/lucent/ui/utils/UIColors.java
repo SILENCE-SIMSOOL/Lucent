@@ -36,4 +36,5 @@ public class UIColors {
 		int alpha = Math.max(0, Math.min(255, (int) (255 * alphaRatio)));
 		return withAlpha(color, alpha);
 	}
+
 }

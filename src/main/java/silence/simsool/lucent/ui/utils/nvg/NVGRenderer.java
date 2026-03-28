@@ -1,5 +1,9 @@
 package silence.simsool.lucent.ui.utils.nvg;
 
+import static org.lwjgl.nanovg.NanoVG.*;
+import static org.lwjgl.nanovg.NanoVGGL3.NVG_IMAGE_NODELETE;
+import static silence.simsool.lucent.Lucent.mc;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -11,59 +15,15 @@ import org.lwjgl.nanovg.NVGColor;
 import org.lwjgl.nanovg.NVGPaint;
 import org.lwjgl.nanovg.NanoSVG;
 import org.lwjgl.nanovg.NanoVG;
-import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_LEFT;
-import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_TOP;
-import static org.lwjgl.nanovg.NanoVG.NVG_HOLE;
-import static org.lwjgl.nanovg.NanoVG.nvgArcTo;
-import static org.lwjgl.nanovg.NanoVG.nvgBeginFrame;
-import static org.lwjgl.nanovg.NanoVG.nvgBeginPath;
-import static org.lwjgl.nanovg.NanoVG.nvgBoxGradient;
-import static org.lwjgl.nanovg.NanoVG.nvgCircle;
-import static org.lwjgl.nanovg.NanoVG.nvgClosePath;
-import static org.lwjgl.nanovg.NanoVG.nvgCreateFontMem;
-import static org.lwjgl.nanovg.NanoVG.nvgCreateImageRGBA;
-import static org.lwjgl.nanovg.NanoVG.nvgDeleteImage;
-import static org.lwjgl.nanovg.NanoVG.nvgEndFrame;
-import static org.lwjgl.nanovg.NanoVG.nvgFill;
-import static org.lwjgl.nanovg.NanoVG.nvgFillColor;
-import static org.lwjgl.nanovg.NanoVG.nvgFillPaint;
-import static org.lwjgl.nanovg.NanoVG.nvgFontFaceId;
-import static org.lwjgl.nanovg.NanoVG.nvgFontSize;
-import static org.lwjgl.nanovg.NanoVG.nvgGlobalAlpha;
-import static org.lwjgl.nanovg.NanoVG.nvgImagePattern;
-import static org.lwjgl.nanovg.NanoVG.nvgLineTo;
-import static org.lwjgl.nanovg.NanoVG.nvgLinearGradient;
-import static org.lwjgl.nanovg.NanoVG.nvgMoveTo;
-import static org.lwjgl.nanovg.NanoVG.nvgPathWinding;
-import static org.lwjgl.nanovg.NanoVG.nvgRGBA;
-import static org.lwjgl.nanovg.NanoVG.nvgResetScissor;
-import static org.lwjgl.nanovg.NanoVG.nvgRestore;
-import static org.lwjgl.nanovg.NanoVG.nvgRotate;
-import static org.lwjgl.nanovg.NanoVG.nvgRoundedRect;
-import static org.lwjgl.nanovg.NanoVG.nvgSave;
-import static org.lwjgl.nanovg.NanoVG.nvgScale;
-import static org.lwjgl.nanovg.NanoVG.nvgScissor;
-import static org.lwjgl.nanovg.NanoVG.nvgStroke;
-import static org.lwjgl.nanovg.NanoVG.nvgStrokeColor;
-import static org.lwjgl.nanovg.NanoVG.nvgStrokeWidth;
-import static org.lwjgl.nanovg.NanoVG.nvgText;
-import static org.lwjgl.nanovg.NanoVG.nvgTextAlign;
-import static org.lwjgl.nanovg.NanoVG.nvgTextBounds;
-import static org.lwjgl.nanovg.NanoVG.nvgTextBox;
-import static org.lwjgl.nanovg.NanoVG.nvgTextBoxBounds;
-import static org.lwjgl.nanovg.NanoVG.nvgTextLineHeight;
-import static org.lwjgl.nanovg.NanoVG.nvgTranslate;
 import org.lwjgl.nanovg.NanoVGGL3;
-import static org.lwjgl.nanovg.NanoVGGL3.NVG_IMAGE_NODELETE;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
-import static silence.simsool.lucent.Lucent.mc;
-import silence.simsool.lucent.general.data.nvg.NVGFont;
-import silence.simsool.lucent.general.data.nvg.NVGImage;
 import silence.simsool.lucent.general.enums.Direction;
 import silence.simsool.lucent.general.enums.GradientType;
+import silence.simsool.lucent.general.models.nvg.NVGFont;
+import silence.simsool.lucent.general.models.nvg.NVGImage;
 import silence.simsool.lucent.ui.font.LucentFont;
 import silence.simsool.lucent.ui.utils.UIColors;
 
@@ -74,7 +34,7 @@ public class NVGRenderer {
 	private static final NVGColor nvgColor2 = NVGColor.malloc();
 
 	private static final Map<LucentFont, NVGFont> fontMap = new HashMap<>();
-	private static final Map<Image, NVGImage>     images  = new HashMap<>();
+	private static final Map<Image, NVGImage> images = new HashMap<>();
 
 	private static final float[] fontBounds = new float[4];
 	static final Map<Long, Integer> checkerCache = new HashMap<>();
@@ -106,9 +66,8 @@ public class NVGRenderer {
 		 * of this scissor and the parent, preventing overdraw outside nested bounds.
 		 */
 		void applyScissor() {
-			if (previous == null) {
-				nvgScissor(vg, x, y, maxX - x, maxY - y);
-			} else {
+			if (previous == null) nvgScissor(vg, x, y, maxX - x, maxY - y);
+			else {
 				float cx = Math.max(x, previous.x);
 				float cy = Math.max(y, previous.y);
 				float cw = Math.max(0f, Math.min(maxX, previous.maxX) - cx);
