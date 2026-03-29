@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 import org.lwjgl.glfw.GLFW;
 
 import net.minecraft.client.gui.GuiGraphics;
-import silence.simsool.lucent.general.models.KeyBind;
+import silence.simsool.lucent.general.models.data.KeyBind;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UColor;
 import silence.simsool.lucent.ui.utils.UIColors;

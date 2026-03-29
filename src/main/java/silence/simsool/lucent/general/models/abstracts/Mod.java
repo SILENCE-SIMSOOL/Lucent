@@ -1,4 +1,4 @@
-package silence.simsool.lucent.general.models;
+package silence.simsool.lucent.general.models.abstracts;
 
 public abstract class Mod {
 	public final String name;

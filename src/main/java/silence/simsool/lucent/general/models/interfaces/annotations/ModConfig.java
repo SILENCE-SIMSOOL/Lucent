@@ -1,4 +1,4 @@
-package silence.simsool.lucent.general.interfaces;
+package silence.simsool.lucent.general.models.interfaces.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;

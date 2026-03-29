@@ -1,6 +1,6 @@
 package silence.simsool.lucent.client.dev.examplemods;
 
-import silence.simsool.lucent.general.models.Mod;
+import silence.simsool.lucent.general.models.abstracts.Mod;
 
 public class ExampleMod extends Mod {
 

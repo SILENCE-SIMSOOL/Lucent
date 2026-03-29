@@ -1,4 +1,4 @@
-package silence.simsool.lucent.general.models.nvg;
+package silence.simsool.lucent.general.models.data.nvg;
 
 import java.nio.ByteBuffer;
 

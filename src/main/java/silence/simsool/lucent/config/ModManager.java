@@ -20,9 +20,9 @@ import com.google.gson.stream.JsonWriter;
 
 import silence.simsool.lucent.client.dev.examplemods.ChattingMod;
 import silence.simsool.lucent.client.dev.examplemods.ExampleMod;
-import silence.simsool.lucent.general.interfaces.ModConfig;
-import silence.simsool.lucent.general.models.KeyBind;
-import silence.simsool.lucent.general.models.Mod;
+import silence.simsool.lucent.general.models.abstracts.Mod;
+import silence.simsool.lucent.general.models.data.KeyBind;
+import silence.simsool.lucent.general.models.interfaces.annotations.ModConfig;
 import silence.simsool.lucent.hud.HUDManager;
 import silence.simsool.lucent.ui.theme.ThemeManager;
 

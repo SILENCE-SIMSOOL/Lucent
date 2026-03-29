@@ -1,4 +1,4 @@
-package silence.simsool.lucent.general.models;
+package silence.simsool.lucent.general.models.data;
 
 public class LucentTheme {
 	public final String name;

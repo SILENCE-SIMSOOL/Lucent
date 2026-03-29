@@ -22,8 +22,8 @@ import org.lwjgl.system.MemoryUtil;
 
 import silence.simsool.lucent.general.enums.Direction;
 import silence.simsool.lucent.general.enums.GradientType;
-import silence.simsool.lucent.general.models.nvg.NVGFont;
-import silence.simsool.lucent.general.models.nvg.NVGImage;
+import silence.simsool.lucent.general.models.data.nvg.NVGFont;
+import silence.simsool.lucent.general.models.data.nvg.NVGImage;
 import silence.simsool.lucent.ui.font.LucentFont;
 import silence.simsool.lucent.ui.utils.UIColors;
 
