@@ -44,15 +44,20 @@ Add to your `build.gradle`:
 
 ```groovy
 repositories {
-    maven { url = "https://your-maven-repo-url" }
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    modImplementation "silence.simsool.lucent:lucent:1.0.0"
-    // or include it inside your JAR:
-    include "silence.simsool.lucent:lucent:1.0.0"
+    // For fetching the mod jar (lucent-1.0.0.jar)
+    implementation 'com.github.SILENCE-SIMSOOL:Lucent:1.0.0'
+
+    // For fetching the library jar (lucent-1.0.0-library.jar)
+    implementation 'com.github.SILENCE-SIMSOOL:Lucent:1.0.0:library'
 }
 ```
+
+A **Mod JAR** requires players to manually install the mod, but efficiently reduces the file size.
+A **Library JAR** is embedded into your own mod, meaning Lucent does not need to be installed separately.
 
 ---
 

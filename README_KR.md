@@ -44,15 +44,20 @@ Lucent는 두 가지 JAR 빌드를 제공합니다:
 
 ```groovy
 repositories {
-    maven { url = "https://your-maven-repo-url" }
+	maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    modImplementation "silence.simsool.lucent:lucent:1.0.0"
-    // 또는 자신의 JAR 안에 번들:
-    include "silence.simsool.lucent:lucent:1.0.0"
+	// 모드 jar (lucent-1.0.0.jar)를 가져올 때
+	implementation 'com.github.SILENCE-SIMSOOL:Lucent:1.0.0'
+
+	// 라이브러리 jar (lucent-1.0.0-library.jar)을 가져올 때
+	implementation 'com.github.SILENCE-SIMSOOL:Lucent:1.0.0:library'
 }
 ```
+
+모드 jar는 플레이어가 모드를 직접 적용 시켜야하는 번거로움이 있지만 파일의 크기를 효율적으로 줄일 수 있습니다.
+라이브러리 jar는 자신의 모드에 내장시켜 Lucent 모드를 따로 사용하지 않아도 됩니다.
 
 ---
 
