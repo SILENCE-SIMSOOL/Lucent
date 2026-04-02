@@ -31,16 +31,26 @@ Lucent gives you:
 
 ## Integration
 
-### 1. Add Lucent as a dependency
+### Library Types
 
-Lucent ships two JAR variants:
-
-| Classifier | Contents |
+| Type | Description |
 |---|---|
-| *(default)* | Full JIJ build — includes bundled NanoVG natives |
-| `library` | Slim build — NanoVG excluded (use when the host mod bundles Lucent itself) |
+| **[0] mod** | Fully built mod. NanoVG is JIJ'd. Players must install the Lucent mod separately. Efficiently reduces the mod file size. |
+| **[1] library** | Slim library build. No NanoVG included. Lucent is bundled via JIJ inside the mod, meaning players do not need to install it separately. |
 
-Add to your `build.gradle`:
+### Version List
+
+| Version | MC Version |
+|---|---|
+| 1.0.0 | 1.21.11 |
+| 1.0.1 | 1.21.11 |
+
+### Version Format
+
+- Format: `<lucent_version>-<mc_version>-<type>`
+- Example: `1.0.0-1.21.11-0`
+
+### Gradle Example
 
 ```groovy
 repositories {
@@ -48,17 +58,14 @@ repositories {
 }
 
 dependencies {
-    // For fetching the mod jar (e.g., lucent-1.0.0-1.21.11.jar)
-    modImplementation "com.github.SILENCE-SIMSOOL:lucent:1.0.0-1.21.11"
+    // For fetching a [0] mod
+    modImplementation "com.github.SILENCE-SIMSOOL:lucent:1.0.1-1.21.11-0"
 
-    // For fetching the library jar (e.g., lucent-1.0.0-1.21.11-library.jar)
-    modImplementation "com.github.SILENCE-SIMSOOL:lucent:1.0.0-1.21.11-library"
-    include "com.github.SILENCE-SIMSOOL:lucent:1.0.0-1.21.11-library"
+    // For fetching a [1] library
+    modImplementation "com.github.SILENCE-SIMSOOL:lucent:1.0.1-1.21.11-1"
+    include "com.github.SILENCE-SIMSOOL:lucent:1.0.1-1.21.11-1"
 }
 ```
-
-A **Mod JAR** requires players to manually install the mod, but efficiently reduces the file size.
-A **Library JAR** is embedded into your own mod, meaning Lucent does not need to be installed separately.
 
 ---
 

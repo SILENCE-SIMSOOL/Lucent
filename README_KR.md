@@ -31,16 +31,26 @@ Lucent가 제공하는 것들:
 
 ## 통합
 
-### 1. 의존성 추가
+### 라이브러리 종류
 
-Lucent는 두 가지 JAR 빌드를 제공합니다:
-
-| Classifier | 내용 |
+| 타입 | 내용 |
 |---|---|
-| *(기본)* | 완전한 JIJ 빌드 — NanoVG 네이티브 포함 |
-| `library` | 경량 빌드 — NanoVG 제외 (Lucent를 내부에 번들할 때 사용) |
+| **[0] mod** | 완전하게 빌드된 모드. NanoVG가 JIJ 됨. 플레이어가 Lucent 모드를 따로 사용해야함. 모드의 용량을 줄일 수 있음. |
+| **[1] library** | 경량 빌드된 라이브러리. NanoVG가 없음. 모드 내부에 Lucent가 JIJ로 번들링되어 플레이어가 Lucent 모드를 추가할 필요없음. |
 
-`build.gradle`에 추가:
+### 버전 목록
+
+| 버전 | MC 버전 |
+|---|---|
+| 1.0.0 | 1.21.11 |
+| 1.0.1 | 1.21.11 |
+
+### 버전 작성 형식
+
+- 형식: `<lucent_version>-<mc_version>-<type>`
+- 예시: `1.0.0-1.21.11-0`
+
+### Gradle 작성 예시
 
 ```groovy
 repositories {
@@ -48,17 +58,14 @@ repositories {
 }
 
 dependencies {
-	// 모드 jar (예: lucent-1.0.0-1.21.11.jar)를 가져올 때
-	modImplementation "com.github.SILENCE-SIMSOOL:lucent:1.0.0-1.21.11"
+	// [0] mod 를 가져올 때
+	modImplementation "com.github.SILENCE-SIMSOOL:lucent:1.0.1-1.21.11-0"
 
-	// 라이브러리 jar (예: lucent-1.0.0-1.21.11-library.jar)을 가져와 내장할 때
-	modImplementation "com.github.SILENCE-SIMSOOL:lucent:1.0.0-1.21.11-library"
-	include "com.github.SILENCE-SIMSOOL:lucent:1.0.0-1.21.11-library"
+	// [1] library 를 가져올 때
+	modImplementation "com.github.SILENCE-SIMSOOL:lucent:1.0.1-1.21.11-1"
+	include "com.github.SILENCE-SIMSOOL:lucent:1.0.1-1.21.11-1"
 }
 ```
-
-모드 jar는 플레이어가 모드를 직접 적용 시켜야하는 번거로움이 있지만 파일의 크기를 효율적으로 줄일 수 있습니다.
-라이브러리 jar는 자신의 모드에 내장시켜 Lucent 모드를 따로 사용하지 않아도 됩니다.
 
 ---
 
