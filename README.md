@@ -44,15 +44,16 @@ Add to your `build.gradle`:
 
 ```groovy
 repositories {
-    maven { url 'https://jitpack.io' }
+    maven { url "https://SILENCE-SIMSOOL.github.io/maven-repo/" }
 }
 
 dependencies {
-    // For fetching the mod jar (lucent-1.0.0.jar)
-    implementation 'com.github.SILENCE-SIMSOOL:Lucent:1.0.0'
+    // For fetching the mod jar (e.g., lucent-1.0.0-1.21.11.jar)
+    modImplementation "com.github.SILENCE-SIMSOOL:lucent:1.0.0-1.21.11"
 
-    // For fetching the library jar (lucent-1.0.0-library.jar)
-    implementation 'com.github.SILENCE-SIMSOOL:Lucent:1.0.0:library'
+    // For fetching the library jar (e.g., lucent-1.0.0-1.21.11-library.jar)
+    modImplementation "com.github.SILENCE-SIMSOOL:lucent:1.0.0-1.21.11-library"
+    include "com.github.SILENCE-SIMSOOL:lucent:1.0.0-1.21.11-library"
 }
 ```
 

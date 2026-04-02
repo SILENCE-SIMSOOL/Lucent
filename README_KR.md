@@ -44,15 +44,16 @@ Lucent는 두 가지 JAR 빌드를 제공합니다:
 
 ```groovy
 repositories {
-	maven { url 'https://jitpack.io' }
+	maven { url "https://SILENCE-SIMSOOL.github.io/maven-repo/" }
 }
 
 dependencies {
-	// 모드 jar (lucent-1.0.0.jar)를 가져올 때
-	implementation 'com.github.SILENCE-SIMSOOL:Lucent:1.0.0'
+	// 모드 jar (예: lucent-1.0.0-1.21.11.jar)를 가져올 때
+	modImplementation "com.github.SILENCE-SIMSOOL:lucent:1.0.0-1.21.11"
 
-	// 라이브러리 jar (lucent-1.0.0-library.jar)을 가져올 때
-	implementation 'com.github.SILENCE-SIMSOOL:Lucent:1.0.0:library'
+	// 라이브러리 jar (예: lucent-1.0.0-1.21.11-library.jar)을 가져와 내장할 때
+	modImplementation "com.github.SILENCE-SIMSOOL:lucent:1.0.0-1.21.11-library"
+	include "com.github.SILENCE-SIMSOOL:lucent:1.0.0-1.21.11-library"
 }
 ```
 
