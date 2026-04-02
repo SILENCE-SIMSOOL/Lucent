@@ -191,8 +191,7 @@ public class NVGRenderer {
 	public static void popScissor() {
 		nvgResetScissor(vg);
 		scissor = (scissor != null) ? scissor.previous : null;
-		if (scissor != null)
-			scissor.applyScissor();
+		if (scissor != null) scissor.applyScissor();
 	}
 
 	/**
