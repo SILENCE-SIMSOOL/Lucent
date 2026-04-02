@@ -1,9 +1,7 @@
 package silence.simsool.lucent.ui.utils.nvg;
 
-import static net.minecraft.resources.Identifier.parse;
-import static silence.simsool.lucent.Lucent.mc;
-
 import silence.simsool.lucent.general.enums.FontList;
+import silence.simsool.lucent.general.utils.UFile;
 import silence.simsool.lucent.ui.font.LucentFont;
 
 public class Fonts {
@@ -20,7 +18,7 @@ public class Fonts {
 	private static LucentFont getFontFromList(FontList font) throws Exception {
 		return new LucentFont(
 				font.toString(),
-				mc.getResourceManager().getResource(parse("lucent:fonts/" + font.getName() + ".ttf")).get().open()
+				UFile.getResourceInputStream("lucent:fonts/" + font.getName() + ".ttf")
 		);
 	}
 
