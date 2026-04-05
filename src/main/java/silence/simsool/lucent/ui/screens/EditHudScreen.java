@@ -381,7 +381,7 @@ public class EditHudScreen extends Screen {
 	private void drawContextMenu(float vw, float vh) {
 		HUDAlignment[] opts = HUDAlignment.values();
 		float iH = 28f, iW = 120f, pad = 8f;
-		float totalH = iH * opts.length + pad * 2;
+		float totalH = iH * opts.length + iH + pad * 2 + 5f; // +iH+5f for separator and Delete option
 
 		float cx = clamp(contextMenuX, 0, vw - iW - 4);
 		float cy = clamp(contextMenuY, 0, vh - totalH - 4);
@@ -400,6 +400,14 @@ public class EditHudScreen extends Screen {
 			if (selected) NVGRenderer.circle(cx + 14, iy + iH / 2f, 3f, UIColors.ACCENT_BLUE);
 			NVGRenderer.text(opt.displayName(), cx + 24, iy + (iH - 11f) / 2f, Fonts.PRETENDARD, tc, 11f);
 		}
+
+		// Separator
+		float sepY = cy + pad + opts.length * iH + 2.5f;
+		NVGRenderer.rect(cx + 8, sepY, iW - 16, 1f, UIColors.withAlpha(UIColors.PURE_WHITE, 15));
+
+		// Delete Option
+		float delY = sepY + 2.5f;
+		NVGRenderer.text("Delete", cx + 24, delY + (iH - 11f) / 2f, Fonts.PRETENDARD, UIColors.RED, 11f);
 	}
 
 	@Override
@@ -638,7 +646,8 @@ public class EditHudScreen extends Screen {
 	private void handleContextMenuClick(float mx, float my) {
 		if (contextMenuHud == null) return;
 		HUDAlignment[] opts = HUDAlignment.values();
-		float iH = 28f, iW = 120f, pad = 8f, totalH = iH * opts.length + pad * 2;
+		float iH = 28f, iW = 120f, pad = 8f;
+		float totalH = iH * opts.length + iH + pad * 2 + 5f;
 
 		float gs = NVGRenderer.getStandardGuiScale();
 		float vw = UDisplay.getScreenWidth()  / gs;
@@ -648,9 +657,18 @@ public class EditHudScreen extends Screen {
 
 		if (mx < cx || mx > cx + iW || my < cy || my > cy + totalH) return;
 
-		int idx = (int)((my - cy - pad) / iH);
+		int idx = -1;
+		if (my < cy + pad + opts.length * iH) {
+			idx = (int)((my - cy - pad) / iH);
+		} else if (my >= cy + pad + opts.length * iH + 5f) {
+			idx = opts.length;
+		}
+
 		if (idx >= 0 && idx < opts.length) {
 			contextMenuHud.alignment = opts[idx];
+			HUDManager.INSTANCE.save();
+		} else if (idx == opts.length) {
+			contextMenuHud.disable();
 			HUDManager.INSTANCE.save();
 		}
 	}

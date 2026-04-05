@@ -1,7 +1,5 @@
 package silence.simsool.lucent.ui.screens;
 
-import static silence.simsool.lucent.Lucent.mc;
-
 import java.awt.Color;
 import java.io.File;
 import java.lang.reflect.Field;
@@ -26,6 +24,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
 import silence.simsool.lucent.Lucent;
+import static silence.simsool.lucent.Lucent.mc;
 import silence.simsool.lucent.config.LucentConfig;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.general.models.abstracts.Mod;
@@ -595,10 +594,19 @@ public class ConfigScreen extends Screen {
 		});
 		widgets.add(scaleSlider);
 
-		// Action Buttons
-		int btnW = 120;
-		int rowY = sy + 420 + 20;
+		// 6. Version Info
+		widgets.add(new SettingRowWidget(sx, sy + 420, itemW, 74, "Version Module", "Current: " + Lucent.VERSION + "  |  Latest: " + Lucent.LATEST_VERSION));
 		
+		int btnW = 120;
+		ActionButton updateBtn = new ActionButton(sx + itemW - PAD - btnW, sy + 19 + 420, btnW, 36, "Update");
+		updateBtn.setOnClick(() -> {
+			Util.getPlatform().openUri(LucentConfig.GITHUB_LINK + "/releases");
+		});
+		widgets.add(updateBtn);
+
+		// Action Buttons
+		int rowY = sy + 504 + 20;
+
 		ActionButton openConfig = new ActionButton(sx, rowY, btnW, 36, "Open Config");
 		openConfig.setOnClick(() -> {
 			Util.getPlatform().openPath(new File(mc.gameDirectory, "config/lucent").toPath());

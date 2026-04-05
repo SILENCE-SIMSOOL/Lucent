@@ -40,6 +40,13 @@ public abstract class LucentHUD {
 	}
 
 	/**
+	 * Disables this HUD element.
+	 * Subclasses should override this to disable the associated config module.
+	 */
+	public void disable() {
+	}
+
+	/**
 	 * Renders the actual HUD in-game.
 	 * <ul>
 	 * <li>Rendering should be skipped if {@link #isEditHudOpen} is true.</li>

@@ -8,6 +8,6 @@ public class LucentConfig {
 	public static float uiScale = 1.0f;
 
 	public static final String DISCORD_LINK = "https://discord.gg/2Zt8HDksJs";
-	public static final String GITHUB_LINK = "https://github.com/SILENCE-SIMSOOL/SilenceUtils";
+	public static final String GITHUB_LINK = "https://github.com/SILENCE-SIMSOOL/Lucent";
 	public static final String LICENSE_LINK = "https://opensource.org/licenses/MIT";
 }

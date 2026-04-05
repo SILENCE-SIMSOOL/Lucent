@@ -184,7 +184,10 @@ public class ModManager {
 
 		for (Mod module : modules) {
 			File file = new File(profileDir, getFileName(module));
-			if (!file.exists()) continue;
+			if (!file.exists()) {
+				saveModConfig(module, file);
+				continue;
+			}
 
 			try (FileReader reader = new FileReader(file)) {
 				JsonObject json = GSON.fromJson(reader, JsonObject.class); if (json == null) continue;
@@ -209,6 +212,27 @@ public class ModManager {
 		}
 	}
 
+	private void saveModConfig(Mod module, File file) {
+		JsonObject json = new JsonObject();
+
+		json.addProperty("isEnabled", module.isEnabled);
+
+		for (Field field : module.getClass().getDeclaredFields()) {
+			if (field.isAnnotationPresent(ModConfig.class)) {
+				field.setAccessible(true);
+				try {
+					json.add(field.getName(), GSON.toJsonTree(field.get(module)));
+				} catch (Exception e) {}
+			}
+		}
+
+		try (FileWriter writer = new FileWriter(file)) {
+			GSON.toJson(json, writer);
+		} catch (Exception e) {
+			// e.printStackTrace();
+		}
+	}
+
 	public void saveConfigs() {
 		File profilesDir = new File(configDirectory, "profiles");
 		File profileDir = new File(profilesDir, currentProfile);
@@ -216,29 +240,16 @@ public class ModManager {
 
 		for (Mod module : modules) {
 			File file = new File(profileDir, getFileName(module));
-			JsonObject json = new JsonObject();
-
-			json.addProperty("isEnabled", module.isEnabled);
-
-			for (Field field : module.getClass().getDeclaredFields()) {
-				if (field.isAnnotationPresent(ModConfig.class)) {
-					field.setAccessible(true);
-					try {
-						json.add(field.getName(), GSON.toJsonTree(field.get(module)));
-					} catch (Exception e) {}
-				}
-			}
-
-			try (FileWriter writer = new FileWriter(file)) {
-				GSON.toJson(json, writer);
-			} catch (Exception e) {
-				// e.printStackTrace();
-			}
+			saveModConfig(module, file);
 		}
 	}
 
 	public void loadGlobalConfig() {
-		File file = new File(configDirectory, "lucent_global.json"); if (!file.exists()) return;
+		File file = new File(configDirectory, "lucent_global.json"); 
+		if (!file.exists()) {
+			saveGlobalConfig();
+			return;
+		}
 
 		try (FileReader reader = new FileReader(file)) {
 			JsonObject json = GSON.fromJson(reader, JsonObject.class); if (json == null) return;

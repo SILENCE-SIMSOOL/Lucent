@@ -1,5 +1,6 @@
 package silence.simsool.lucent.client.dev.examplemods;
 
+import net.minecraft.network.chat.Component;
 import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.general.enums.HUDAlignment;
 import silence.simsool.lucent.general.enums.RenderType;
@@ -36,6 +37,11 @@ public class ChattingHud extends LucentHUD {
 	@Override
 	public boolean isEnabled() {
 		return Lucent.config.getModule(ChattingMod.class).isEnabled;
+	}
+
+	@Override
+	public void disable() {
+		Lucent.config.getModule(ChattingMod.class).isEnabled = false;
 	}
 
 	@Override

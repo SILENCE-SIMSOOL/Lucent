@@ -8,6 +8,7 @@ public class UIColors {
 	public static final int LIGHT_GRAY = 0xFFE1E1E1;
 	public static final int GRAY       = 0xFFADADAD;
 	public static final int DIM_GRAY   = 0xFF909090;
+	public static final int RED        = 0xFFEF4444;
 
 	// ---------- Dynamic Theme Colors ----------
 	public static int WIN_BG         = 0xE6121215; 
