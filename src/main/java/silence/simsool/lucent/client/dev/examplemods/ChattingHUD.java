@@ -1,6 +1,5 @@
 package silence.simsool.lucent.client.dev.examplemods;
 
-import net.minecraft.network.chat.Component;
 import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.general.enums.HUDAlignment;
 import silence.simsool.lucent.general.enums.RenderType;
@@ -10,12 +9,12 @@ import silence.simsool.lucent.ui.utils.UIColors;
 import silence.simsool.lucent.ui.utils.nvg.Fonts;
 import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 
-public class ChattingHud extends LucentHUD {
+public class ChattingHUD extends LucentHUD {
 
 	private static final float BASE_W = 160f;
 	private static final float BASE_H = 24f;
 
-	public ChattingHud() {
+	public ChattingHUD() {
 		super("chatting_hud", 0.01f, 0.05f, 1.0f, HUDAlignment.LEFT);
 	}
 

@@ -1,5 +1,7 @@
 package silence.simsool.lucent.config;
 
+import static silence.simsool.lucent.Lucent.mc;
+
 import java.awt.Color;
 import java.io.File;
 import java.io.FileReader;
@@ -29,22 +31,33 @@ import silence.simsool.lucent.ui.theme.ThemeManager;
 public class ModManager {
 	public final List<Mod> modules = new ArrayList<>();
 	private final File configDirectory;
-	private String currentProfile = "default";
+	private static String currentProfile = "default";
+
+	private File getGlobalLucentDir() {
+		File f = new File(mc.gameDirectory, "config/lucent");
+		if (!f.exists()) f.mkdirs();
+		return f;
+	}
+
+	private File getGlobalProfilesDir() {
+		File f = new File(getGlobalLucentDir(), "profiles");
+		if (!f.exists()) f.mkdirs();
+		return f;
+	}
 
 	public String getCurrentProfile() {
 		return currentProfile;
 	}
 
 	public void setCurrentProfile(String profile) {
-		this.currentProfile = profile;
+		currentProfile = profile;
 		saveGlobalConfig();
 		loadConfigs();
 		HUDManager.INSTANCE.loadAll();
 	}
 
 	public List<String> getProfiles() {
-		File profilesDir = new File(configDirectory, "profiles");
-		if (!profilesDir.exists()) profilesDir.mkdirs();
+		File profilesDir = getGlobalProfilesDir();
 
 		List<String> list = new ArrayList<>();
 		File[] files = profilesDir.listFiles(File::isDirectory);
@@ -64,14 +77,14 @@ public class ModManager {
 	}
 
 	public void createProfile(String name) {
-		File profilesDir = new File(configDirectory, "profiles");
+		File profilesDir = getGlobalProfilesDir();
 		File profileDir = new File(profilesDir, name);
 		if (!profileDir.exists()) profileDir.mkdirs();
 	}
 
 	public void deleteProfile(String name) {
 		if (name.equals("default")) return;
-		File profilesDir = new File(configDirectory, "profiles");
+		File profilesDir = getGlobalProfilesDir();
 		File profileDir = new File(profilesDir, name);
 		if (profileDir.exists()) deleteDirectory(profileDir);
 		if (currentProfile.equals(name)) setCurrentProfile("default");
@@ -79,7 +92,7 @@ public class ModManager {
 
 	public void renameProfile(String oldName, String newName) {
 		if (oldName.equals("default") || newName.equals("default") || newName.isEmpty()) return;
-		File profilesDir = new File(configDirectory, "profiles");
+		File profilesDir = getGlobalProfilesDir();
 		File oldDir = new File(profilesDir, oldName);
 		File newDir = new File(profilesDir, newName);
 
@@ -150,11 +163,12 @@ public class ModManager {
 		this.configDirectory = configDirectory;
 		if (!this.configDirectory.exists()) this.configDirectory.mkdirs();
 
-		// Ensure profiles directory and default profile exist
-		File profilesDir = new File(configDirectory, "profiles");
-		if (!profilesDir.exists()) profilesDir.mkdirs();
+		// Ensure local profiles directory exists
+		File localProfilesDir = new File(configDirectory, "profiles");
+		if (!localProfilesDir.exists()) localProfilesDir.mkdirs();
 
-		File defaultProfile = new File(profilesDir, "default");
+		// Ensure global profiles directory and default profile exist
+		File defaultProfile = new File(getGlobalProfilesDir(), "default");
 		if (!defaultProfile.exists()) defaultProfile.mkdirs();
 	}
 
@@ -245,7 +259,7 @@ public class ModManager {
 	}
 
 	public void loadGlobalConfig() {
-		File file = new File(configDirectory, "lucent_global.json"); 
+		File file = new File(getGlobalLucentDir(), "lucent_global.json"); 
 		if (!file.exists()) {
 			saveGlobalConfig();
 			return;
@@ -254,7 +268,7 @@ public class ModManager {
 		try (FileReader reader = new FileReader(file)) {
 			JsonObject json = GSON.fromJson(reader, JsonObject.class); if (json == null) return;
 
-			if (json.has("currentProfile")) this.currentProfile = json.get("currentProfile").getAsString();
+			if (json.has("currentProfile")) currentProfile = json.get("currentProfile").getAsString();
 
 			if (json.has("theme")) {
 				String themeName = json.get("theme").getAsString();
@@ -270,8 +284,9 @@ public class ModManager {
 	}
 
 	public void saveGlobalConfig() {
-		if (!configDirectory.exists()) configDirectory.mkdirs();
-		File file = new File(configDirectory, "lucent_global.json");
+		File f = getGlobalLucentDir();
+		if (!f.exists()) f.mkdirs();
+		File file = new File(f, "lucent_global.json");
 		JsonObject json = new JsonObject();
 
 		json.addProperty("currentProfile", currentProfile);

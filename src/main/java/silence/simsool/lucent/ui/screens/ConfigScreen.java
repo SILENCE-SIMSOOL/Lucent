@@ -1293,7 +1293,7 @@ public class ConfigScreen extends Screen {
 			float editHudY = winY + WINDOW_H - 100;
 			if (mx >= winX + 16 && mx <= winX + SIDEBAR_W - 16 && my >= editHudY && my <= editHudY + 36) {
 				this.onClose();
-				minecraft.setScreen(new EditHudScreen(true));
+				minecraft.setScreen(new EditHUDScreen(moduleManager));
 				return true;
 			}
 

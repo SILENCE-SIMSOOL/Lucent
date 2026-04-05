@@ -25,7 +25,7 @@ import silence.simsool.lucent.ui.utils.nvg.Image;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 
-public class EditHudScreen extends Screen {
+public class EditHUDScreen extends Screen {
 	private static final int SNAP_PX        = 10;
 	private static final int C_DIM          = 0x88000000;
 	private static final int C_BORDER       = 0x4DFFFFFF;
@@ -54,13 +54,16 @@ public class EditHudScreen extends Screen {
 	private long closeStartTime = -1L;
 	private boolean closing = false;
 
-	public EditHudScreen() {
-		this(false);
+	private final silence.simsool.lucent.config.ModManager parentManager;
+
+	public EditHUDScreen() {
+		this(null);
 	}
 
-	public EditHudScreen(boolean showModsButton) {
+	public EditHUDScreen(silence.simsool.lucent.config.ModManager parentManager) {
 		super(Component.literal("Edit HUD"));
-		this.showModsButton = showModsButton;
+		this.parentManager = parentManager;
+		this.showModsButton = true;
 		LucentHUD.isEditHudOpen = true;
 	}
 
@@ -83,9 +86,14 @@ public class EditHudScreen extends Screen {
 	}
 
 	private void exit() {
+		super.onClose();
+	}
+
+	@Override
+	public void removed() {
+		super.removed();
 		LucentHUD.isEditHudOpen = false;
 		HUDManager.INSTANCE.save();
-		super.onClose();
 	}
 
 	@Override
@@ -455,19 +463,19 @@ public class EditHudScreen extends Screen {
 
 				// Center Mods Button
 				if (mx >= bx && mx <= bx + bw && my >= by && my <= by + bh) {
-					minecraft.setScreen(new ConfigScreen(Lucent.config));
+					minecraft.setScreen(new ConfigScreen(parentManager != null ? parentManager : Lucent.config));
 					return true;
 				}
 
 				// Left Button
 				if (mx >= bx - sideS - gap && mx <= bx - gap && my >= by && my <= by + sideS) {
-					minecraft.setScreen(new ConfigScreen(Lucent.config));
+					minecraft.setScreen(new ConfigScreen(parentManager != null ? parentManager : Lucent.config));
 					return true;
 				}
 
 				// Right Button (Profiles)
 				if (mx >= bx + bw + gap && mx <= bx + bw + gap + sideS && my >= by && my <= by + sideS) {
-					ConfigScreen cs = new ConfigScreen(Lucent.config);
+					ConfigScreen cs = new ConfigScreen(parentManager != null ? parentManager : Lucent.config);
 					minecraft.setScreen(cs);
 					return true;
 				}

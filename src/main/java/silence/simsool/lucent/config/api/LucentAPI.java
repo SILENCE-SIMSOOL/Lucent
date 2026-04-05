@@ -3,6 +3,7 @@ package silence.simsool.lucent.config.api;
 import net.minecraft.client.gui.screens.Screen;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.ui.screens.ConfigScreen;
+import silence.simsool.lucent.ui.screens.EditHUDScreen;
 
 import java.io.File;
 
@@ -31,6 +32,16 @@ public class LucentAPI {
 	 */
 	public static Screen createConfigScreen(ModManager manager) {
 		return new ConfigScreen(manager);
+	}
+
+	/**
+	 * Returns the Lucent Edit HUD Screen for the specified ModuleManager.
+	 *
+	 * @param manager Your mod's global ModuleManager instance
+	 * @return The Minecraft Screen object containing the Edit HUD UI
+	 */
+	public static Screen createEditHUDScreen(ModManager manager) {
+		return new EditHUDScreen(manager);
 	}
 
 }

@@ -20,20 +20,21 @@ import net.fabricmc.fabric.api.client.rendering.v1.SpecialGuiElementRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
-import silence.simsool.lucent.client.dev.examplemods.ChattingHud;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.config.api.LucentAPI;
+import silence.simsool.lucent.general.utils.UChat;
 import silence.simsool.lucent.general.utils.UDisplay;
 import silence.simsool.lucent.general.utils.ULog;
 import silence.simsool.lucent.hud.HUDManager;
-import silence.simsool.lucent.ui.screens.EditHudScreen;
+import silence.simsool.lucent.ui.screens.ConfigScreen;
+import silence.simsool.lucent.ui.screens.EditHUDScreen;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 
 public class Lucent implements ClientModInitializer {
 
 	public static final String ID = "lucent";
 	public static final String NAME = "Lucent";
-	public static final String VERSION = "1.0.2";
+	public static final String VERSION = "1.0.3";
 	public static String LATEST_VERSION = "Fetching...";
 
 	public static Minecraft mc = Minecraft.getInstance();
@@ -56,12 +57,8 @@ public class Lucent implements ClientModInitializer {
 						String version = val.substring(quoteStart, quoteEnd);
 						if (version.startsWith("v")) version = version.substring(1);
 						LATEST_VERSION = version;
-					} else {
-						LATEST_VERSION = "Unknown";
-					}
-				} else {
-					LATEST_VERSION = "Unknown";
-				}
+					} else LATEST_VERSION = "Unknown";
+				} else LATEST_VERSION = "Unknown";
 			} catch(Exception e){
 				LATEST_VERSION = "Unknown";
 			}
@@ -72,11 +69,6 @@ public class Lucent implements ClientModInitializer {
 	private static KeyMapping CONFIG_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
 			"key.lucent.config",
 			GLFW.GLFW_KEY_RIGHT_SHIFT, 
-			KEYBINDING_CATEGORY
-	));
-	private static KeyMapping EDIT_HUD_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
-			"key.lucent.edithud",
-			InputConstants.UNKNOWN.getValue(),
 			KEYBINDING_CATEGORY
 	));
 
@@ -113,7 +105,8 @@ public class Lucent implements ClientModInitializer {
 			for (String label : commands) {
 				dispatcher.register(ClientCommandManager.literal(label)
 					.executes(context -> {
-						ScreenOpenHelper.shouldOpen = true;
+						mc.schedule(() -> mc.setScreen(LucentAPI.createEditHUDScreen(config)));
+						//ScreenOpenHelper.shouldOpen = true;
 						return Command.SINGLE_SUCCESS;
 					})
 				);
@@ -122,25 +115,9 @@ public class Lucent implements ClientModInitializer {
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			while (CONFIG_KEY.consumeClick()) {
-				ScreenOpenHelper.shouldOpen = true;
-			}
-			while (EDIT_HUD_KEY.consumeClick()) {
-				ScreenOpenHelper.shouldOpenEditHud = true;
-			}
-			if (ScreenOpenHelper.shouldOpen) {
-				client.setScreen(new EditHudScreen(true));
-				ScreenOpenHelper.shouldOpen = false;
-			}
-			if (ScreenOpenHelper.shouldOpenEditHud) {
-				client.setScreen(new EditHudScreen());
-				ScreenOpenHelper.shouldOpenEditHud = false;
+				mc.schedule(() -> mc.setScreen(LucentAPI.createEditHUDScreen(config)));
 			}
 		});
-	}
-
-	private static class ScreenOpenHelper {
-		static boolean shouldOpen = false;
-		static boolean shouldOpenEditHud = false;
 	}
 
 	public static Identifier id(String path) {
