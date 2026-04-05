@@ -42,8 +42,9 @@ Lucent gives you:
 
 | Version | MC Version |
 |---|---|
-| 1.0.0 | 1.21.11 |
+| 1.0.2 | 1.21.11 |
 | 1.0.1 | 1.21.11 |
+| 1.0.0 | 1.21.11 |
 
 ### Version Format
 
