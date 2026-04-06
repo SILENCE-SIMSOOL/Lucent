@@ -7,7 +7,6 @@ import java.net.http.HttpResponse;
 
 import org.lwjgl.glfw.GLFW;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.brigadier.Command;
 
 import net.fabricmc.api.ClientModInitializer;
@@ -22,12 +21,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.config.api.LucentAPI;
-import silence.simsool.lucent.general.utils.UChat;
 import silence.simsool.lucent.general.utils.UDisplay;
 import silence.simsool.lucent.general.utils.ULog;
 import silence.simsool.lucent.hud.HUDManager;
-import silence.simsool.lucent.ui.screens.ConfigScreen;
-import silence.simsool.lucent.ui.screens.EditHUDScreen;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 
 public class Lucent implements ClientModInitializer {
@@ -79,6 +75,8 @@ public class Lucent implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		LOG.info("Lucent library initializing..");
+
+		mc = Minecraft.getInstance();
 
 		config.loadGlobalConfig();
 		config.loadConfigs();
