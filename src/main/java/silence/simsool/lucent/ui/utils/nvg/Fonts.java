@@ -5,7 +5,7 @@ import silence.simsool.lucent.general.utils.UFile;
 import silence.simsool.lucent.ui.font.LucentFont;
 
 public class Fonts {
-	public static LucentFont PRETENDARD_EXTRALIGHT;
+	//public static LucentFont PRETENDARD_EXTRALIGHT;
 	public static LucentFont PRETENDARD_LIGHT;
 	public static LucentFont PRETENDARD;
 	public static LucentFont PRETENDARD_MEDIUM;
@@ -25,7 +25,7 @@ public class Fonts {
 	public static void loadFont() {
 		try {
 
-			PRETENDARD_EXTRALIGHT = getFontFromList(FontList.PRETENDARD_EXTRALIGHT);
+			//PRETENDARD_EXTRALIGHT = getFontFromList(FontList.PRETENDARD_EXTRALIGHT);
 			PRETENDARD_LIGHT      = getFontFromList(FontList.PRETENDARD_LIGHT);
 			PRETENDARD            = getFontFromList(FontList.PRETENDARD);
 			PRETENDARD_MEDIUM     = getFontFromList(FontList.PRETENDARD_MEDIUM);

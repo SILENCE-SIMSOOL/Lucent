@@ -191,6 +191,19 @@ public class ModManager {
 		return null;
 	}
 
+	public boolean isModuleEnabled(Class<? extends Mod> moduleClass) {
+		Mod m = getModule(moduleClass);
+		return m != null && m.isEnabled;
+	}
+
+	public void setModuleEnabled(Class<? extends Mod> moduleClass, boolean enabled) {
+		Mod m = getModule(moduleClass);
+		if (m != null) {
+			m.isEnabled = enabled;
+			saveConfigs();
+		}
+	}
+
 	public void loadConfigs() {
 		File profilesDir = new File(configDirectory, "profiles");
 		File profileDir = new File(profilesDir, currentProfile);

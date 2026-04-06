@@ -13,6 +13,10 @@ import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 import silence.simsool.lucent.ui.widget.base.UIWidget;
 
 public class Slider extends UIWidget {
+	public enum SliderType {
+		DOUBLE, FLOAT, INT
+	}
+
 	private final int   TRACK_H =          6;
 	private final int   THUMB_R =         10;
 	private final int   THUMB_HOVER_R =   11;
@@ -28,6 +32,7 @@ public class Slider extends UIWidget {
 	private double max;
 	private double step;
 	private double value;
+	private SliderType type = SliderType.DOUBLE;
 
 	private float thumbScale = 0.0f;
 	private float displayX = -1;
@@ -45,11 +50,28 @@ public class Slider extends UIWidget {
 	private int trackX, trackW;
 
 	public Slider(int x, int y, int width, int height, double min, double max, double step, double initialValue) {
+		this(x, y, width, height, min, max, step, initialValue, SliderType.DOUBLE);
+	}
+
+	public Slider(int x, int y, int width, int height, double min, double max, double step, double initialValue, SliderType type) {
 		super(x, y, width, height);
+		this.type = type;
 		this.min = min;
 		this.max = max;
-		this.step = step;
+		this.step = (type == SliderType.INT) ? 1.0 : step;
 		this.value = UAnimation.clamp(initialValue, min, max);
+	}
+
+	public static Slider SLIDER_INT(int x, int y, int w, int h, int min, int max, int initial) {
+		return new Slider(x, y, w, h, min, max, 1.0, initial, SliderType.INT);
+	}
+
+	public static Slider SLIDER_FLOAT(int x, int y, int w, int h, float min, float max, float step, float initial) {
+		return new Slider(x, y, w, h, min, max, step, initial, SliderType.FLOAT);
+	}
+
+	public static Slider SLIDER_DOUBLE(int x, int y, int w, int h, double min, double max, double step, double initialValue) {
+		return new Slider(x, y, w, h, min, max, step, initialValue, SliderType.DOUBLE);
 	}
 
 	@Override
@@ -277,6 +299,7 @@ public class Slider extends UIWidget {
 	}
 
 	private String formatValue(double v) {
+		if (type == SliderType.INT) return String.valueOf((int) Math.round(v));
 		return UAnimation.formatForStep(v, step);
 	}
 
@@ -300,9 +323,30 @@ public class Slider extends UIWidget {
 	public void setRange(double min, double max, double step) {
 		this.min = min;
 		this.max = max;
-		this.step = step;
+		this.step = (type == SliderType.INT) ? 1.0 : step;
 		this.value = UAnimation.clamp(this.value, min, max);
 		this.displayX = -1;
+	}
+
+	public int getIntValue() {
+		return (int) Math.round(value);
+	}
+
+	public float getFloatValue() {
+		return (float) value;
+	}
+
+	public double getDoubleValue() {
+		return value;
+	}
+
+	public SliderType getType() {
+		return type;
+	}
+
+	public void setType(SliderType type) {
+		this.type = type;
+		if (type == SliderType.INT) this.step = 1.0;
 	}
 
 	public void setOnChange(Consumer<Double> onChange) {

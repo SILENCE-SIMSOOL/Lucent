@@ -19,6 +19,7 @@ import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 
 public class HUDManager {
 	public static final HUDManager INSTANCE = new HUDManager();
+	public static GuiGraphics currentGuiGraphics;
 
 	private final List<LucentHUD> huds = new ArrayList<>();
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -45,38 +46,44 @@ public class HUDManager {
 
 	public void render(GuiGraphics guiGraphics, int screenW, int screenH) {
 		if (huds.isEmpty()) return;
+		currentGuiGraphics = guiGraphics;
 
 		// mc draw
 		for (LucentHUD hud : huds) {
-			if (hud.isEnabled() && hud.getRenderType() == RenderType.MINECRAFT) hud.draw();
+			if (hud.isEnabled() && hud.getRenderType() == RenderType.MINECRAFT) hud.draw(guiGraphics);
 		}
 
 		// nano draw
 		if (cachedHasNanoVG) {
 			NVGPIPRenderer.draw(guiGraphics, 0, 0, screenW, screenH, () -> {
 				for (LucentHUD hud : huds) {
-					if (hud.isEnabled() && hud.getRenderType() == RenderType.NANOVG) hud.draw();
+					if (hud.isEnabled() && hud.getRenderType() == RenderType.NANOVG) hud.draw(guiGraphics);
 				}
 			});
 		}
+		
+		currentGuiGraphics = null;
 	}
 
 	public void preview(GuiGraphics guiGraphics, int screenW, int screenH) {
 		if (huds.isEmpty()) return;
+		currentGuiGraphics = guiGraphics;
 
 		// mc preview
 		for (LucentHUD hud : huds) {
-			if (hud.isEnabled() && hud.getRenderType() == RenderType.MINECRAFT) hud.preview();
+			if (hud.isEnabled() && hud.getRenderType() == RenderType.MINECRAFT) hud.preview(guiGraphics);
 		}
 
 		// nano preview
 		if (cachedHasNanoVG) {
 			NVGPIPRenderer.draw(guiGraphics, 0, 0, screenW, screenH, () -> {
 				for (LucentHUD hud : huds) {
-					if (hud.isEnabled() && hud.getRenderType() == RenderType.NANOVG) hud.preview();
+					if (hud.isEnabled() && hud.getRenderType() == RenderType.NANOVG) hud.preview(guiGraphics);
 				}
 			});
 		}
+		
+		currentGuiGraphics = null;
 	}
 
 	public void loadAll() {

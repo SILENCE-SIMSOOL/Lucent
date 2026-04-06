@@ -127,7 +127,7 @@ public class EditHUDScreen extends Screen {
 
 		for (LucentHUD hud : HUDManager.INSTANCE.getHuds()) {
 			if (hud.isEnabled() && hud.getRenderType() == RenderType.MINECRAFT) {
-				hud.preview();
+				hud.preview(guiGraphics);
 			}
 		}
 		NVGPIPRenderer.draw(guiGraphics, 0, 0, width, height, () -> {
@@ -139,12 +139,12 @@ public class EditHUDScreen extends Screen {
 				NVGRenderer.globalAlpha(UAnimation.clamp(animP * 1.5f, 0, 1));
 			}
 
-		for (LucentHUD hud : HUDManager.INSTANCE.getHuds()) {
-			if (hud.isEnabled() && hud.getRenderType() == RenderType.NANOVG) {
-				hud.preview();
+			for (LucentHUD hud : HUDManager.INSTANCE.getHuds()) {
+				if (hud.isEnabled() && hud.getRenderType() == RenderType.NANOVG) {
+					hud.preview(guiGraphics);
+				}
 			}
-		}
-		renderOverlay(animP);
+			renderOverlay(animP);
 
 			NVGRenderer.pop();
 		});

@@ -1,5 +1,6 @@
 package silence.simsool.lucent.client.dev.examplemods;
 
+import net.minecraft.client.gui.GuiGraphics;
 import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.general.enums.HUDAlignment;
 import silence.simsool.lucent.general.enums.RenderType;
@@ -44,17 +45,17 @@ public class ChattingHUD extends LucentHUD {
 	}
 
 	@Override
-	public void draw() {
+	public void draw(GuiGraphics guiGraphics) {
 		if (LucentHUD.isEditHudOpen || UDisplay.isDebugScreen()) return;
-		renderPanel("Hello World");
+		renderPanel(guiGraphics, "Hello World");
 	}
 
 	@Override
-	public void preview() {
-		renderPanel("Chat & Emote");
+	public void preview(GuiGraphics guiGraphics) {
+		renderPanel(guiGraphics, "Chat & Emote");
 	}
 
-	private void renderPanel(String text) {
+	private void renderPanel(GuiGraphics guiGraphics, String text) {
 		float rx = getRenderX(), ry = getRenderY();
 		float sw = getScaledWidth(), sh = getScaledHeight();
 		float fs = 14f * scale;

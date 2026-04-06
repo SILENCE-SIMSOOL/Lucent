@@ -2,6 +2,8 @@ package silence.simsool.lucent.general.models.data;
 
 import org.lwjgl.glfw.GLFW;
 
+import silence.simsool.lucent.general.utils.UDisplay;
+
 /**
  * Represents a single key binding: one keyboard key or mouse button, plus optional modifier keys.
  *
@@ -23,6 +25,8 @@ public class KeyBind {
 
 	/** GLFW modifier bitmask (GLFW_MOD_SHIFT | GLFW_MOD_CONTROL | GLFW_MOD_ALT). */
 	public int mods;
+
+	private boolean wasPressed = false;
 
 	/** Constructs an unbound (None) key bind. */
 	public KeyBind() {
@@ -72,6 +76,24 @@ public class KeyBind {
 
 	public static boolean isAlt(int key) {
 		return key == GLFW.GLFW_KEY_LEFT_ALT || key == GLFW.GLFW_KEY_RIGHT_ALT;
+	}
+
+	public boolean isKeyDown() {
+		if (!isBound()) return false;
+		long window = UDisplay.getWindow().handle();
+		if (isKey()) return GLFW.glfwGetKey(window, keyCode) == GLFW.GLFW_PRESS;
+		if (isMouse()) return GLFW.glfwGetMouseButton(window, mouseButton) == GLFW.GLFW_PRESS;
+		return false;
+	}
+
+	public boolean isPressed() {
+		boolean currentlyDown = isKeyDown();
+		if (currentlyDown && !wasPressed) {
+			wasPressed = true;
+			return true;
+		}
+		if (!currentlyDown) wasPressed = false;
+		return false;
 	}
 
 	/**

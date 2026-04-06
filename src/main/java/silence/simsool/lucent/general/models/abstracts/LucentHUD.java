@@ -1,5 +1,6 @@
 package silence.simsool.lucent.general.models.abstracts;
 
+import net.minecraft.client.gui.GuiGraphics;
 import silence.simsool.lucent.general.enums.HUDAlignment;
 import silence.simsool.lucent.general.enums.RenderType;
 import silence.simsool.lucent.general.utils.UDisplay;
@@ -9,13 +10,19 @@ import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 public abstract class LucentHUD {
 	public static boolean isEditHudOpen = false;
 	public final String id;
+	public final Class<? extends Mod> moduleClass;
 	public float x;
 	public float y;
 	public float scale; // (0.5 ~ 2.0 / 0.1 unit)
 	public HUDAlignment alignment;
 
 	protected LucentHUD(String id, float defaultX, float defaultY, float defaultScale, HUDAlignment defaultAlignment) {
+		this(id, null, defaultX, defaultY, defaultScale, defaultAlignment);
+	}
+
+	protected LucentHUD(String id, Class<? extends Mod> moduleClass, float defaultX, float defaultY, float defaultScale, HUDAlignment defaultAlignment) {
 		this.id = id;
+		this.moduleClass = moduleClass;
 		this.x = defaultX;
 		this.y = defaultY;
 		this.scale = clampScale(defaultScale);
@@ -36,7 +43,7 @@ public abstract class LucentHUD {
 	 * Subclasses can override this to tie visibility to mod settings.
 	 */
 	public boolean isEnabled() {
-		return true;
+		return moduleClass == null || silence.simsool.lucent.Lucent.config.isModuleEnabled(moduleClass);
 	}
 
 	/**
@@ -44,6 +51,9 @@ public abstract class LucentHUD {
 	 * Subclasses should override this to disable the associated config module.
 	 */
 	public void disable() {
+		if (moduleClass != null) {
+			silence.simsool.lucent.Lucent.config.setModuleEnabled(moduleClass, false);
+		}
 	}
 
 	/**
@@ -54,7 +64,7 @@ public abstract class LucentHUD {
 	 * <li>Use real-time data for rendering.</li>
 	 * </ul>
 	 */
-	public abstract void draw();
+	public abstract void draw(GuiGraphics guiGraphics);
 
 	/**
 	 * Renders a preview for the EditHUD screen.
@@ -63,7 +73,7 @@ public abstract class LucentHUD {
 	 * <li>Does not need to rely on actual game states or live data.</li>
 	 * </ul>
 	 */
-	public abstract void preview();
+	public abstract void preview(GuiGraphics guiGraphics);
 
 	/** Returns the base width used for preview and scaling calculations. */
 	public abstract float getPreviewWidth();
