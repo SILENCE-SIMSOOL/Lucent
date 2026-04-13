@@ -18,6 +18,7 @@ import silence.simsool.lucent.general.utils.LucentUtils;
 import silence.simsool.lucent.general.utils.UDisplay;
 import silence.simsool.lucent.general.utils.UMouse;
 import silence.simsool.lucent.hud.HUDManager;
+import silence.simsool.lucent.config.api.LucentAPI;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UIColors;
 import silence.simsool.lucent.ui.utils.nvg.Fonts;
@@ -93,7 +94,7 @@ public class EditHUDScreen extends Screen {
 	public void removed() {
 		super.removed();
 		LucentHUD.isEditHudOpen = false;
-		HUDManager.INSTANCE.save();
+		LucentAPI.getHUDManager().save();
 	}
 
 	@Override
@@ -125,7 +126,7 @@ public class EditHUDScreen extends Screen {
 			}
 		}
 
-		for (LucentHUD hud : HUDManager.INSTANCE.getHuds()) {
+		for (LucentHUD hud : LucentAPI.getHUDManager().getHuds()) {
 			if (hud.isEnabled() && hud.getRenderType() == RenderType.MINECRAFT) {
 				hud.preview(guiGraphics);
 			}
@@ -139,7 +140,7 @@ public class EditHUDScreen extends Screen {
 				NVGRenderer.globalAlpha(UAnimation.clamp(animP * 1.5f, 0, 1));
 			}
 
-			for (LucentHUD hud : HUDManager.INSTANCE.getHuds()) {
+			for (LucentHUD hud : LucentAPI.getHUDManager().getHuds()) {
 				if (hud.isEnabled() && hud.getRenderType() == RenderType.NANOVG) {
 					hud.preview(guiGraphics);
 				}
@@ -162,14 +163,14 @@ public class EditHUDScreen extends Screen {
 
 		drawCrosshair(vw, vh);
 
-		for (LucentHUD hud : HUDManager.INSTANCE.getHuds()) {
+		for (LucentHUD hud : LucentAPI.getHUDManager().getHuds()) {
 			if (hud.isEnabled()) drawHudBorder(hud, mx, my);
 		}
 
 		drawCrosshair(vw, vh);
 
 		if (draggingMove == null && draggingScale == null && contextMenuHud == null) {
-			for (LucentHUD hud : HUDManager.INSTANCE.getHuds()) {
+			for (LucentHUD hud : LucentAPI.getHUDManager().getHuds()) {
 				if (hud.isEnabled() && isInsideHud(hud, mx, my)) {
 					drawTooltip(hud, mx, my, vw, vh);
 					break;
@@ -286,7 +287,7 @@ public class EditHUDScreen extends Screen {
 		if (matchX) NVGRenderer.line(cx, 0, cx, vh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 150));
 
 		// Requirement 2: Alignment with other HUDs
-		for (LucentHUD other : HUDManager.INSTANCE.getHuds()) {
+		for (LucentHUD other : LucentAPI.getHUDManager().getHuds()) {
 			if (!other.isEnabled() || other == draggingMove) continue;
 
 			float orx = other.getRenderX(), ory = other.getRenderY();
@@ -434,7 +435,7 @@ public class EditHUDScreen extends Screen {
 			return true;
 		}
 
-		List<LucentHUD> huds = HUDManager.INSTANCE.getHuds();
+		List<LucentHUD> huds = LucentAPI.getHUDManager().getHuds();
 
 		if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
 			for (int i = huds.size() - 1; i >= 0; i--) {
@@ -498,7 +499,7 @@ public class EditHUDScreen extends Screen {
 	@Override
 	public boolean mouseReleased(MouseButtonEvent event) {
 		if (event.button() == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-			if (draggingMove != null || draggingScale != null) HUDManager.INSTANCE.save();
+			if (draggingMove != null || draggingScale != null) LucentAPI.getHUDManager().save();
 			draggingMove  = null;
 			draggingScale = null;
 		}
@@ -563,7 +564,7 @@ public class EditHUDScreen extends Screen {
 			if (Math.abs(hcy_raw - vh / 2f) < SNAP_PX) snappedY = vh / 2f - scaledH / 2f;
 
 			// Snapping to other HUDs
-			for (LucentHUD other : HUDManager.INSTANCE.getHuds()) {
+			for (LucentHUD other : LucentAPI.getHUDManager().getHuds()) {
 				if (other == draggingMove) continue;
 
 				float orx = other.getRenderX(), ory = other.getRenderY();
@@ -674,10 +675,10 @@ public class EditHUDScreen extends Screen {
 
 		if (idx >= 0 && idx < opts.length) {
 			contextMenuHud.alignment = opts[idx];
-			HUDManager.INSTANCE.save();
+			LucentAPI.getHUDManager().save();
 		} else if (idx == opts.length) {
 			contextMenuHud.disable();
-			HUDManager.INSTANCE.save();
+			LucentAPI.getHUDManager().save();
 		}
 	}
 

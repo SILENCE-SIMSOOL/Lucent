@@ -1,5 +1,90 @@
 package silence.simsool.lucent.general.utils;
 
+import static silence.simsool.lucent.Lucent.mc;
+
+import org.joml.Matrix3x2fStack;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+
+import net.minecraft.client.gui.GuiGraphics;
+import silence.simsool.lucent.ui.utils.UIColors;
+
+public class UText {
+
+	public static void drawText(GuiGraphics graphics, String text, float x, float y, float scale) {
+		drawText(graphics, text, x, y, scale, UIColors.PURE_WHITE, false);
+	}
+
+	public static void drawText(GuiGraphics graphics, String text, float x, float y, float scale, int color) {
+		drawText(graphics, text, x, y, scale, color, false);
+	}
+
+	public static void drawShadowText(GuiGraphics graphics, String text, float x, float y, float scale) {
+		drawText(graphics, text, x, y, scale, UIColors.PURE_WHITE, true);
+	}
+
+	public static void drawShadowText(GuiGraphics graphics, String text, float x, float y, float scale, int color) {
+		drawText(graphics, text, x, y, scale, color, true);
+	}
+
+	public static void drawText(GuiGraphics graphics, String text, float x, float y, float scale, int color, boolean shadow) {
+		Matrix3x2fStack pose = graphics.pose();
+		pose.pushMatrix();
+		pose.translate(x, y);
+		pose.scale(scale, scale);
+		graphics.drawString(mc.font, text, 0, 0, color, shadow);
+		pose.popMatrix();
+	}
+
+	public static void drawTextRatio(GuiGraphics graphics, String text, float x, float y, float scale, float scaleRatio) {
+		drawText(graphics, text, x, y, scale, scaleRatio, UIColors.PURE_WHITE, false);
+	}
+
+	public static void drawTextRatio(GuiGraphics graphics, String text, float x, float y, float scale, float scaleRatio, int color) {
+		drawText(graphics, text, x, y, scale, scaleRatio, color, false);
+	}
+
+	public static void drawShadowTextRatio(GuiGraphics graphics, String text, float x, float y, float scale, float scaleRatio) {
+		drawText(graphics, text, x, y, scale, scaleRatio, UIColors.PURE_WHITE, true);
+	}
+
+	public static void drawShadowTextRatio(GuiGraphics graphics, String text, float x, float y, float scale, float scaleRatio, int color) {
+		drawText(graphics, text, x, y, scale, scaleRatio, color, true);
+	}
+
+	public static void drawText(GuiGraphics graphics, String text, float x, float y, float scale, float scaleRatio, int color, boolean shadow) {
+		Matrix3x2fStack pose = graphics.pose();
+		pose.pushMatrix();
+		pose.translate(x * scaleRatio, y * scaleRatio);
+		pose.scale(scaleRatio * scale, scaleRatio * scale);
+		graphics.drawString(mc.font, text, 0, 0, color, shadow);
+		pose.popMatrix();
+	}
+
+	public static void drawCenteredText(GuiGraphics graphics, String text, float centerX, float y, float scale) {
+		drawCenteredText(graphics, text, centerX, y, scale, UIColors.PURE_WHITE, false);
+	}
+
+	public static void drawCenteredText(GuiGraphics graphics, String text, float centerX, float y, float scale, int color) {
+		drawCenteredText(graphics, text, centerX, y, scale, color, false);
+	}
+
+	public static void drawCenteredShadowText(GuiGraphics graphics, String text, float centerX, float y, float scale) {
+		drawCenteredText(graphics, text, centerX, y, scale, UIColors.PURE_WHITE, true);
+	}
+
+	public static void drawCenteredShadowText(GuiGraphics graphics, String text, float centerX, float y, float scale, int color) {
+		drawCenteredText(graphics, text, centerX, y, scale, color, true);
+	}
+
+	public static void drawCenteredText(GuiGraphics graphics, String text, float centerX, float y, float scale, int color, boolean shadow) {
+		float width = mc.font.width(text) * scale;
+		drawText(graphics, text, centerX - width / 2f, y, scale, color, shadow);
+	}
+
+}
+
+
 //import java.util.List;
 //import java.util.ArrayList;
 //import java.util.HashMap;
@@ -15,12 +100,6 @@ package silence.simsool.lucent.general.utils;
 //import silence.simsool.lucent.Lucent;
 //import silence.simsool.lucent.ui.font.CFontRenderer;
 //import silence.simsool.lucent.ui.font.LucentFont;
-
-public class UText {
-
-
-
-}
 
 //public class UText {
 //

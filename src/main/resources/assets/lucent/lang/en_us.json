@@ -1,5 +1,31 @@
 {
 	"key.category.lucent.main": "Lucent",
 	"key.lucent.config": "Open Config Screen",
-	"key.lucent.edithud": "Open EditHUD Screen"
+	"key.lucent.edithud": "Open EditHUD Screen",
+
+	"lucent.config.title": "Lucent Config",
+	"lucent.sidebar.mods": "Mods",
+	"lucent.sidebar.profiles": "Profiles",
+	"lucent.sidebar.themes": "Themes",
+	"lucent.sidebar.preferences": "Preferences",
+	"lucent.sidebar.edithud": "Edit HUD",
+	"lucent.sidebar.close": "Close",
+	"lucent.search.placeholder": "Search...",
+	"lucent.preferences.open_animation": "Open Animation",
+	"lucent.preferences.open_animation.desc": "Enable iPhone-style scale animation when opening this screen.",
+	"lucent.preferences.ui_blur": "UI Blur",
+	"lucent.preferences.ui_blur.desc": "Enable background blur effect for a premium frosted glass look.",
+	"lucent.preferences.ui_blur_strength": "UI Blur Strength",
+	"lucent.preferences.ui_blur_strength.desc": "Adjust the intensity of the background blur.",
+	"lucent.preferences.language": "Setup Language",
+	"lucent.preferences.language.desc": "Choose the primary language for the configuration UI.",
+	"lucent.preferences.ui_scale": "UI Scale",
+	"lucent.preferences.ui_scale.desc": "Adjust the overall size of the configuration interface.",
+	"lucent.preferences.version": "Version Module",
+	"lucent.preferences.update": "Update",
+	"lucent.preferences.open_config": "Open Config",
+	"lucent.preferences.load_config": "Load Config",
+	"lucent.preferences.discord": "Discord",
+	"lucent.preferences.github": "GitHub",
+	"lucent.preferences.license": "License"
 }

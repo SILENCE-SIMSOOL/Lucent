@@ -12,30 +12,40 @@ import com.mojang.brigadier.Command;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.SpecialGuiElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.config.api.LucentAPI;
+import silence.simsool.lucent.general.utils.LucentUtils;
 import silence.simsool.lucent.general.utils.UDisplay;
 import silence.simsool.lucent.general.utils.ULog;
 import silence.simsool.lucent.hud.HUDManager;
+import silence.simsool.lucent.ui.manager.LucentResourceManager;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 
 public class Lucent implements ClientModInitializer {
 
 	public static final String ID = "lucent";
 	public static final String NAME = "Lucent";
-	public static final String VERSION = "1.0.4";
+	public static final String VERSION = "1.0.8";
 	public static String LATEST_VERSION = "Fetching...";
 
 	public static Minecraft mc = Minecraft.getInstance();
-	public static ULog LOG = new ULog("Lucent");
+	public static HUDManager hudManager = new HUDManager();
 	public static ModManager config = LucentAPI.createModManager("lucent");
+	public static ULog LOG = new ULog("Lucent");
+
+	public static KeyMapping.Category KEYBINDING_CATEGORY = KeyMapping.Category.register(LucentUtils.id("main"));
+	public static KeyMapping CONFIG_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+			"key.lucent.config",
+			GLFW.GLFW_KEY_RIGHT_SHIFT, 
+			KEYBINDING_CATEGORY
+	));
 
 	static {
 		HttpClient.newHttpClient().sendAsync(
@@ -61,13 +71,6 @@ public class Lucent implements ClientModInitializer {
 		});
 	}
 
-	public static KeyMapping.Category KEYBINDING_CATEGORY = KeyMapping.Category.register(id("main"));
-	private static KeyMapping CONFIG_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
-			"key.lucent.config",
-			GLFW.GLFW_KEY_RIGHT_SHIFT, 
-			KEYBINDING_CATEGORY
-	));
-
 	public static void init() {
 		
 	}
@@ -76,26 +79,30 @@ public class Lucent implements ClientModInitializer {
 	public void onInitializeClient() {
 		LOG.info("Lucent library initializing..");
 
-		mc = Minecraft.getInstance();
-
-		config.loadGlobalConfig();
-		config.loadConfigs();
-
 //		// Example mods
 //		config.registerExampleMods();
-//		HUDManager.INSTANCE.register(new ChattingHud());
+//		hudManager.register(new ChattingHUD());
+//		hudManager.register(new TestHUD());
 
-		HUDManager.INSTANCE.loadAll();
+		//mc = Minecraft.getInstance();
+		config.loadGlobalConfig();
+		config.loadConfigs();
+		hudManager.loadAll();
 
 		SpecialGuiElementRegistry.register(context ->
 			new NVGPIPRenderer(context.vertexConsumers())
 		);
 
-		HudRenderCallback.EVENT.register((guiGraphics, tickDelta) -> {
-			int sw = UDisplay.getWidth();
-			int sh = UDisplay.getHeight();
-			HUDManager.INSTANCE.render(guiGraphics, sw, sh);
-		});
+		HudElementRegistry.attachElementBefore(
+		    VanillaHudElements.SLEEP,
+		    Identifier.fromNamespaceAndPath(ID, "hud_element"),
+		    (guiGraphics, tickDelta) -> {
+		    	LucentResourceManager.loadIcons(config);
+		        int sw = UDisplay.getWidth();
+		        int sh = UDisplay.getHeight();
+		        hudManager.render(guiGraphics, sw, sh);
+		    }
+		);
 
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
 			String[] commands = {"lucent", "config"};
@@ -104,22 +111,12 @@ public class Lucent implements ClientModInitializer {
 				dispatcher.register(ClientCommandManager.literal(label)
 					.executes(context -> {
 						mc.schedule(() -> mc.setScreen(LucentAPI.createEditHUDScreen(config)));
-						//ScreenOpenHelper.shouldOpen = true;
 						return Command.SINGLE_SUCCESS;
 					})
 				);
 			}
 		});
 
-		ClientTickEvents.END_CLIENT_TICK.register(client -> {
-			while (CONFIG_KEY.consumeClick()) {
-				mc.schedule(() -> mc.setScreen(LucentAPI.createEditHUDScreen(config)));
-			}
-		});
-	}
-
-	public static Identifier id(String path) {
-		return Identifier.fromNamespaceAndPath(ID, path);
 	}
 
 }

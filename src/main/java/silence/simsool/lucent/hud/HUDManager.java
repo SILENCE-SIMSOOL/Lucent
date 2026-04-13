@@ -12,20 +12,20 @@ import com.google.gson.JsonObject;
 
 import net.minecraft.client.gui.GuiGraphics;
 import silence.simsool.lucent.Lucent;
+import static silence.simsool.lucent.Lucent.mc;
 import silence.simsool.lucent.general.enums.HUDAlignment;
 import silence.simsool.lucent.general.enums.RenderType;
 import silence.simsool.lucent.general.models.abstracts.LucentHUD;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 
 public class HUDManager {
-	public static final HUDManager INSTANCE = new HUDManager();
 	public static GuiGraphics currentGuiGraphics;
 
 	private final List<LucentHUD> huds = new ArrayList<>();
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private boolean cachedHasNanoVG = false;
 
-	private HUDManager() {}
+	public HUDManager() {}
 
 	public void register(LucentHUD hud) {
 		huds.add(hud);
@@ -45,7 +45,7 @@ public class HUDManager {
 	}
 
 	public void render(GuiGraphics guiGraphics, int screenW, int screenH) {
-		if (huds.isEmpty()) return;
+		if (huds.isEmpty() || mc.player == null) return;
 		currentGuiGraphics = guiGraphics;
 
 		// mc draw
@@ -66,7 +66,7 @@ public class HUDManager {
 	}
 
 	public void preview(GuiGraphics guiGraphics, int screenW, int screenH) {
-		if (huds.isEmpty()) return;
+		if (huds.isEmpty() || mc.player == null) return;
 		currentGuiGraphics = guiGraphics;
 
 		// mc preview

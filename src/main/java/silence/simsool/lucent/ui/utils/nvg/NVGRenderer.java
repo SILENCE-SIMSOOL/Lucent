@@ -43,9 +43,11 @@ public class NVGRenderer {
 	private static Scissor scissor = null;
 	private static boolean drawing = false;
 
-	static {
-		vg = NanoVGGL3.nvgCreate(NanoVGGL3.NVG_ANTIALIAS | NanoVGGL3.NVG_STENCIL_STROKES);
-		if (vg == -1L) throw new RuntimeException("Failed to initialize NanoVG");
+	private static void checkInit() {
+		if (vg == -1L) {
+			vg = NanoVGGL3.nvgCreate(NanoVGGL3.NVG_ANTIALIAS | NanoVGGL3.NVG_STENCIL_STROKES);
+			if (vg == -1L) throw new RuntimeException("Failed to initialize NanoVG");
+		}
 	}
 
 	private static class Scissor {
@@ -78,6 +80,7 @@ public class NVGRenderer {
 	}
 
 	public static long getVG() {
+		checkInit();
 		return vg;
 	}
 
@@ -91,6 +94,7 @@ public class NVGRenderer {
 	 * @throws IllegalStateException if a frame is already in progress
 	 */
 	public static void beginFrame(float width, float height) {
+		checkInit();
 		if (drawing) throw new IllegalStateException("[NVGRenderer] Already drawing, but called beginFrame");
 		float dpr = devicePixelRatio();
 		nvgBeginFrame(vg, width / dpr, height / dpr, dpr);
@@ -869,7 +873,7 @@ public class NVGRenderer {
 	 * @return NanoVG image handle
 	 */
 	public static int createNVGImage(int textureId, int textureWidth, int textureHeight) {
-		return NanoVGGL3.nvglCreateImageFromHandle(vg, textureId, textureWidth, textureHeight, NVG_IMAGE_NODELETE);
+		return NanoVGGL3.nvglCreateImageFromHandle(getVG(), textureId, textureWidth, textureHeight, NVG_IMAGE_NODELETE);
 	}
 
 	/**
@@ -1011,8 +1015,8 @@ public class NVGRenderer {
 	}
 
 	public static float getStandardGuiScale() {
-		float verticalScale = (mc.getWindow().getScreenHeight() / 1080f) / devicePixelRatio();
-		float horizontalScale = (mc.getWindow().getScreenWidth() / 1920f) / devicePixelRatio();
+		float verticalScale = (mc.getWindow().getHeight() / 1080f) / devicePixelRatio();
+		float horizontalScale = (mc.getWindow().getWidth() / 1920f) / devicePixelRatio();
 
 		float scale = Math.max(verticalScale, horizontalScale);
 		scale = Math.max(1f, Math.min(scale, 3f));
@@ -1029,6 +1033,7 @@ public class NVGRenderer {
 	 */
 	private static int getFontID(LucentFont font) {
 		if (font == null) return -1;
+		checkInit();
 		return fontMap.computeIfAbsent(font, f -> {
 			ByteBuffer buffer = f.buffer();
 			int id = nvgCreateFontMem(vg, font.getName(), buffer, false);
@@ -1059,6 +1064,7 @@ public class NVGRenderer {
 	 * @throws NullPointerException If STB fails to decode the image
 	 */
 	private static int loadImage(Image image) throws IOException {
+		checkInit();
 		int[] w = new int[1], h = new int[1], channels = new int[1];
 		ByteBuffer buffer = STBImage.stbi_load_from_memory(image.buffer(), w, h, channels, 4);
 		if (buffer == null) throw new NullPointerException("Failed to load image: " + image.identifier);
@@ -1076,6 +1082,7 @@ public class NVGRenderer {
 	 * @throws IllegalStateException If NanoSVG fails to parse the SVG source
 	 */
 	private static int loadSVG(Image image) {
+		checkInit();
 		String vec;
 		try (InputStream s = image.stream) {
 			vec = new String(s.readAllBytes());

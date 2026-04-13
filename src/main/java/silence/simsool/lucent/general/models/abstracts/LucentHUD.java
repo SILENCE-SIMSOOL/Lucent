@@ -1,10 +1,11 @@
 package silence.simsool.lucent.general.models.abstracts;
 
 import net.minecraft.client.gui.GuiGraphics;
+import silence.simsool.lucent.Lucent;
+import silence.simsool.lucent.config.api.LucentAPI;
 import silence.simsool.lucent.general.enums.HUDAlignment;
 import silence.simsool.lucent.general.enums.RenderType;
 import silence.simsool.lucent.general.utils.UDisplay;
-import silence.simsool.lucent.hud.HUDManager;
 import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 
 public abstract class LucentHUD {
@@ -43,7 +44,7 @@ public abstract class LucentHUD {
 	 * Subclasses can override this to tie visibility to mod settings.
 	 */
 	public boolean isEnabled() {
-		return moduleClass == null || silence.simsool.lucent.Lucent.config.isModuleEnabled(moduleClass);
+		return moduleClass == null || Lucent.config.isModuleEnabled(moduleClass);
 	}
 
 	/**
@@ -52,7 +53,7 @@ public abstract class LucentHUD {
 	 */
 	public void disable() {
 		if (moduleClass != null) {
-			silence.simsool.lucent.Lucent.config.setModuleEnabled(moduleClass, false);
+			Lucent.config.setModuleEnabled(moduleClass, false);
 		}
 	}
 
@@ -106,7 +107,7 @@ public abstract class LucentHUD {
 	 * @return The calculated X coordinate.
 	 */
 	public float getRenderX() {
-		float sw = UDisplay.getScreenWidth();
+		float sw = UDisplay.getWidth();
 		float gs = NVGRenderer.getStandardGuiScale();
 		float virtualW = sw / gs;
 
@@ -122,7 +123,7 @@ public abstract class LucentHUD {
 	 * @return The Y coordinate.
 	 */
 	public float getRenderY() {
-		float sh = UDisplay.getScreenHeight();
+		float sh = UDisplay.getHeight();
 		float gs = NVGRenderer.getStandardGuiScale();
 		float virtualH = sh / gs;
 
@@ -131,6 +132,6 @@ public abstract class LucentHUD {
 
 	/** Saves the current HUD state to the configuration file. */
 	public void save() {
-		HUDManager.INSTANCE.save();
+		LucentAPI.getHUDManager().save();
 	}
 }

@@ -32,9 +32,10 @@ import silence.simsool.lucent.general.models.data.KeyBind;
 import silence.simsool.lucent.general.models.data.LucentTheme;
 import silence.simsool.lucent.general.models.data.NavState;
 import silence.simsool.lucent.general.models.interfaces.annotations.ModConfig;
-import silence.simsool.lucent.general.utils.LucentUtils;
+import silence.simsool.lucent.general.utils.L10n;
 import silence.simsool.lucent.general.utils.UDisplay;
 import silence.simsool.lucent.general.utils.UMouse;
+import silence.simsool.lucent.ui.manager.LucentResourceManager;
 import silence.simsool.lucent.ui.theme.ThemeManager;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UColor;
@@ -55,7 +56,7 @@ import silence.simsool.lucent.ui.widget.base.UIWidget;
 public class ConfigScreen extends Screen {
 
 	public ConfigScreen(ModManager moduleManager) {
-		super(Component.literal("Lucent Config"));
+		super(Component.literal(L10n.translate("lucent.config.title")));
 		this.moduleManager = moduleManager;
 	}
 
@@ -68,10 +69,6 @@ public class ConfigScreen extends Screen {
 	private int winX, winY;
 	private int contentX, contentY, contentW, contentH;
 	private int scissorY, scissorH;
-
-	private final Map<String, Image> modIconsMap = new HashMap<>();
-	private Image iconMods, iconProfiles, iconThemes, iconPreferences, iconEditHud, iconClose, iconSearch, iconSettings, iconDelete, iconEdit;
-	private boolean iconsLoaded = false;
 
 	private final Map<String, Float> toggleAnimCache = new HashMap<>();
 	private final ModManager moduleManager;
@@ -251,18 +248,18 @@ public class ConfigScreen extends Screen {
 				if (profileName.equals("default")) {
 					// No divider, center Edit icon
 					boolean hovEdit = mx > x && mx < x + width && my > barTop && my < barTop + BAR_H;
-					NVGRenderer.image(iconEdit, midX - (iconS/2f), barTop + (BAR_H - iconS) / 2f, iconS, iconS, 0f, hovEdit ? 1.0f : 0.6f);
+					NVGRenderer.image(LucentResourceManager.iconEdit, midX - (iconS/2f), barTop + (BAR_H - iconS) / 2f, iconS, iconS, 0f, hovEdit ? 1.0f : 0.6f);
 				} else {
 					// Divider line
 					NVGRenderer.rect(midX - 0.5f, barTop + 6f, 1f, BAR_H - 12f, 0x33FFFFFF, 0f);
 
 					// Left Half: Edit
 					boolean hovEdit = mx > x && mx < midX && my > barTop && my < barTop + BAR_H;
-					NVGRenderer.image(iconEdit, x + (width/4f) - (iconS/2f), barTop + (BAR_H - iconS) / 2f, iconS, iconS, 0f, hovEdit ? 1.0f : 0.6f);
+					NVGRenderer.image(LucentResourceManager.iconEdit, x + (width/4f) - (iconS/2f), barTop + (BAR_H - iconS) / 2f, iconS, iconS, 0f, hovEdit ? 1.0f : 0.6f);
 
 					// Right Half: Delete
 					boolean hovDel = mx > midX && mx < x + width && my > barTop && my < barTop + BAR_H;
-					NVGRenderer.image(iconDelete, x + (3*width/4f) - (iconS/2f), barTop + (BAR_H - iconS) / 2f, iconS, iconS, 0f, hovDel ? 1.0f : 0.6f);
+					NVGRenderer.image(LucentResourceManager.iconDelete, x + (3*width/4f) - (iconS/2f), barTop + (BAR_H - iconS) / 2f, iconS, iconS, 0f, hovDel ? 1.0f : 0.6f);
 				}
 			}
 
@@ -401,35 +398,7 @@ public class ConfigScreen extends Screen {
 		else buildPlaceholderWidgets(currentSidebarPage);
 	}
 
-	private void loadIcon() {
-		if (iconsLoaded) return;
-		iconsLoaded = true;
 
-		try {
-			iconMods        = LucentUtils.createIcon("mods");
-			iconProfiles    = LucentUtils.createIcon("profiles");
-			iconThemes      = LucentUtils.createIcon("themes");
-			iconPreferences = LucentUtils.createIcon("preferences");
-			iconEditHud     = LucentUtils.createIcon("edithud");
-			iconClose       = LucentUtils.createIcon("close");
-			iconSearch      = LucentUtils.createIcon("search");
-			iconSettings    = LucentUtils.createIcon("settings");
-			iconDelete      = LucentUtils.createIcon("delete");
-			iconEdit        = LucentUtils.createIcon("edit");
-
-			if (moduleManager != null) {
-				for (Mod m : moduleManager.modules) {
-					if (m.icon != null && !m.icon.isEmpty() && !modIconsMap.containsKey(m.name)) {
-						try {
-							modIconsMap.put(m.name, NVGRenderer.createImage(m.icon));
-						} catch (Exception ex) {}
-					}
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 
 	public void applyTheme(LucentTheme theme) {
 		ThemeManager.applyTheme(theme);
@@ -443,13 +412,14 @@ public class ConfigScreen extends Screen {
 	private void pushNav(String page, Mod mod, String cat) {
 		if (currentSidebarPage.equals("Mods")) moduleManager.saveConfigs();
 
-		NavState current = new NavState(currentSidebarPage, currentModSettings, currentCategory);
+		NavState current = new NavState(currentSidebarPage, currentModSettings, currentCategory, scrollOffset);
 		if (history.isEmpty() || !isSameState(history.peek(), current)) history.push(current);
 
 		forwardHistory.clear();
 		currentSidebarPage = page;
 		currentModSettings = mod;
 		currentCategory = cat;
+		scrollOffset = 0; // New page starts at top
 
 		if (page.equals("Mods")) moduleManager.loadConfigs();
 
@@ -466,15 +436,16 @@ public class ConfigScreen extends Screen {
 
 		if (currentSidebarPage.equals("Mods")) moduleManager.saveConfigs();
 
-		forwardHistory.push(new NavState(currentSidebarPage, currentModSettings, currentCategory));
+		forwardHistory.push(new NavState(currentSidebarPage, currentModSettings, currentCategory, scrollOffset));
 		NavState prev = history.pop();
 		currentSidebarPage = prev.page;
 		currentModSettings = prev.mod;
 		currentCategory = prev.category;
+		scrollOffset = prev.scrollOffset;
 
 		if (currentSidebarPage.equals("Mods")) moduleManager.loadConfigs();
 
-		refreshUI();
+		refreshUI(true);
 	}
 
 	private void goForward() {
@@ -482,15 +453,16 @@ public class ConfigScreen extends Screen {
 
 		if (currentSidebarPage.equals("Mods")) moduleManager.saveConfigs();
 
-		history.push(new NavState(currentSidebarPage, currentModSettings, currentCategory));
+		history.push(new NavState(currentSidebarPage, currentModSettings, currentCategory, scrollOffset));
 		NavState next = forwardHistory.pop();
 		currentSidebarPage = next.page;
 		currentModSettings = next.mod;
 		currentCategory = next.category;
+		scrollOffset = next.scrollOffset;
 
 		if (currentSidebarPage.equals("Mods")) moduleManager.loadConfigs();
 
-		refreshUI();
+		refreshUI(true);
 	}
 
 	private void buildThemesWidgets() {
@@ -560,32 +532,37 @@ public class ConfigScreen extends Screen {
 		int itemW = contentW - PAD * 2;
 		
 		// 1. Open Animation
-		widgets.add(new SettingRowWidget(sx, sy, itemW, 74, "Open Animation", "Enable iPhone-style scale animation when opening this screen."));
+		widgets.add(new SettingRowWidget(sx, sy, itemW, 74, L10n.translate("lucent.preferences.open_animation"), L10n.translate("lucent.preferences.open_animation.desc")));
 		ToggleButton animBtn = new ToggleButton(sx + itemW - PAD - 48, sy + 25, 48, 24, LucentConfig.openAnimation);
 		animBtn.setOnChange(v -> { LucentConfig.openAnimation = v; Lucent.config.saveGlobalConfig(); });
 		widgets.add(animBtn);
 
 		// 2. UI Blur
-		widgets.add(new SettingRowWidget(sx, sy + 84, itemW, 74, "UI Blur", "Enable background blur effect for a premium frosted glass look."));
+		widgets.add(new SettingRowWidget(sx, sy + 84, itemW, 74, L10n.translate("lucent.preferences.ui_blur"), L10n.translate("lucent.preferences.ui_blur.desc")));
 		ToggleButton blurBtn = new ToggleButton(sx + itemW - PAD - 48, sy + 25 + 84, 48, 24, LucentConfig.uiBlur);
 		blurBtn.setOnChange(v -> { LucentConfig.uiBlur = v; Lucent.config.saveGlobalConfig(); });
 		widgets.add(blurBtn);
 
 		// 3. UI Blur Strength
-		widgets.add(new SettingRowWidget(sx, sy + 168, itemW, 74, "UI Blur Strength", "Adjust the intensity of the background blur."));
+		widgets.add(new SettingRowWidget(sx, sy + 168, itemW, 74, L10n.translate("lucent.preferences.ui_blur_strength"), L10n.translate("lucent.preferences.ui_blur_strength.desc")));
 		Slider blurSlider = new Slider(sx + itemW - PAD - 200, sy + 25 + 168, 200, 24, 0, 20, 1, LucentConfig.uiBlurStrength);
 		blurSlider.setOnChange(v -> { LucentConfig.uiBlurStrength = (float)(double)v; Lucent.config.saveGlobalConfig(); });
 		widgets.add(blurSlider);
 
 		// 4. Setup Language
-		widgets.add(new SettingRowWidget(sx, sy + 252, itemW, 74, "Setup Language", "Choose the primary language for the configuration UI."));
+		widgets.add(new SettingRowWidget(sx, sy + 252, itemW, 74, L10n.translate("lucent.preferences.language"), L10n.translate("lucent.preferences.language.desc")));
 		Selector langSel = new Selector(sx + itemW - PAD - 148, sy + 17 + 252, 148, 38, List.of("English", "Korean", "Chinese", "Japanese", "Russian"));
 		langSel.setValue(LucentConfig.setupLanguage);
-		langSel.setOnChange(v -> { LucentConfig.setupLanguage = v; Lucent.config.saveGlobalConfig(); });
+		langSel.setOnChange(v -> { 
+			LucentConfig.setupLanguage = v; 
+			Lucent.config.saveGlobalConfig(); 
+			L10n.load();
+			refreshUI(true);
+		});
 		overlayWidgets.add(langSel);
 
 		// 5. UI Scale
-		widgets.add(new SettingRowWidget(sx, sy + 336, itemW, 74, "UI Scale", "Adjust the overall size of the configuration interface."));
+		widgets.add(new SettingRowWidget(sx, sy + 336, itemW, 74, L10n.translate("lucent.preferences.ui_scale"), L10n.translate("lucent.preferences.ui_scale.desc")));
 		Slider scaleSlider = new Slider(sx + itemW - PAD - 200, sy + 25 + 336, 200, 24, 1.0, 2.0, 0.1, (double) LucentConfig.uiScale);
 		scaleSlider.setOnRelease(v -> { 
 			LucentConfig.uiScale = (float)(double)v; 
@@ -595,10 +572,10 @@ public class ConfigScreen extends Screen {
 		widgets.add(scaleSlider);
 
 		// 6. Version Info
-		widgets.add(new SettingRowWidget(sx, sy + 420, itemW, 74, "Version Module", "Current: " + Lucent.VERSION + "  |  Latest: " + Lucent.LATEST_VERSION));
+		widgets.add(new SettingRowWidget(sx, sy + 420, itemW, 74, L10n.translate("lucent.preferences.version"), "Current: " + Lucent.VERSION + "  |  Latest: " + Lucent.LATEST_VERSION));
 		
 		int btnW = 120;
-		ActionButton updateBtn = new ActionButton(sx + itemW - PAD - btnW, sy + 19 + 420, btnW, 36, "Update");
+		ActionButton updateBtn = new ActionButton(sx + itemW - PAD - btnW, sy + 19 + 420, btnW, 36, L10n.translate("lucent.preferences.update"));
 		updateBtn.setOnClick(() -> {
 			Util.getPlatform().openUri(LucentConfig.GITHUB_LINK + "/releases");
 		});
@@ -607,20 +584,20 @@ public class ConfigScreen extends Screen {
 		// Action Buttons
 		int rowY = sy + 504 + 20;
 
-		ActionButton openConfig = new ActionButton(sx, rowY, btnW, 36, "Open Config");
+		ActionButton openConfig = new ActionButton(sx, rowY, btnW, 36, L10n.translate("lucent.preferences.open_config"));
 		openConfig.setOnClick(() -> {
 			Util.getPlatform().openPath(new File(mc.gameDirectory, "config/lucent").toPath());
 		});
 		widgets.add(openConfig);
 
-		ActionButton loadConfig = new ActionButton(sx + btnW + 12, rowY, btnW, 36, "Load Config");
+		ActionButton loadConfig = new ActionButton(sx + btnW + 12, rowY, btnW, 36, L10n.translate("lucent.preferences.load_config"));
 		loadConfig.setOnClick(() -> {
 			Lucent.config.loadConfigs();
 			refreshUI();
 		});
 		widgets.add(loadConfig);
 
-		ActionButton discord = new ActionButton(sx + (btnW + 12) * 2, rowY, btnW, 36, "Discord");
+		ActionButton discord = new ActionButton(sx + (btnW + 12) * 2, rowY, btnW, 36, L10n.translate("lucent.preferences.discord"));
 		discord.setOnClick(() -> {
 			Util.getPlatform().openUri(LucentConfig.DISCORD_LINK);
 		});
@@ -628,13 +605,13 @@ public class ConfigScreen extends Screen {
 
 		// Next row of buttons
 		rowY += 48;
-		ActionButton github = new ActionButton(sx, rowY, btnW, 36, "GitHub");
+		ActionButton github = new ActionButton(sx, rowY, btnW, 36, L10n.translate("lucent.preferences.github"));
 		github.setOnClick(() -> {
 			Util.getPlatform().openUri(LucentConfig.GITHUB_LINK);
 		});
 		widgets.add(github);
 
-		ActionButton license = new ActionButton(sx + btnW + 12, rowY, btnW, 36, "License");
+		ActionButton license = new ActionButton(sx + btnW + 12, rowY, btnW, 36, L10n.translate("lucent.preferences.license"));
 		license.setOnClick(() -> {
 			Util.getPlatform().openUri(LucentConfig.LICENSE_LINK);
 		});
@@ -683,7 +660,7 @@ public class ConfigScreen extends Screen {
 		for (Mod m : moduleManager.modules) {
 			boolean catOk = currentCategory.equals("All") || m.category.equals(currentCategory);
 			boolean qOk = q.isEmpty()
-				|| m.name.toLowerCase().contains(q)
+				|| L10n.translate(m.name).toLowerCase().contains(q)
 				|| m.searchTags.toLowerCase().contains(q);
 			if (catOk && qOk) out.add(m);
 		}
@@ -703,7 +680,9 @@ public class ConfigScreen extends Screen {
 
 			for (Object member : entry.getValue()) {
 				ModConfig cfg = (member instanceof Field f) ? f.getAnnotation(ModConfig.class) : ((Method)member).getAnnotation(ModConfig.class);
-				widgets.add(new SettingRowWidget(sx, curY, itemW, 74, cfg.name(), cfg.description()));
+				String cfgName = cfg.name();
+				String cfgDesc = cfg.description();
+				widgets.add(new SettingRowWidget(sx, curY, itemW, 74, L10n.translate(cfgName), L10n.translate(cfgDesc)));
 
 				try {
 					Object val = null;
@@ -736,11 +715,25 @@ public class ConfigScreen extends Screen {
 						}
 
 						case SLIDER -> {
-							Slider slider = new Slider(ux - 290, curY + 25, 290, 24, cfg.min(), cfg.max(), cfg.step(), (double) val);
+							double dVal = (val instanceof Number n) ? n.doubleValue() : 0.0;
 							final Field field = (member instanceof Field f) ? f : null;
+							Slider.SliderType sType = Slider.SliderType.DOUBLE;
+
+							if (field != null) {
+								Class<?> fType = field.getType();
+								if (fType == float.class || fType == Float.class) sType = Slider.SliderType.FLOAT;
+								else if (fType == int.class || fType == Integer.class) sType = Slider.SliderType.INT;
+							}
+
+							Slider slider = new Slider(ux - 290, curY + 25, 290, 24, cfg.min(), cfg.max(), cfg.step(), dVal, sType);
 							slider.setOnChange(v -> {
 								try {
-									if (field != null) field.set(currentModSettings, v);
+									if (field != null) {
+										Class<?> fType = field.getType();
+										if (fType == float.class || fType == Float.class) field.set(currentModSettings, v.floatValue());
+										else if (fType == int.class || fType == Integer.class) field.set(currentModSettings, (int) Math.round(v));
+										else field.set(currentModSettings, v);
+									}
 								} catch (Exception e) {}
 							});
 							widgets.add(slider);
@@ -895,21 +888,30 @@ public class ConfigScreen extends Screen {
 		return max == Integer.MIN_VALUE ? 0 : max;
 	}
 
-	private boolean isParentActive(String parentFieldName) {
+	private boolean isParentActive(String fieldName) {
 		try {
-			Field f = currentModSettings.getClass().getDeclaredField(parentFieldName);
+			Field f = currentModSettings.getClass().getDeclaredField(fieldName);
 			f.setAccessible(true);
 			Object val = f.get(currentModSettings);
-			if (val instanceof Boolean b) return b;
+			if (val instanceof Boolean b) {
+				if (!b) return false;
+
+				// Check if the parent field itself has a parent
+				ModConfig cfg = f.getAnnotation(ModConfig.class);
+				if (cfg != null && !cfg.parent().isEmpty()) {
+					return isParentActive(cfg.parent());
+				}
+				return true;
+			}
 		} catch (Exception e) {}
 		return false;
 	}
 
 	private boolean matchesSearch(ModConfig cfg, String q) {
 		if (q == null || q.isEmpty()) return true;
-		return (   cfg.name().toLowerCase().contains(q)
-				|| cfg.description().toLowerCase().contains(q)
-				|| cfg.category().toLowerCase().contains(q)
+		return (   L10n.translate(cfg.name()).toLowerCase().contains(q)
+				|| L10n.translate(cfg.description()).toLowerCase().contains(q)
+				|| L10n.translate(cfg.category()).toLowerCase().contains(q)
 		);
 	}
 
@@ -975,10 +977,7 @@ public class ConfigScreen extends Screen {
 				NVGRenderer.translate(-width / 2f, -height / 2f);
 				NVGRenderer.globalAlpha(UAnimation.clamp(openAnimationProgress * 1.5f, 0f, 1f));
 			}
-
 			NVGRenderer.scale(gs * uiScale, gs * uiScale);
-
-			loadIcon();
 
 			drawFrame();
 			renderSidebar();
@@ -1051,18 +1050,18 @@ public class ConfigScreen extends Screen {
 		sy += 36;
 		NVGRenderer.text("MOD CONFIG", ix, sy, Fonts.PRETENDARD_SEMIBOLD, UIColors.MUTED, 10f);
 		sy += 16;
-		sy = sidebarItem(ix, sy, iconMods, "Mods", currentSidebarPage.equals("Mods"));
-		sy = sidebarItem(ix, sy, iconProfiles, "Profiles", currentSidebarPage.equals("Profiles"));
+		sy = sidebarItem(ix, sy, LucentResourceManager.iconMods, L10n.translate("lucent.sidebar.mods"), currentSidebarPage.equals("Mods"));
+		sy = sidebarItem(ix, sy, LucentResourceManager.iconProfiles, L10n.translate("lucent.sidebar.profiles"), currentSidebarPage.equals("Profiles"));
 
 		sy += 16;
 		NVGRenderer.text("PERSONALIZATION", ix, sy, Fonts.PRETENDARD_SEMIBOLD, UIColors.MUTED, 10f);
 		sy += 16;
-		sy = sidebarItem(ix, sy, iconThemes, "Themes", currentSidebarPage.equals("Themes"));
-		sy = sidebarItem(ix, sy, iconPreferences, "Preferences", currentSidebarPage.equals("Preferences"));
+		sy = sidebarItem(ix, sy, LucentResourceManager.iconThemes, L10n.translate("lucent.sidebar.themes"), currentSidebarPage.equals("Themes"));
+		sy = sidebarItem(ix, sy, LucentResourceManager.iconPreferences, L10n.translate("lucent.sidebar.preferences"), currentSidebarPage.equals("Preferences"));
 
 		int bY = winY + WINDOW_H - 100;
-		sidebarItem(ix, bY, iconEditHud, "Edit HUD", false);
-		sidebarItem(ix, bY + 38, iconClose, "Close", false);
+		sidebarItem(ix, bY, LucentResourceManager.iconEditHud, L10n.translate("lucent.sidebar.edithud"), false);
+		sidebarItem(ix, bY + 38, LucentResourceManager.iconClose, L10n.translate("lucent.sidebar.close"), false);
 	}
 
 	private int sidebarItem(int x, int y, Image icon, String label, boolean active) {
@@ -1091,7 +1090,10 @@ public class ConfigScreen extends Screen {
 		
 		String title = currentSidebarPage;
 		if (currentSidebarPage.equals("Mods") && currentModSettings != null) {
-			title = currentModSettings.name;
+			title = L10n.translate(currentModSettings.name);
+		} else {
+			// Sidebar page names might also be translatable or handled by keys
+			title = L10n.translate(title);
 		}
 		NVGRenderer.text(title, cx + 70, winY + 25f,  Fonts.PRETENDARD_SEMIBOLD, UIColors.TEXT_PRIMARY, 22f);
 	}
@@ -1103,7 +1105,7 @@ public class ConfigScreen extends Screen {
 
 		NVGRenderer.rect(bx, by, bw, bh, UIColors.SEARCHBAR_BG, 8f);
 		NVGRenderer.outlineRect(bx, by, bw, bh, 1, searchFocused ? UIColors.ACCENT_BLUE : UIColors.ITEM_BORDER, 8f);
-		NVGRenderer.image(iconSearch, bx + 10, by + (bh - 16) / 2f, 16);
+		NVGRenderer.image(LucentResourceManager.iconSearch, bx + 10, by + (bh - 16) / 2f, 16);
 
 		if (searchField != null) {
 			String txt = searchField.getValue();
@@ -1115,7 +1117,7 @@ public class ConfigScreen extends Screen {
 			if (txt.isEmpty() && !searchFocused) {
 				NVGRenderer.push();
 				NanoVG.nvgIntersectScissor(NVGRenderer.getVG(), (int) textAreaX, by, (int) textAreaW, bh);
-				NVGRenderer.text("Search...", textAreaX, textY, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_SECONDARY, 14f);
+				NVGRenderer.text(L10n.translate("lucent.search.placeholder"), textAreaX, textY, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_SECONDARY, 14f);
 				NVGRenderer.pop();
 			} else {
 				int cpos = searchField.getCursorPosition();
@@ -1147,7 +1149,8 @@ public class ConfigScreen extends Screen {
 		float cy = contentY; 
 
 		for (String cat : cats) {
-			float tw = NVGRenderer.textWidth(cat, Fonts.PRETENDARD_MEDIUM, 13f);
+			String translatedCat = L10n.translate(cat);
+			float tw = NVGRenderer.textWidth(translatedCat, Fonts.PRETENDARD_MEDIUM, 13f);
 			boolean active = cat.equals(currentCategory);
 			
 			int bg = active ? UIColors.ACCENT_BLUE : UIColors.TAB_BG;
@@ -1159,7 +1162,7 @@ public class ConfigScreen extends Screen {
 			
 			NVGRenderer.rect(cx, cy, tabW, tabH, bg, 8f);
 			float textY = cy + (tabH - 13f) / 2f;
-			NVGRenderer.text(cat, cx + padX, textY, Fonts.PRETENDARD_MEDIUM, fg, 13f);
+			NVGRenderer.text(translatedCat, cx + padX, textY, Fonts.PRETENDARD_MEDIUM, fg, 13f);
 			
 			cx += tabW + 8f; 
 		}
@@ -1170,15 +1173,15 @@ public class ConfigScreen extends Screen {
 		float hy = contentY - (float) scrollOffset;
 
 		if (hy > scissorY - 80 && hy < scissorY + scissorH) {
-			NVGRenderer.text(currentModSettings.name, sx, hy, Fonts.PRETENDARD_SEMIBOLD, UIColors.TEXT_PRIMARY, 26f);
-			NVGRenderer.text(currentModSettings.description, sx, hy + 32, Fonts.PRETENDARD, UIColors.TEXT_SECONDARY, 14f);
+			NVGRenderer.text(L10n.translate(currentModSettings.name), sx, hy, Fonts.PRETENDARD_SEMIBOLD, UIColors.TEXT_PRIMARY, 26f);
+			NVGRenderer.text(L10n.translate(currentModSettings.description), sx, hy + 32, Fonts.PRETENDARD, UIColors.TEXT_SECONDARY, 14f);
 		}
 
 		int curY = contentY + 66;
 		for (Map.Entry<String, List<Object>> e : groupConfigMembers().entrySet()) {
 			float ry = curY + 14 - (float) scrollOffset;
 			if (ry > scissorY - 30 && ry < scissorY + scissorH) {
-				String catName = e.getKey().toUpperCase();
+				String catName = L10n.translate(e.getKey()).toUpperCase();
 				float catW = NVGRenderer.textWidth(catName, Fonts.PRETENDARD_SEMIBOLD, 12f);
 				float indent = 8f;
 				
@@ -1462,7 +1465,7 @@ public class ConfigScreen extends Screen {
 			float topH = height - BAR_H;
 
 			Image iconImg = null;
-			if (mod.icon != null && !mod.icon.isEmpty()) iconImg = modIconsMap.get(mod.name);
+			if (mod.icon != null && !mod.icon.isEmpty()) iconImg = LucentResourceManager.modIconsMap.get(mod.name);
 
 			if (iconImg != null) NVGRenderer.image(iconImg, midX - 22f, y + (topH - 44f) / 2f, 44f, 44f);
 			else {
@@ -1472,12 +1475,12 @@ public class ConfigScreen extends Screen {
 
 			float barTop  = y + height - BAR_H;
 
-			NVGRenderer.text(mod.name, x + 12f, barTop + 8f, Fonts.PRETENDARD_MEDIUM, UIColors.PURE_WHITE, 14f);
+			NVGRenderer.text(L10n.translate(mod.name), x + 12f, barTop + 8f, Fonts.PRETENDARD_MEDIUM, UIColors.PURE_WHITE, 14f);
 
 			float divX = x + width - 36f;
 			NVGRenderer.rect(divX, barTop + 6f, 1, BAR_H - 12f, 0x55FFFFFF, 0f); // 약간 투명한 선
 			
-			if (iconSettings != null) NVGRenderer.image(iconSettings, divX + 10f, barTop + (BAR_H - 16f) / 2f, 16f, 16f);
+			if (LucentResourceManager.iconSettings != null) NVGRenderer.image(LucentResourceManager.iconSettings, divX + 10f, barTop + (BAR_H - 16f) / 2f, 16f, 16f);
 		}
 
 		@Override

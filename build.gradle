@@ -11,7 +11,8 @@ base {
 }
 
 repositories {
-
+	mavenCentral()
+	maven { url = uri("https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1") }
 }
 
 loom {
@@ -20,6 +21,16 @@ loom {
 			sourceSet sourceSets.main
 		}
 	}
+	
+	runConfigs.named("client") {
+		ideConfigGenerated = true
+		property "devauth.enabled", "true"
+		property "devauth.account", "main"
+	}
+
+    runConfigs.named("server") {
+        ideConfigGenerated = false
+    }
 }
 
 dependencies {
@@ -27,6 +38,8 @@ dependencies {
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+	modRuntimeOnly("me.djtheredstoner:DevAuth-fabric:${property("devauth_version")}")
 
 	def lwjglVersion = project.property("minecraft_lwjgl_version")
 	modImplementation "org.lwjgl:lwjgl-nanovg:${lwjglVersion}"
@@ -89,3 +102,55 @@ publishing {
 
 	}
 }
+
+task generateCustomOutputs {
+	dependsOn assemble
+	doLast {
+		def mcVer = project.minecraft_version
+		def modVer = project.mod_version
+		def baseName = project.archives_base_name
+		
+		def outDir0 = file("build/maven_reop/${modVer}-${mcVer}-0")
+		def outDir1 = file("build/maven_reop/${modVer}-${mcVer}-1")
+		
+		outDir0.mkdirs()
+		outDir1.mkdirs()
+
+		def jar0Name = "${baseName}-${modVer}-${mcVer}-0.jar"
+		def pom0Name = "${baseName}-${modVer}-${mcVer}-0.pom"
+		def ver0 = "${modVer}-${mcVer}-0"
+
+		def jar1Name = "${baseName}-${modVer}-${mcVer}-1.jar"
+		def pom1Name = "${baseName}-${modVer}-${mcVer}-1.pom"
+		def ver1 = "${modVer}-${mcVer}-1"
+
+		def jar0File = file("${buildDir}/libs/${baseName}-${modVer}.jar")
+		def jar1File = file("${buildDir}/libs/${baseName}-${modVer}-library.jar")
+
+		copy {
+			from jar0File
+			into outDir0
+			rename { jar0Name }
+		}
+
+		copy {
+			from jar1File
+			into outDir1
+			rename { jar1Name }
+		}
+
+		def pomTemplate = """<project>
+\t<modelVersion>4.0.0</modelVersion>
+\t<groupId>com.github.SILENCE-SIMSOOL</groupId>
+\t<artifactId>lucent</artifactId>
+\t<version>%s</version>
+</project>"""
+
+		new File(outDir0, pom0Name).text = String.format(pomTemplate, ver0)
+		new File(outDir1, pom1Name).text = String.format(pomTemplate, ver1)
+		
+		println "Generated custom outputs in build/maven_reop/"
+	}
+}
+
+build.finalizedBy(generateCustomOutputs)

@@ -26,6 +26,7 @@ import silence.simsool.lucent.general.models.abstracts.Mod;
 import silence.simsool.lucent.general.models.data.KeyBind;
 import silence.simsool.lucent.general.models.interfaces.annotations.ModConfig;
 import silence.simsool.lucent.hud.HUDManager;
+import silence.simsool.lucent.config.api.LucentAPI;
 import silence.simsool.lucent.ui.theme.ThemeManager;
 
 public class ModManager {
@@ -53,7 +54,7 @@ public class ModManager {
 		currentProfile = profile;
 		saveGlobalConfig();
 		loadConfigs();
-		HUDManager.INSTANCE.loadAll();
+		LucentAPI.getHUDManager().loadAll();
 	}
 
 	public List<String> getProfiles() {
