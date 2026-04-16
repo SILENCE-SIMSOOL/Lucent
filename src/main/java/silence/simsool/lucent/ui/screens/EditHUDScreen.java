@@ -1,5 +1,7 @@
 package silence.simsool.lucent.ui.screens;
 
+import static silence.simsool.lucent.Lucent.mc;
+
 import java.util.List;
 
 import org.lwjgl.glfw.GLFW;
@@ -11,14 +13,15 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.config.LucentConfig;
+import silence.simsool.lucent.config.ModManager;
+import silence.simsool.lucent.config.api.LucentAPI;
 import silence.simsool.lucent.general.enums.HUDAlignment;
 import silence.simsool.lucent.general.enums.RenderType;
 import silence.simsool.lucent.general.models.abstracts.LucentHUD;
+import silence.simsool.lucent.general.models.abstracts.Mod;
 import silence.simsool.lucent.general.utils.LucentUtils;
 import silence.simsool.lucent.general.utils.UDisplay;
 import silence.simsool.lucent.general.utils.UMouse;
-import silence.simsool.lucent.hud.HUDManager;
-import silence.simsool.lucent.config.api.LucentAPI;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UIColors;
 import silence.simsool.lucent.ui.utils.nvg.Fonts;
@@ -27,7 +30,9 @@ import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 
 public class EditHUDScreen extends Screen {
-	private static final int SNAP_PX        = 10;
+
+	private static final int SNAP_PX	    = 10; // Detection range for magnetic snapping
+	private static final int GRID_PX	    = 2; // Movement step increment (Grid size)
 	private static final int C_DIM          = 0x88000000;
 	private static final int C_BORDER       = 0x4DFFFFFF;
 	private static final int C_BORDER_HOV   = 0x80FFFFFF;
@@ -41,8 +46,9 @@ public class EditHUDScreen extends Screen {
 
 	private LucentHUD draggingMove  = null;
 	private LucentHUD draggingScale = null;
+	private int draggingScaleHandle = -1; // 0:TL, 1:TR, 2:BL, 3:BR
 	private float dragOffsetX, dragOffsetY;
-	private float scaleDragStartX, scaleDragBaseScale;
+	private float scaleDragStartX, scaleDragStartY, scaleDragBaseScale;
 
 	private LucentHUD contextMenuHud = null;
 	private float contextMenuX, contextMenuY;
@@ -55,13 +61,13 @@ public class EditHUDScreen extends Screen {
 	private long closeStartTime = -1L;
 	private boolean closing = false;
 
-	private final silence.simsool.lucent.config.ModManager parentManager;
+	private final ModManager parentManager;
 
 	public EditHUDScreen() {
 		this(null);
 	}
 
-	public EditHUDScreen(silence.simsool.lucent.config.ModManager parentManager) {
+	public EditHUDScreen(ModManager parentManager) {
 		super(Component.literal("Edit HUD"));
 		this.parentManager = parentManager;
 		this.showModsButton = true;
@@ -69,11 +75,8 @@ public class EditHUDScreen extends Screen {
 	}
 
 	@Override
-	protected void init() {
-		super.init();
-		this.startTime = System.currentTimeMillis();
-		this.closing = false;
-		this.closeStartTime = -1L;
+	public boolean isPauseScreen() {
+		return false;
 	}
 
 	@Override
@@ -81,9 +84,7 @@ public class EditHUDScreen extends Screen {
 		if (LucentConfig.openAnimation && !closing) {
 			closing = true;
 			closeStartTime = System.currentTimeMillis();
-		} else {
-			exit();
-		}
+		} else exit();
 	}
 
 	private void exit() {
@@ -95,6 +96,14 @@ public class EditHUDScreen extends Screen {
 		super.removed();
 		LucentHUD.isEditHudOpen = false;
 		LucentAPI.getHUDManager().save();
+	}
+
+	@Override
+	protected void init() {
+		super.init();
+		this.startTime = System.currentTimeMillis();
+		this.closing = false;
+		this.closeStartTime = -1L;
 	}
 
 	@Override
@@ -152,12 +161,237 @@ public class EditHUDScreen extends Screen {
 		super.render(guiGraphics, mouseX, mouseY, partialTick);
 	}
 
+	@Override
+	public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick) {
+		int button = event.button();
+		float gs   = NVGRenderer.getStandardGuiScale();
+		float vw   = UDisplay.getScreenWidth()  / gs;
+		float vh   = UDisplay.getScreenHeight() / gs;
+		float mx   = UMouse.getNvgScaledX(1f);
+		float my   = UMouse.getNvgScaledY(1f);
+
+		// 컨텍스트 메뉴 처리
+		if (contextMenuHud != null) {
+			handleContextMenuClick(mx, my);
+			contextMenuHud = null;
+			return true;
+		}
+
+		List<LucentHUD> huds = LucentAPI.getHUDManager().getHuds();
+
+		if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+			for (int i = huds.size() - 1; i >= 0; i--) {
+				LucentHUD hud = huds.get(i);
+				if (!hud.isEnabled()) continue;
+				
+				int handle = getHandleUnderMouse(hud, mx, my);
+				if (handle != -1) {
+					draggingScale       = hud;
+					draggingScaleHandle = handle;
+					scaleDragStartX     = mx;
+					scaleDragStartY     = my;
+					scaleDragBaseScale  = hud.scale;
+					return true;
+				}
+				if (isInsideInner(hud, mx, my)) {
+					draggingMove = hud;
+					dragOffsetX  = mx - hud.x * vw;
+					dragOffsetY  = my - hud.y * vh;
+					return true;
+				}
+			}
+
+			if (showModsButton) {
+				float bw = 164f, bh = 48f;
+				float bx = (vw - bw) / 2f, by = ((vh - bh) / 2f);
+				float sideS = 48f, gap = 10f;
+
+				// Center Mods Button
+				if (mx >= bx && mx <= bx + bw && my >= by && my <= by + bh) {
+					mc.setScreen(new ConfigScreen(parentManager != null ? parentManager : Lucent.config));
+					return true;
+				}
+
+				// Left Button
+				if (mx >= bx - sideS - gap && mx <= bx - gap && my >= by && my <= by + sideS) {
+					mc.setScreen(new ConfigScreen(parentManager != null ? parentManager : Lucent.config));
+					return true;
+				}
+
+				// Right Button (Profiles)
+				if (mx >= bx + bw + gap && mx <= bx + bw + gap + sideS && my >= by && my <= by + sideS) {
+					ConfigScreen cs = new ConfigScreen(parentManager != null ? parentManager : Lucent.config);
+					mc.setScreen(cs);
+					return true;
+				}
+			}
+		}
+		else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+			for (int i = huds.size() - 1; i >= 0; i--) {
+				LucentHUD hud = huds.get(i);
+				if (hud.isEnabled() && isInsideHud(hud, mx, my)) {
+					contextMenuHud = hud;
+					contextMenuX   = mx;
+					contextMenuY   = my;
+					return true;
+				}
+			}
+		}
+		return super.mouseClicked(event, isDoubleClick);
+	}
+
+	@Override
+	public boolean mouseReleased(MouseButtonEvent event) {
+		if (event.button() == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+			if (draggingMove != null || draggingScale != null) LucentAPI.getHUDManager().save();
+			draggingMove  = null;
+			draggingScale = null;
+		}
+		return super.mouseReleased(event);
+	}
+
+	@Override
+	public boolean mouseDragged(MouseButtonEvent event, double mouseX, double mouseY) {
+		if (event.button() != GLFW.GLFW_MOUSE_BUTTON_LEFT) return super.mouseDragged(event, mouseX, mouseY);
+
+		float gs = NVGRenderer.getStandardGuiScale();
+		float vw = UDisplay.getScreenWidth()  / gs;
+		float vh = UDisplay.getScreenHeight() / gs;
+		float mx = UMouse.getNvgScaledX(1f);
+		float my = UMouse.getNvgScaledY(1f);
+
+		if (draggingMove != null) {
+			boolean shiftDown = GLFW.glfwGetKey(UDisplay.getWindow().handle(), GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS
+						  || GLFW.glfwGetKey(UDisplay.getWindow().handle(), GLFW.GLFW_KEY_RIGHT_SHIFT) == GLFW.GLFW_PRESS;
+			float rawX = mx - dragOffsetX, rawY = my - dragOffsetY;
+
+			// 4px 그리드로 이동
+			float snappedX = (float)(Math.round(rawX / GRID_PX) * GRID_PX);
+			float snappedY = (float)(Math.round(rawY / GRID_PX) * GRID_PX);
+
+			float scaledW = draggingMove.getScaledWidth();
+			float scaledH = draggingMove.getScaledHeight();
+			
+			float minRx = 0, maxRx = vw - scaledW;
+			float minRy = 0, maxRy = vh - scaledH;
+
+			float renderX;
+			switch (draggingMove.alignment) {
+				case CENTER -> {
+					renderX = snappedX - scaledW / 2f;
+					if (renderX < minRx) snappedX = scaledW / 2f;
+					else if (renderX > maxRx) snappedX = vw - scaledW / 2f;
+				}
+				case RIGHT -> {
+					renderX = snappedX - scaledW;
+					if (renderX < minRx) snappedX = scaledW;
+					else if (renderX > maxRx) snappedX = vw;
+				}
+				default -> { // LEFT
+					snappedX = UAnimation.clamp(snappedX, minRx, maxRx);
+				}
+			}
+			snappedY = UAnimation.clamp(snappedY, minRy, maxRy);
+
+			float hcx_raw = 0, hcy_raw = 0;
+			switch (draggingMove.alignment) {
+				case CENTER -> hcx_raw = snappedX;
+				case RIGHT  -> hcx_raw = snappedX - scaledW / 2f;
+				default     -> hcx_raw = snappedX + scaledW / 2f;
+			}
+			hcy_raw = snappedY + scaledH / 2f;
+
+			if (Math.abs(hcx_raw - vw / 2f) < SNAP_PX) {
+				switch (draggingMove.alignment) {
+					case CENTER -> snappedX = vw / 2f;
+					case RIGHT  -> snappedX = vw / 2f + scaledW / 2f;
+					default     -> snappedX = vw / 2f - scaledW / 2f;
+				}
+			}
+			if (Math.abs(hcy_raw - vh / 2f) < SNAP_PX) snappedY = vh / 2f - scaledH / 2f;
+
+			// Shift 키를 누르면 자석 비활성
+			if (!shiftDown) {
+				for (LucentHUD other : LucentAPI.getHUDManager().getHuds()) {
+					if (!other.isEnabled() || other == draggingMove) continue;
+	
+					float orx = other.getRenderX(), ory = other.getRenderY();
+					float orw = other.getScaledWidth(), orh = other.getScaledHeight();
+					float ohcx = orx + orw / 2f;
+					float ohcy = ory + orh / 2f;
+	
+					// Current renderX with snappedX
+					float curRx;
+					switch (draggingMove.alignment) {
+						case CENTER: curRx = snappedX - scaledW / 2f;break;
+						case RIGHT:  curRx = snappedX - scaledW;      break;
+						default:     curRx = snappedX;                break;
+					}
+	
+					// Snap X
+					if (Math.abs(curRx - orx) < SNAP_PX) {
+						switch (draggingMove.alignment) {
+							case CENTER: snappedX = orx + scaledW / 2f; break;
+							case RIGHT:  snappedX = orx + scaledW;      break;
+							default:     snappedX = orx;                break;
+						}
+					} else if (Math.abs((curRx + scaledW / 2f) - ohcx) < SNAP_PX) {
+						switch (draggingMove.alignment) {
+							case CENTER: snappedX = ohcx;                break;
+							case RIGHT:  snappedX = ohcx + scaledW / 2f; break;
+							default:     snappedX = ohcx - scaledW / 2f; break;
+						}
+					} else if (Math.abs((curRx + scaledW) - (orx + orw)) < SNAP_PX) {
+						switch (draggingMove.alignment) {
+							case CENTER: snappedX = orx + orw - scaledW / 2f; break;
+							case RIGHT:  snappedX = orx + orw;                break;
+							default:     snappedX = orx + orw - scaledW;      break;
+						}
+					}
+	
+					// Snap Y
+					if (Math.abs(snappedY - ory) < SNAP_PX) snappedY = ory;
+					else if (Math.abs((snappedY + scaledH / 2f) - ohcy) < SNAP_PX) snappedY = ohcy - scaledH / 2f;
+					else if (Math.abs((snappedY + scaledH) - (ory + orh)) < SNAP_PX) snappedY = ory + orh - scaledH;
+				}
+			}
+
+			draggingMove.x = snappedX / vw;
+			draggingMove.y = snappedY / vh;
+			return true;
+		}
+
+		if (draggingScale != null) {
+			float deltaX = mx - scaleDragStartX;
+			float deltaY = my - scaleDragStartY;
+
+			if (draggingScaleHandle == 0 || draggingScaleHandle == 2) deltaX = -deltaX;
+
+			if (draggingScaleHandle == 0 || draggingScaleHandle == 1) deltaY = -deltaY;
+
+			float diff = (deltaX + deltaY) / 100f;
+			draggingScale.scale = LucentHUD.clampScale(scaleDragBaseScale + diff);
+			return true;
+		}
+
+		return super.mouseDragged(event, mouseX, mouseY);
+	}
+
+	@Override
+	public boolean keyPressed(KeyEvent input) {
+		if (input.key() == GLFW.GLFW_KEY_ESCAPE) {
+			this.onClose();
+			return true;
+		}
+		return super.keyPressed(input);
+	}
+
 	private void renderOverlay(float animP) {
 		float gs  = NVGRenderer.getStandardGuiScale();
 		float vw  = UDisplay.getScreenWidth()  / gs;
 		float vh  = UDisplay.getScreenHeight() / gs;
-		float mx  = UMouse.getScaledX(1f);
-		float my  = UMouse.getScaledY(1f);
+		float mx  = UMouse.getNvgScaledX(1f);
+		float my  = UMouse.getNvgScaledY(1f);
 
 		NVGRenderer.rect(0, 0, vw, vh, C_DIM);
 
@@ -296,22 +530,14 @@ public class EditHUDScreen extends Screen {
 			float ohcy = ory + orh / 2f;
 
 			// Match X (Left, Center, Right)
-			if (Math.abs(rx - orx) < eps) {
-				NVGRenderer.line(orx, 0, orx, vh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
-			} else if (Math.abs(hcx - ohcx) < eps) {
-				NVGRenderer.line(ohcx, 0, ohcx, vh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
-			} else if (Math.abs((rx + rw) - (orx + orw)) < eps) {
-				NVGRenderer.line(orx + orw, 0, orx + orw, vh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
-			}
+			if (Math.abs(rx - orx) < eps) NVGRenderer.line(orx, 0, orx, vh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
+			else if (Math.abs(hcx - ohcx) < eps) NVGRenderer.line(ohcx, 0, ohcx, vh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
+			else if (Math.abs((rx + rw) - (orx + orw)) < eps) NVGRenderer.line(orx + orw, 0, orx + orw, vh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
 
 			// Match Y (Top, Center, Bottom)
-			if (Math.abs(ry - ory) < eps) {
-				NVGRenderer.line(0, ory, vw, ory, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
-			} else if (Math.abs(hcy - ohcy) < eps) {
-				NVGRenderer.line(0, ohcy, vw, ohcy, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
-			} else if (Math.abs((ry + rh) - (ory + orh)) < eps) {
-				NVGRenderer.line(0, ory + orh, vw, ory + orh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
-			}
+			if (Math.abs(ry - ory) < eps) NVGRenderer.line(0, ory, vw, ory, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
+			else if (Math.abs(hcy - ohcy) < eps) NVGRenderer.line(0, ohcy, vw, ohcy, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
+			else if (Math.abs((ry + rh) - (ory + orh)) < eps) NVGRenderer.line(0, ory + orh, vw, ory + orh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
 		}
 
 		if (matchX && matchY) NVGRenderer.outlineCircle(cx, cy, 4f, 2f, UIColors.PURE_WHITE);
@@ -322,16 +548,25 @@ public class EditHUDScreen extends Screen {
 		float rw = hud.getScaledWidth(), rh = hud.getScaledHeight();
 
 		int handleIndex = getHandleUnderMouse(hud, mx, my);
-		boolean scaleDrag  = draggingScale == hud;
-		boolean moveDrag   = draggingMove  == hud;
+		boolean scaleDrag = draggingScale == hud;
+		boolean moveDrag = draggingMove  == hud;
 
 		NVGRenderer.rect(rx, ry, rw, rh, C_FILL, 3f);
 
-		int   bc; float bt;
-		if (scaleDrag)        { bc = C_SCALE_BORDER; bt = 2.5f; }
-		else if (moveDrag)    { bc = C_BORDER_HOV;   bt = 2.0f; }
-		else if (handleIndex != -1) { bc = C_BORDER_HOV;   bt = 2.0f; }
-		else                  { bc = C_BORDER;        bt = 1.5f; }
+		int bc; float bt;
+		if (scaleDrag) {
+			bc = C_SCALE_BORDER;
+			bt = 2.5f;
+		} else if (moveDrag) {
+			bc = C_BORDER_HOV;
+			bt = 2.0f;
+		} else if (handleIndex != -1) {
+			bc = C_BORDER_HOV;
+			bt = 2.0f;
+		} else {
+			bc = C_BORDER;
+			bt = 1.5f;
+		}
 
 		NVGRenderer.outlineRect(rx, ry, rw, rh, bt, bc, 3f);
 
@@ -349,13 +584,16 @@ public class EditHUDScreen extends Screen {
 	}
 
 	private void drawTooltip(LucentHUD hud, float mx, float my, float vw, float vh) {
+		// 현재 모니터/창의 실제 픽셀 해상도 기준 좌표 계산
+		int screenX = Math.round(hud.x * UDisplay.getScreenWidth());
+		int screenY = Math.round(hud.y * UDisplay.getScreenHeight());
 		String[] lines = {
-			"X: " + Math.round(hud.x) + "  Y: " + Math.round(hud.y),
+			"X: " + screenX + "  Y: " + screenY,
 			"Scale: " + String.format("%.1f", hud.scale),
 			"Align: " + hud.alignment.displayName()
 		};
 
-		float fs = 11f, padX = 10f, padY = 7f, lineH = 15f;
+		float fs = 12f, padX = 10f, padY = 7f, lineH = 15f;
 		float tw = 0;
 		for (String l : lines) tw = Math.max(tw, NVGRenderer.textWidth(l, Fonts.PRETENDARD, fs));
 		float bw = tw + padX * 2, bh = lineH * lines.length + padY * 2;
@@ -371,6 +609,13 @@ public class EditHUDScreen extends Screen {
 			int col = (i == 0) ? C_TEXT : (i == 2 ? C_TEXT_ACCENT : C_TEXT_DIM);
 			NVGRenderer.text(lines[i], tx + padX, ty + padY + i * lineH, Fonts.PRETENDARD, col, fs);
 		}
+
+		// Shift 키 안내 텍스트
+		boolean shifting = GLFW.glfwGetKey(UDisplay.getWindow().handle(), GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS
+					 || GLFW.glfwGetKey(UDisplay.getWindow().handle(), GLFW.GLFW_KEY_RIGHT_SHIFT) == GLFW.GLFW_PRESS;
+		String hintText = shifting ? "[Shift] Snap OFF" : "[Shift] Snap ON";
+		int hintColor = shifting ? 0xFFFF1919 : 0xFF19FF05;
+		NVGRenderer.text(hintText, tx + padX, ty + bh + 4, Fonts.PRETENDARD, hintColor, 10f);
 	}
 
 	private void drawScaleBadge(LucentHUD hud) {
@@ -389,11 +634,12 @@ public class EditHUDScreen extends Screen {
 
 	private void drawContextMenu(float vw, float vh) {
 		HUDAlignment[] opts = HUDAlignment.values();
-		float iH = 28f, iW = 120f, pad = 8f;
-		float totalH = iH * opts.length + iH + pad * 2 + 5f; // +iH+5f for separator and Delete option
+		float iH = 28f, iW = 130f, pad = 8f;
+		// opts + separator + Delete + separator + Settings
+		float totalH = iH * opts.length + 2 * (iH + 5f) + pad * 2;
 
-		float cx = clamp(contextMenuX, 0, vw - iW - 4);
-		float cy = clamp(contextMenuY, 0, vh - totalH - 4);
+		float cx = UAnimation.clamp(contextMenuX, 0, vw - iW - 4);
+		float cy = UAnimation.clamp(contextMenuY, 0, vh - totalH - 4);
 
 		NVGRenderer.rect(cx, cy, iW, totalH, C_MENU_BG, 8f);
 		NVGRenderer.outlineRect(cx, cy, iW, totalH, 1f, UIColors.withAlpha(0xFFFFFFFF, 15), 8f);
@@ -410,224 +656,21 @@ public class EditHUDScreen extends Screen {
 			NVGRenderer.text(opt.displayName(), cx + 24, iy + (iH - 11f) / 2f, Fonts.PRETENDARD, tc, 11f);
 		}
 
-		// Separator
+		// Separator 1
 		float sepY = cy + pad + opts.length * iH + 2.5f;
 		NVGRenderer.rect(cx + 8, sepY, iW - 16, 1f, UIColors.withAlpha(UIColors.PURE_WHITE, 15));
 
 		// Delete Option
 		float delY = sepY + 2.5f;
 		NVGRenderer.text("Delete", cx + 24, delY + (iH - 11f) / 2f, Fonts.PRETENDARD, UIColors.RED, 11f);
-	}
 
-	@Override
-	public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick) {
-		int button = event.button();
-		float gs   = NVGRenderer.getStandardGuiScale();
-		float vw   = UDisplay.getScreenWidth()  / gs;
-		float vh   = UDisplay.getScreenHeight() / gs;
-		float mx   = UMouse.getScaledX(1f);
-		float my   = UMouse.getScaledY(1f);
+		// Separator 2
+		float sep2Y = delY + iH + 2.5f;
+		NVGRenderer.rect(cx + 8, sep2Y, iW - 16, 1f, UIColors.withAlpha(UIColors.PURE_WHITE, 15));
 
-		// 컨텍스트 메뉴 처리
-		if (contextMenuHud != null) {
-			handleContextMenuClick(mx, my);
-			contextMenuHud = null;
-			return true;
-		}
-
-		List<LucentHUD> huds = LucentAPI.getHUDManager().getHuds();
-
-		if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-			for (int i = huds.size() - 1; i >= 0; i--) {
-				LucentHUD hud = huds.get(i);
-				if (!hud.isEnabled()) continue;
-				
-				int handle = getHandleUnderMouse(hud, mx, my);
-				if (handle != -1) {
-					draggingScale      = hud;
-					scaleDragStartX    = mx;
-					scaleDragBaseScale = hud.scale;
-					return true;
-				}
-				if (isInsideInner(hud, mx, my)) {
-					draggingMove = hud;
-					dragOffsetX  = mx - hud.x * vw;
-					dragOffsetY  = my - hud.y * vh;
-					return true;
-				}
-			}
-
-			if (showModsButton) {
-				float bw = 164f, bh = 48f;
-				float bx = (vw - bw) / 2f, by = ((vh - bh) / 2f);
-				float sideS = 48f, gap = 10f;
-
-				// Center Mods Button
-				if (mx >= bx && mx <= bx + bw && my >= by && my <= by + bh) {
-					minecraft.setScreen(new ConfigScreen(parentManager != null ? parentManager : Lucent.config));
-					return true;
-				}
-
-				// Left Button
-				if (mx >= bx - sideS - gap && mx <= bx - gap && my >= by && my <= by + sideS) {
-					minecraft.setScreen(new ConfigScreen(parentManager != null ? parentManager : Lucent.config));
-					return true;
-				}
-
-				// Right Button (Profiles)
-				if (mx >= bx + bw + gap && mx <= bx + bw + gap + sideS && my >= by && my <= by + sideS) {
-					ConfigScreen cs = new ConfigScreen(parentManager != null ? parentManager : Lucent.config);
-					minecraft.setScreen(cs);
-					return true;
-				}
-			}
-		}
-		else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
-			for (int i = huds.size() - 1; i >= 0; i--) {
-				LucentHUD hud = huds.get(i);
-				if (isInsideHud(hud, mx, my)) {
-					contextMenuHud = hud;
-					contextMenuX   = mx;
-					contextMenuY   = my;
-					return true;
-				}
-			}
-		}
-		return super.mouseClicked(event, isDoubleClick);
-	}
-
-	@Override
-	public boolean mouseReleased(MouseButtonEvent event) {
-		if (event.button() == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-			if (draggingMove != null || draggingScale != null) LucentAPI.getHUDManager().save();
-			draggingMove  = null;
-			draggingScale = null;
-		}
-		return super.mouseReleased(event);
-	}
-
-	@Override
-	public boolean mouseDragged(MouseButtonEvent event, double mouseX, double mouseY) {
-		if (event.button() != GLFW.GLFW_MOUSE_BUTTON_LEFT) return super.mouseDragged(event, mouseX, mouseY);
-
-		float gs = NVGRenderer.getStandardGuiScale();
-		float vw = UDisplay.getScreenWidth()  / gs;
-		float vh = UDisplay.getScreenHeight() / gs;
-		float mx = UMouse.getScaledX(1f);
-		float my = UMouse.getScaledY(1f);
-
-		if (draggingMove != null) {
-			float rawX = mx - dragOffsetX, rawY = my - dragOffsetY;
-
-			float snappedX = (float)(Math.round(rawX / SNAP_PX) * SNAP_PX);
-			float snappedY = (float)(Math.round(rawY / SNAP_PX) * SNAP_PX);
-
-			float scaledW = draggingMove.getScaledWidth();
-			float scaledH = draggingMove.getScaledHeight();
-			
-			float minRx = 0, maxRx = vw - scaledW;
-			float minRy = 0, maxRy = vh - scaledH;
-
-			float renderX;
-			switch (draggingMove.alignment) {
-				case CENTER -> {
-					renderX = snappedX - scaledW / 2f;
-					if (renderX < minRx) snappedX = scaledW / 2f;
-					else if (renderX > maxRx) snappedX = vw - scaledW / 2f;
-				}
-				case RIGHT -> {
-					renderX = snappedX - scaledW;
-					if (renderX < minRx) snappedX = scaledW;
-					else if (renderX > maxRx) snappedX = vw;
-				}
-				default -> { // LEFT
-					snappedX = clamp(snappedX, minRx, maxRx);
-				}
-			}
-			snappedY = clamp(snappedY, minRy, maxRy);
-
-			float hcx_raw = 0, hcy_raw = 0;
-			switch (draggingMove.alignment) {
-				case CENTER -> hcx_raw = snappedX;
-				case RIGHT  -> hcx_raw = snappedX - scaledW / 2f;
-				default     -> hcx_raw = snappedX + scaledW / 2f;
-			}
-			hcy_raw = snappedY + scaledH / 2f;
-
-			if (Math.abs(hcx_raw - vw / 2f) < SNAP_PX) {
-				switch (draggingMove.alignment) {
-					case CENTER -> snappedX = vw / 2f;
-					case RIGHT  -> snappedX = vw / 2f + scaledW / 2f;
-					default     -> snappedX = vw / 2f - scaledW / 2f;
-				}
-			}
-			if (Math.abs(hcy_raw - vh / 2f) < SNAP_PX) snappedY = vh / 2f - scaledH / 2f;
-
-			// Snapping to other HUDs
-			for (LucentHUD other : LucentAPI.getHUDManager().getHuds()) {
-				if (other == draggingMove) continue;
-
-				float orx = other.getRenderX(), ory = other.getRenderY();
-				float orw = other.getScaledWidth(), orh = other.getScaledHeight();
-				float ohcx = orx + orw / 2f;
-				float ohcy = ory + orh / 2f;
-
-				// Current renderX with snappedX
-				float curRx;
-				switch (draggingMove.alignment) {
-					case CENTER: curRx = snappedX - scaledW / 2f; break;
-					case RIGHT:  curRx = snappedX - scaledW;      break;
-					default:     curRx = snappedX;                break;
-				}
-
-				// Snap X
-				if (Math.abs(curRx - orx) < SNAP_PX) {
-					switch (draggingMove.alignment) {
-						case CENTER: snappedX = orx + scaledW / 2f; break;
-						case RIGHT:  snappedX = orx + scaledW;      break;
-						default:     snappedX = orx;                break;
-					}
-				} else if (Math.abs((curRx + scaledW / 2f) - ohcx) < SNAP_PX) {
-					switch (draggingMove.alignment) {
-						case CENTER: snappedX = ohcx;                break;
-						case RIGHT:  snappedX = ohcx + scaledW / 2f; break;
-						default:     snappedX = ohcx - scaledW / 2f; break;
-					}
-				} else if (Math.abs((curRx + scaledW) - (orx + orw)) < SNAP_PX) {
-					switch (draggingMove.alignment) {
-						case CENTER: snappedX = orx + orw - scaledW / 2f; break;
-						case RIGHT:  snappedX = orx + orw;                break;
-						default:     snappedX = orx + orw - scaledW;      break;
-					}
-				}
-
-				// Snap Y
-				if (Math.abs(snappedY - ory) < SNAP_PX) snappedY = ory;
-				else if (Math.abs((snappedY + scaledH / 2f) - ohcy) < SNAP_PX) snappedY = ohcy - scaledH / 2f;
-				else if (Math.abs((snappedY + scaledH) - (ory + orh)) < SNAP_PX) snappedY = ory + orh - scaledH;
-			}
-
-			draggingMove.x = snappedX / vw;
-			draggingMove.y = snappedY / vh;
-			return true;
-		}
-
-		if (draggingScale != null) {
-			float diff = (mx - scaleDragStartX) / 100f;
-			draggingScale.scale = LucentHUD.clampScale(scaleDragBaseScale + diff);
-			return true;
-		}
-
-		return super.mouseDragged(event, mouseX, mouseY);
-	}
-
-	@Override
-	public boolean keyPressed(KeyEvent input) {
-		if (input.key() == GLFW.GLFW_KEY_ESCAPE) {
-			this.onClose();
-			return true;
-		}
-		return super.keyPressed(input);
+		// Settings Option
+		float setY = sep2Y + 2.5f;
+		NVGRenderer.text("Settings", cx + 24, setY + (iH - 11f) / 2f, Fonts.PRETENDARD, C_TEXT_ACCENT, 11f);
 	}
 
 	private boolean isInsideHud(LucentHUD h, float mx, float my) {
@@ -638,12 +681,10 @@ public class EditHUDScreen extends Screen {
 	private int getHandleUnderMouse(LucentHUD h, float mx, float my) {
 		float rx = h.getRenderX(), ry = h.getRenderY(), rw = h.getScaledWidth(), rh = h.getScaledHeight();
 		float hs = 10f, off = hs / 2f; // 히트박스는 시각적 크기보다 크게 (10px)
-
 		if (mx >= rx - off      && mx <= rx + off      && my >= ry - off      && my <= ry + off)      return 0;
 		if (mx >= rx + rw - off && mx <= rx + rw + off && my >= ry - off      && my <= ry + off)      return 1;
 		if (mx >= rx - off      && mx <= rx + off      && my >= ry + rh - off && my <= ry + rh + off) return 2;
 		if (mx >= rx + rw - off && mx <= rx + rw + off && my >= ry + rh - off && my <= ry + rh + off) return 3;
-
 		return -1;
 	}
 
@@ -655,39 +696,66 @@ public class EditHUDScreen extends Screen {
 	private void handleContextMenuClick(float mx, float my) {
 		if (contextMenuHud == null) return;
 		HUDAlignment[] opts = HUDAlignment.values();
-		float iH = 28f, iW = 120f, pad = 8f;
-		float totalH = iH * opts.length + iH + pad * 2 + 5f;
+		float iH = 28f, iW = 130f, pad = 8f;
+		float totalH = iH * opts.length + 2 * (iH + 5f) + pad * 2;
 
 		float gs = NVGRenderer.getStandardGuiScale();
-		float vw = UDisplay.getScreenWidth()  / gs;
+		float vw = UDisplay.getScreenWidth() / gs;
 		float vh = UDisplay.getScreenHeight() / gs;
-		float cx = clamp(contextMenuX, 0, vw - iW - 4);
-		float cy = clamp(contextMenuY, 0, vh - totalH - 4);
+		float cx = UAnimation.clamp(contextMenuX, 0, vw - iW - 4);
+		float cy = UAnimation.clamp(contextMenuY, 0, vh - totalH - 4);
 
 		if (mx < cx || mx > cx + iW || my < cy || my > cy + totalH) return;
 
-		int idx = -1;
-		if (my < cy + pad + opts.length * iH) {
-			idx = (int)((my - cy - pad) / iH);
-		} else if (my >= cy + pad + opts.length * iH + 5f) {
-			idx = opts.length;
+		float sep1Y = cy + pad + opts.length * iH + 2.5f;
+		float delY = sep1Y + 2.5f;
+		float sep2Y = delY + iH + 2.5f;
+		float setY = sep2Y + 2.5f;
+
+		if (my >= setY && my < setY + iH) {
+			// 해당 HUD의 moduleClass로 모듈 찾아서 세부설정으로 이동
+			LucentHUD targetHud = contextMenuHud;
+			contextMenuHud = null;
+			ModManager mgr = parentManager != null ? parentManager : Lucent.config;
+			Mod targetMod = null;
+			if (targetHud.moduleClass != null) targetMod = mgr.getModule(targetHud.moduleClass);
+			if (targetMod != null) mc.setScreen(new ConfigScreen(mgr, targetMod));
+			else mc.setScreen(new ConfigScreen(mgr));
+			return;
 		}
 
-		if (idx >= 0 && idx < opts.length) {
-			contextMenuHud.alignment = opts[idx];
-			LucentAPI.getHUDManager().save();
-		} else if (idx == opts.length) {
+		if (my >= delY && my < sep2Y) {
 			contextMenuHud.disable();
 			LucentAPI.getHUDManager().save();
+			return;
+		}
+
+		int idx = -1;
+		if (my < cy + pad + opts.length * iH) idx = (int)((my - cy - pad) / iH);
+		if (idx >= 0 && idx < opts.length) {
+			contextMenuHud.alignment = opts[idx];
+			
+			// 화면 밖으로 나가는 것 방지 (필요한 경우에만 보정)
+			float rw = contextMenuHud.getScaledWidth(), rh = contextMenuHud.getScaledHeight();
+			float rx = contextMenuHud.getRenderX(), ry = contextMenuHud.getRenderY();
+			boolean changed = false;
+
+			if (rx < 0) { rx = 0; changed = true; }
+			else if (rx + rw > vw) { rx = vw - rw; changed = true; }
+			if (ry < 0) { ry = 0; changed = true; }
+			else if (ry + rh > vh) { ry = vh - rh; changed = true; }
+
+			if (changed) {
+				float anchorX = switch (contextMenuHud.alignment) {
+					case CENTER -> rx + rw / 2f;
+					case RIGHT  -> rx + rw;
+					default     -> rx;
+				};
+				contextMenuHud.x = anchorX / vw;
+				contextMenuHud.y = ry / vh;
+			}
+			LucentAPI.getHUDManager().save();
 		}
 	}
 
-	private static float clamp(float v, float min, float max) {
-		return Math.max(min, Math.min(max, v));
-	}
-
-	@Override
-	public boolean isPauseScreen() {
-		return false;
-	}
 }

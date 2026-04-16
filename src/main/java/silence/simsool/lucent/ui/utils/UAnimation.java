@@ -203,4 +203,35 @@ public class UAnimation {
 		if (forward) return Math.min(1f, current + change);
 		else return Math.max(0f, current - change);
 	}
+
+
+	public static float map(float value, float min1, float max1, float min2, float max2) {
+		return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
+	}
+
+	public static float round(float value, int places) {
+		float scale = (float) Math.pow(10, places);
+		return (float) Math.round(value * scale) / scale;
+	}
+
+	/** 두 값이 오차 범위(epsilon) 내에서 같은지 확인 (부동소수점 비교용) */
+	public static boolean epsilonEquals(float a, float b, float epsilon) {
+		return Math.abs(a - b) < epsilon;
+	}
+
+	/** 0.0 ~ 1.0 사이의 값을 반환*/
+	public static float saturate(float v) {
+		return clamp(v, 0f, 1f);
+	}
+
+	/** 값이 특정 범위 안에 있는지 확인 */
+	public static boolean inRange(float v, float min, float max) {
+		return v >= min && v <= max;
+	}
+
+	/** 최대값과 최소값 사이에서 순환 (각도 계산 등에 유용) */
+	public static float wrap(float v, float min, float max) {
+		float range = max - min;
+		return (float) (min + ((((v - min) % range) + range) % range));
+	}
 }

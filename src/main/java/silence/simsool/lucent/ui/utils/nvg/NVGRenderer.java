@@ -1,8 +1,48 @@
 package silence.simsool.lucent.ui.utils.nvg;
 
-import static org.lwjgl.nanovg.NanoVG.*;
+import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_LEFT;
+import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_TOP;
+import static org.lwjgl.nanovg.NanoVG.NVG_HOLE;
+import static org.lwjgl.nanovg.NanoVG.nvgArcTo;
+import static org.lwjgl.nanovg.NanoVG.nvgBeginFrame;
+import static org.lwjgl.nanovg.NanoVG.nvgBeginPath;
+import static org.lwjgl.nanovg.NanoVG.nvgBoxGradient;
+import static org.lwjgl.nanovg.NanoVG.nvgCircle;
+import static org.lwjgl.nanovg.NanoVG.nvgClosePath;
+import static org.lwjgl.nanovg.NanoVG.nvgCreateFontMem;
+import static org.lwjgl.nanovg.NanoVG.nvgCreateImageRGBA;
+import static org.lwjgl.nanovg.NanoVG.nvgDeleteImage;
+import static org.lwjgl.nanovg.NanoVG.nvgEndFrame;
+import static org.lwjgl.nanovg.NanoVG.nvgFill;
+import static org.lwjgl.nanovg.NanoVG.nvgFillColor;
+import static org.lwjgl.nanovg.NanoVG.nvgFillPaint;
+import static org.lwjgl.nanovg.NanoVG.nvgFontFaceId;
+import static org.lwjgl.nanovg.NanoVG.nvgFontSize;
+import static org.lwjgl.nanovg.NanoVG.nvgGlobalAlpha;
+import static org.lwjgl.nanovg.NanoVG.nvgImagePattern;
+import static org.lwjgl.nanovg.NanoVG.nvgIntersectScissor;
+import static org.lwjgl.nanovg.NanoVG.nvgLineTo;
+import static org.lwjgl.nanovg.NanoVG.nvgLinearGradient;
+import static org.lwjgl.nanovg.NanoVG.nvgMoveTo;
+import static org.lwjgl.nanovg.NanoVG.nvgPathWinding;
+import static org.lwjgl.nanovg.NanoVG.nvgRGBA;
+import static org.lwjgl.nanovg.NanoVG.nvgRestore;
+import static org.lwjgl.nanovg.NanoVG.nvgRotate;
+import static org.lwjgl.nanovg.NanoVG.nvgRoundedRect;
+import static org.lwjgl.nanovg.NanoVG.nvgSave;
+import static org.lwjgl.nanovg.NanoVG.nvgScale;
+import static org.lwjgl.nanovg.NanoVG.nvgScissor;
+import static org.lwjgl.nanovg.NanoVG.nvgStroke;
+import static org.lwjgl.nanovg.NanoVG.nvgStrokeColor;
+import static org.lwjgl.nanovg.NanoVG.nvgStrokeWidth;
+import static org.lwjgl.nanovg.NanoVG.nvgText;
+import static org.lwjgl.nanovg.NanoVG.nvgTextAlign;
+import static org.lwjgl.nanovg.NanoVG.nvgTextBounds;
+import static org.lwjgl.nanovg.NanoVG.nvgTextBox;
+import static org.lwjgl.nanovg.NanoVG.nvgTextBoxBounds;
+import static org.lwjgl.nanovg.NanoVG.nvgTextLineHeight;
+import static org.lwjgl.nanovg.NanoVG.nvgTranslate;
 import static org.lwjgl.nanovg.NanoVGGL3.NVG_IMAGE_NODELETE;
-import static silence.simsool.lucent.Lucent.mc;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,10 +60,12 @@ import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
+import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.general.enums.Direction;
 import silence.simsool.lucent.general.enums.GradientType;
 import silence.simsool.lucent.general.models.data.nvg.NVGFont;
 import silence.simsool.lucent.general.models.data.nvg.NVGImage;
+import silence.simsool.lucent.general.utils.UDisplay;
 import silence.simsool.lucent.ui.font.LucentFont;
 import silence.simsool.lucent.ui.utils.UIColors;
 
@@ -45,6 +87,10 @@ public class NVGRenderer {
 
 	private static void checkInit() {
 		if (vg == -1L) {
+			if (!com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) {
+				Lucent.LOG.error("NanoVG initialization attempted from wrong thread: " + Thread.currentThread().getName());
+				return;
+			}
 			vg = NanoVGGL3.nvgCreate(NanoVGGL3.NVG_ANTIALIAS | NanoVGGL3.NVG_STENCIL_STROKES);
 			if (vg == -1L) throw new RuntimeException("Failed to initialize NanoVG");
 		}
@@ -52,30 +98,19 @@ public class NVGRenderer {
 
 	private static class Scissor {
 		final Scissor previous;
-		final float x, y, maxX, maxY;
+		final float x, y, w, h;
 
-		Scissor(Scissor previous, float x, float y, float maxX, float maxY) {
+		Scissor(Scissor previous, float x, float y, float w, float h) {
 			this.previous = previous;
 			this.x = x;
 			this.y = y;
-			this.maxX = maxX;
-			this.maxY = maxY;
+			this.w = w;
+			this.h = h;
 		}
 
-		/**
-		 * Applies this scissor region to the NanoVG context.
-		 * If a parent scissor exists, the applied region is the intersection
-		 * of this scissor and the parent, preventing overdraw outside nested bounds.
-		 */
+		@SuppressWarnings("unused")
 		void applyScissor() {
-			if (previous == null) nvgScissor(vg, x, y, maxX - x, maxY - y);
-			else {
-				float cx = Math.max(x, previous.x);
-				float cy = Math.max(y, previous.y);
-				float cw = Math.max(0f, Math.min(maxX, previous.maxX) - cx);
-				float ch = Math.max(0f, Math.min(maxY, previous.maxY) - cy);
-				nvgScissor(vg, cx, cy, cw, ch);
-			}
+			nvgIntersectScissor(vg, x, y, w, h);
 		}
 	}
 
@@ -184,8 +219,10 @@ public class NVGRenderer {
 	 * @param h Height of the scissor region
 	 */
 	public static void pushScissor(float x, float y, float w, float h) {
-		scissor = new Scissor(scissor, x, y, w + x, h + y);
-		scissor.applyScissor();
+		nvgSave(vg);
+		if (scissor == null) nvgScissor(vg, x, y, w, h);
+		else nvgIntersectScissor(vg, x, y, w, h);
+		scissor = new Scissor(scissor, x, y, w, h);
 	}
 
 	/**
@@ -193,9 +230,10 @@ public class NVGRenderer {
 	 * If no parent scissor exists, the scissor is fully reset.
 	 */
 	public static void popScissor() {
-		nvgResetScissor(vg);
-		scissor = (scissor != null) ? scissor.previous : null;
-		if (scissor != null) scissor.applyScissor();
+		if (scissor != null) {
+			scissor = scissor.previous;
+			nvgRestore(vg);
+		}
 	}
 
 	/**
@@ -1005,9 +1043,8 @@ public class NVGRenderer {
 	 */
 	public static float devicePixelRatio() {
 		try {
-			var window = mc.getWindow();
-			int fbw = window.getWidth();
-			int ww = window.getScreenWidth();
+			int fbw = UDisplay.getWidth();
+			int ww = UDisplay.getScreenWidth();
 			return ww == 0 ? 1f : (float) fbw / ww;
 		} catch (Throwable t) {
 			return 1f;
@@ -1015,8 +1052,8 @@ public class NVGRenderer {
 	}
 
 	public static float getStandardGuiScale() {
-		float verticalScale = (mc.getWindow().getHeight() / 1080f) / devicePixelRatio();
-		float horizontalScale = (mc.getWindow().getWidth() / 1920f) / devicePixelRatio();
+		float verticalScale = (UDisplay.getHeight() / 1080f) / devicePixelRatio();
+		float horizontalScale = (UDisplay.getWidth() / 1920f) / devicePixelRatio();
 
 		float scale = Math.max(verticalScale, horizontalScale);
 		scale = Math.max(1f, Math.min(scale, 3f));

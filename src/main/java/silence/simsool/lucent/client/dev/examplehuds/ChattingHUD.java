@@ -1,7 +1,7 @@
-package silence.simsool.lucent.client.dev.examplemods;
+package silence.simsool.lucent.client.dev.examplehuds;
 
 import net.minecraft.client.gui.GuiGraphics;
-import silence.simsool.lucent.Lucent;
+import silence.simsool.lucent.client.dev.examplemods.ChattingMod;
 import silence.simsool.lucent.general.enums.HUDAlignment;
 import silence.simsool.lucent.general.enums.RenderType;
 import silence.simsool.lucent.general.models.abstracts.LucentHUD;
@@ -12,11 +12,8 @@ import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 
 public class ChattingHUD extends LucentHUD {
 
-	private static final float BASE_W = 160f;
-	private static final float BASE_H = 24f;
-
 	public ChattingHUD() {
-		super("chatting_hud", 0.01f, 0.05f, 1.0f, HUDAlignment.LEFT);
+		super("chatting", ChattingMod.class, 0.01f, 0.05f, 1.0f, HUDAlignment.LEFT);
 	}
 
 	@Override
@@ -26,33 +23,23 @@ public class ChattingHUD extends LucentHUD {
 
 	@Override
 	public float getPreviewWidth() {
-		return BASE_W;
+		return 160;
 	}
 
 	@Override
 	public float getPreviewHeight() {
-		return BASE_H;
+		return 24;
 	}
 
 	@Override
-	public boolean isEnabled() {
-		return Lucent.config.getModule(ChattingMod.class).isEnabled;
-	}
-
-	@Override
-	public void disable() {
-		Lucent.config.getModule(ChattingMod.class).isEnabled = false;
-	}
-
-	@Override
-	public void draw(GuiGraphics guiGraphics) {
+	public void draw(GuiGraphics graphics) {
 		if (LucentHUD.isEditHudOpen || UDisplay.isDebugScreen()) return;
-		renderPanel(guiGraphics, "Hello World");
+		renderPanel(graphics, "Hello World");
 	}
 
 	@Override
-	public void preview(GuiGraphics guiGraphics) {
-		renderPanel(guiGraphics, "Chat & Emote");
+	public void preview(GuiGraphics graphics) {
+		renderPanel(graphics, "Preview Text");
 	}
 
 	private void renderPanel(GuiGraphics guiGraphics, String text) {

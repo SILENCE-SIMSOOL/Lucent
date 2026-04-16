@@ -33,7 +33,6 @@ public class KeyBindButton extends UIWidget {
 		NVGRenderer.push();
 		
 		hoverAnim = UAnimation.stepProgress(hoverAnim, hovered && !waiting, ANIM_SPEED, delta);
-
 		if (waiting) waitAnim = (float) ((System.currentTimeMillis() - waitStart) % 1500) / 1500f;
 		else waitAnim = 0f;
 

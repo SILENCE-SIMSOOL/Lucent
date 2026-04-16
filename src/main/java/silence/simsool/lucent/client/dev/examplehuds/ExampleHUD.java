@@ -1,19 +1,21 @@
-package silence.simsool.lucent.client.dev.examplemods;
+package silence.simsool.lucent.client.dev.examplehuds;
 
 import static silence.simsool.lucent.Lucent.mc;
 
 import net.minecraft.client.gui.GuiGraphics;
 import silence.simsool.lucent.Lucent;
+import silence.simsool.lucent.client.dev.examplemods.ChattingMod;
+import silence.simsool.lucent.client.dev.examplemods.ExampleMod;
 import silence.simsool.lucent.general.enums.HUDAlignment;
 import silence.simsool.lucent.general.enums.RenderType;
 import silence.simsool.lucent.general.models.abstracts.LucentHUD;
 import silence.simsool.lucent.general.utils.UDisplay;
 import silence.simsool.lucent.general.utils.UText;
 
-public class TestHUD extends LucentHUD {
+public class ExampleHUD extends LucentHUD {
 
-	public TestHUD() {
-		super("testhud", 0.02f, 0.02f, 1.0f, HUDAlignment.LEFT);
+	public ExampleHUD() {
+		super("example", 0.02f, 0.02f, 1.0f, HUDAlignment.LEFT);
 	}
 
 	@Override
@@ -33,7 +35,7 @@ public class TestHUD extends LucentHUD {
 
 	@Override
 	public boolean isEnabled() {
-		return Lucent.config.isModuleEnabled(ExampleMod.class);
+		return Lucent.config.getModule(ExampleMod.class).isEnabled && ChattingMod.AdvancedConfig;
 	}
 
 	@Override
@@ -53,15 +55,11 @@ public class TestHUD extends LucentHUD {
 	}
 
 	private void render(GuiGraphics graphics, boolean preview) {
-		if (!preview && mc.player == null) return;
+		float rx = getRenderX();
+		float ry = getRenderY();
 
-		int sw = UDisplay.getGuiScaledWidth();
-		int sh = mc.getWindow().getGuiScaledHeight();
-
-		float rx = x * sw;
-		float ry = y * sh;
-
-		UText.drawText(graphics, String.format("XT: " + mc.player.getBlockX()), rx, ry, scale);
+		UText.drawText(graphics, String.format("[X]: " + mc.player.getBlockX()), rx, ry, scale);
+		UText.drawText(graphics, "abcdefghijklnmopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890", rx, ry + 6, scale);
 	}
 
 }

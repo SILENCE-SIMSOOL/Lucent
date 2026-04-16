@@ -4,8 +4,6 @@ import static silence.simsool.lucent.Lucent.mc;
 
 import org.joml.Matrix3x2fStack;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.client.gui.GuiGraphics;
 import silence.simsool.lucent.ui.utils.UIColors;
 

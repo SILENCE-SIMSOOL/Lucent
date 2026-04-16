@@ -13,9 +13,9 @@
 	},
 	"license": "MIT",
 	"icon": "assets/lucent/icon.png",
-	"environment": "*",
+	"environment": "client",
 	"mixins": [
-		"mixins.lucent.json"
+		"lucent.mixins.json"
 	],
 	"entrypoints": {
 		"client": [

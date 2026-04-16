@@ -14,11 +14,19 @@ public class UMouse {
 		return (float) mc.mouseHandler.ypos();
 	}
 
-	public static float getScaledX(float scale) {
+	public static float getScaledX() {
+		return (float) mc.mouseHandler.getScaledXPos(UDisplay.getWindow());
+	}
+
+	public static float getScaledY() {
+		return (float) mc.mouseHandler.getScaledYPos(UDisplay.getWindow());
+	}
+
+	public static float getNvgScaledX(float scale) {
 		return (getX() / (NVGRenderer.getStandardGuiScale() * scale));
 	}
 
-	public static float getScaledY(float scale) {
+	public static float getNvgScaledY(float scale) {
 		return (getY() / (NVGRenderer.getStandardGuiScale() * scale));
 	}
 

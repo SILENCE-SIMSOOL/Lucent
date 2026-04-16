@@ -19,4 +19,9 @@ public class LucentUtils {
 		return Identifier.fromNamespaceAndPath(id, path);
 	}
 
+	public static String stripColorCodes(String text) {
+		if (text == null) return "";
+		return text.replace("&&", "\u0000").replaceAll("&[0-9a-fA-FrR]", "").replace("\u0000", "&");
+	}
+
 }

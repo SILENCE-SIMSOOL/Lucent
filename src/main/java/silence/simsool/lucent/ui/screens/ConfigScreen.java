@@ -33,6 +33,7 @@ import silence.simsool.lucent.general.models.data.LucentTheme;
 import silence.simsool.lucent.general.models.data.NavState;
 import silence.simsool.lucent.general.models.interfaces.annotations.ModConfig;
 import silence.simsool.lucent.general.utils.L10n;
+import silence.simsool.lucent.general.utils.LucentUtils;
 import silence.simsool.lucent.general.utils.UDisplay;
 import silence.simsool.lucent.general.utils.UMouse;
 import silence.simsool.lucent.ui.manager.LucentResourceManager;
@@ -55,20 +56,18 @@ import silence.simsool.lucent.ui.widget.base.UIWidget;
 
 public class ConfigScreen extends Screen {
 
-	public ConfigScreen(ModManager moduleManager) {
-		super(Component.literal(L10n.translate("lucent.config.title")));
-		this.moduleManager = moduleManager;
-	}
-
 	private static final int WINDOW_W  = 1100;
 	private static final int WINDOW_H  = 680;
 	private static final int SIDEBAR_W = 210;
 	private static final int TOPBAR_H  = 72;
 	private static final int PAD       = 24;
+	private static final int SCROLLBAR_W = 6;
 
 	private int winX, winY;
 	private int contentX, contentY, contentW, contentH;
 	private int scissorY, scissorH;
+
+	private boolean scrollbarDragging = false;
 
 	private final Map<String, Float> toggleAnimCache = new HashMap<>();
 	private final ModManager moduleManager;
@@ -79,6 +78,8 @@ public class ConfigScreen extends Screen {
 
 	private final Stack<NavState> history = new Stack<>();
 	private final Stack<NavState> forwardHistory = new Stack<>();
+
+	private static final Map<Class<?>, List<Object>> modMemberCache = new HashMap<>();
 
 	private final List<UIWidget> widgets = new ArrayList<>();
 	private final List<UIWidget> overlayWidgets = new ArrayList<>();
@@ -95,61 +96,90 @@ public class ConfigScreen extends Screen {
 	private long closeStartTime = -1L;
 	private boolean closing = false;
 
-	private class ThemeCardWidget extends UIWidget {
-		private final LucentTheme theme;
-		private float hoverAnim = 0f;
+	private Mod initialMod = null;
 
-		public ThemeCardWidget(int x, int y, int w, int h, LucentTheme theme) {
+	public ConfigScreen(ModManager moduleManager) {
+		super(Component.literal(L10n.translate("lucent.config.title")));
+		this.moduleManager = moduleManager;
+	}
+
+	/** 특정 모듈의 세부설정으로 바로 진입 */
+	public ConfigScreen(ModManager moduleManager, Mod mod) {
+		super(Component.literal(L10n.translate("lucent.config.title")));
+		this.moduleManager = moduleManager;
+		this.initialMod = mod;
+	}
+
+	private record ColorSegment(String text, int color) {}
+
+	private class CategoryLabelWidget extends UIWidget {
+		private final String name;
+		public CategoryLabelWidget(int x, int y, int w, String name) {
+			super(x, y, w, 32);
+			this.name = name;
+		}
+		@Override
+		protected void renderWidget(GuiGraphics ctx, int mx, int my, float delta) {
+			String catName = L10n.translate(name).toUpperCase();
+			float fontSize = 12f;
+			int color = UIColors.MUTED; 
+			float indent = 8f;
+			
+			NVGRenderer.text(catName, x + indent, y + 14, Fonts.PRETENDARD_SEMIBOLD, color, fontSize);
+			
+			float textW = NVGRenderer.textWidth(catName, Fonts.PRETENDARD_SEMIBOLD, fontSize);
+			float lineX = x + indent + textW + 16;
+			float lineW = (x + width - 6) - lineX;
+			if (lineW > 0) NVGRenderer.rect(lineX, y + 20, lineW, 1.5f, UIColors.withAlpha(color, 40));
+		}
+	}
+
+	private class ModCardWidget extends UIWidget {
+		private final Mod mod;
+		private static final int BAR_H = 30;
+
+		public ModCardWidget(int x, int y, int w, int h, Mod mod) {
 			super(x, y, w, h);
-			this.theme = theme;
+			this.mod = mod;
 		}
 
 		@Override
 		protected void renderWidget(GuiGraphics ctx, int mx, int my, float delta) {
-			hoverAnim = UAnimation.stepProgress(hoverAnim, hovered, 12f, delta);
-			boolean current = ThemeManager.currentTheme == theme;
+			boolean hov = mx >= x && mx <= x + width && my >= y && my <= y + height;
+			int topBg   = hov ? UIColors.CARD_HOVER : UIColors.CARD_BG;
+			int barBg   = mod.isEnabled ? UIColors.ACCENT_BLUE : UIColors.TAB_BG; 
+			if (hov && !mod.isEnabled) barBg = UIColors.withAlphaFloat(UIColors.TAB_BG, 0.6f);
 
-			// Glow/Shadow effect on hover
-			if (hoverAnim > 0) {
-				NVGRenderer.rect(x - hoverAnim * 2, y - hoverAnim * 2, width + hoverAnim * 4, height + hoverAnim * 4, UColor.withAlpha(theme.accent, (int)(hoverAnim * 25)), 14f);
+			NVGRenderer.rect(x, y, width, height - BAR_H, topBg, 12, 12, 0, 0);
+			NVGRenderer.rect(x, y + height - BAR_H, width, BAR_H, barBg, 0, 0, 12, 12);
+
+			float midX = x + width / 2f;
+			float topH = height - BAR_H;
+
+			Image iconImg = null;
+			if (mod.icon != null && !mod.icon.isEmpty()) iconImg = LucentResourceManager.modIconsMap.get(mod.name);
+
+			if (iconImg != null) NVGRenderer.image(iconImg, midX - 22f, y + (topH - 44f) / 2f, 44f, 44f);
+			else {
+				float initialW = NVGRenderer.textWidth(mod.name, Fonts.PRETENDARD_SEMIBOLD, 20f);
+				NVGRenderer.text(mod.name, midX - initialW/2, y + (topH - 20) / 2, Fonts.PRETENDARD_SEMIBOLD, 0xFFFFFFFF, 20);
 			}
 
-			// Main Background
-			NVGRenderer.rect(x, y, width, height, theme.itemBg, 12f);
-			if (hoverAnim > 0) {
-				int targetHover = UColor.withAlpha(theme.itemHover, (int)(hoverAnim * UColor.getAlpha(theme.itemHover)));
-				NVGRenderer.rect(x, y, width, height, targetHover, 12f);
-			}
+			float barTop  = y + height - BAR_H;
 
-			// Theme name
-			NVGRenderer.text(theme.name, x + 15, y + 18, Fonts.PRETENDARD_SEMIBOLD, theme.textPrimary, 15f);
+			NVGRenderer.text(L10n.translate(mod.name), x + 12f, barTop + 8f, Fonts.PRETENDARD_MEDIUM, UIColors.PURE_WHITE, 14f);
 
-			// Palette Preview circles
-			float size = 10f;
-			float gap = 6f;
-			float px = x + 15;
-			float py = y + height - 20;
-
-			int[] colors = { theme.accent, theme.textPrimary, theme.sidebarBg, theme.winBg };
-			for (int i = 0; i < colors.length; i++) {
-				NVGRenderer.circle(px + i * (size + gap), py, size / 2f, colors[i]);
-				NVGRenderer.outlineCircle(px + i * (size + gap), py, size / 2f + 1, 0.5f, theme.itemBorder);
-			}
-
-			// Active Indicator
-			if (current) {
-				NVGRenderer.circle(x + width - 20, y + 20, 5, theme.accent);
-				NVGRenderer.outlineCircle(x + width - 20, y + 20, 7, 1, theme.accent);
-			}
-
-			// Border
-			NVGRenderer.outlineRect(x, y, width, height, 1.5f, current ? theme.accent : theme.itemBorder, 12f);
+			float divX = x + width - 36f;
+			NVGRenderer.rect(divX, barTop + 6f, 1, BAR_H - 12f, 0x55FFFFFF, 0f); // 약간 투명한 선
+			
+			if (LucentResourceManager.iconSettings != null) NVGRenderer.image(LucentResourceManager.iconSettings, divX + 10f, barTop + (BAR_H - 16f) / 2f, 16f, 16f);
 		}
 
 		@Override
 		public boolean mouseClicked(double mx, double my, int btn) {
-			if (btn == 0 && isMouseOver(mx, my)) {
-				applyTheme(theme);
+			if (btn == 0 && mx >= x && mx <= x + width && my >= y && my <= y + height) {
+				if (mx >= x + width - 36 && my >= y + height - BAR_H) pushNav("Mods", mod, currentCategory);
+				else mod.isEnabled = !mod.isEnabled;
 				return true;
 			}
 			return false;
@@ -338,9 +368,202 @@ public class ConfigScreen extends Screen {
 		}
 	}
 
+	private class ThemeCardWidget extends UIWidget {
+		private final LucentTheme theme;
+		private float hoverAnim = 0f;
+
+		public ThemeCardWidget(int x, int y, int w, int h, LucentTheme theme) {
+			super(x, y, w, h);
+			this.theme = theme;
+		}
+
+		@Override
+		protected void renderWidget(GuiGraphics ctx, int mx, int my, float delta) {
+			hoverAnim = UAnimation.stepProgress(hoverAnim, hovered, 12f, delta);
+			boolean current = ThemeManager.currentTheme == theme;
+
+			// Glow/Shadow effect on hover
+			if (hoverAnim > 0) {
+				NVGRenderer.rect(x - hoverAnim * 2, y - hoverAnim * 2, width + hoverAnim * 4, height + hoverAnim * 4, UColor.withAlpha(theme.accent, (int)(hoverAnim * 25)), 14f);
+			}
+
+			// Main Background
+			NVGRenderer.rect(x, y, width, height, theme.itemBg, 12f);
+			if (hoverAnim > 0) {
+				int targetHover = UColor.withAlpha(theme.itemHover, (int)(hoverAnim * UColor.getAlpha(theme.itemHover)));
+				NVGRenderer.rect(x, y, width, height, targetHover, 12f);
+			}
+
+			// Theme name
+			NVGRenderer.text(theme.name, x + 15, y + 18, Fonts.PRETENDARD_SEMIBOLD, theme.textPrimary, 15f);
+
+			// Palette Preview circles
+			float size = 10f;
+			float gap = 6f;
+			float px = x + 15;
+			float py = y + height - 20;
+
+			int[] colors = { theme.accent, theme.textPrimary, theme.sidebarBg, theme.winBg };
+			for (int i = 0; i < colors.length; i++) {
+				NVGRenderer.circle(px + i * (size + gap), py, size / 2f, colors[i]);
+				NVGRenderer.outlineCircle(px + i * (size + gap), py, size / 2f + 1, 0.5f, theme.itemBorder);
+			}
+
+			// Active Indicator
+			if (current) {
+				NVGRenderer.circle(x + width - 20, y + 20, 5, theme.accent);
+				NVGRenderer.outlineCircle(x + width - 20, y + 20, 7, 1, theme.accent);
+			}
+
+			// Border
+			NVGRenderer.outlineRect(x, y, width, height, 1.5f, current ? theme.accent : theme.itemBorder, 12f);
+		}
+
+		@Override
+		public boolean mouseClicked(double mx, double my, int btn) {
+			if (btn == 0 && isMouseOver(mx, my)) {
+				applyTheme(theme);
+				return true;
+			}
+			return false;
+		}
+	}
+
+	private class SettingRowWidget extends UIWidget {
+		private final String label, description;
+
+		public SettingRowWidget(int x, int y, int w, int h, String label, String desc) {
+			super(x, y, w, h);
+			this.label       = label;
+			this.description = desc;
+		}
+
+		@Override
+		protected void renderWidget(GuiGraphics ctx, int mx, int my, float delta) {
+			boolean hov = mx >= x && mx <= x + width && my >= y && my <= y + height;
+			NVGRenderer.rect(x, y, width, height, hov ? UIColors.CARD_HOVER : UIColors.CARD_BG, 8f);
+			NVGRenderer.outlineRect(x, y, width, height, 1, UIColors.ITEM_BORDER, 8f);
+			NVGRenderer.text(label, x + 16, y + 17, Fonts.PRETENDARD_SEMIBOLD, UIColors.TEXT_PRIMARY, 16f);
+			renderDescription(description, x + 16, y + 41, width - 32 - 110, 13f);
+		}
+
+		private void renderDescription(String text, float sx, float sy, float maxW, float fontSize) {
+			if (text == null || text.isEmpty()) return;
+			// && → placeholder
+			String processed = text.replace("&&", "\u0001");
+			String[] lines = processed.split("\\n", -1);
+			float lineH = fontSize + 3f;
+			float curY2 = sy;
+			// 한 줄이 maxW 초과하면 워드랩
+			for (String line : lines) curY2 = renderColorLine(line, sx, curY2, maxW, fontSize, lineH, UIColors.TEXT_SECONDARY);
+		}
+
+		private float renderColorLine(String line, float sx, float sy, float maxW, float fontSize, float lineH, int defaultColor) {
+			float currentX = sx;
+			float currentY = sy;
+			StringBuilder lineBuffer = new StringBuilder();
+			int lineColor = defaultColor;
+
+			for (ColorSegment seg : parseSegments(line, defaultColor)) {
+				String segText = seg.text.replace("\u0001", "&");
+				for (int i = 0; i < segText.length(); i++) {
+					char ch = segText.charAt(i);
+					lineBuffer.append(ch);
+					float w = NVGRenderer.textWidth(lineBuffer.toString(), Fonts.PRETENDARD_LIGHT, fontSize);
+					if (w > maxW && lineBuffer.length() > 1) {
+						lineBuffer.deleteCharAt(lineBuffer.length() - 1);
+						i--;
+						NVGRenderer.text(lineBuffer.toString(), currentX, currentY, Fonts.PRETENDARD_LIGHT, lineColor, fontSize);
+						currentX = sx;
+						currentY += lineH;
+						lineBuffer.setLength(0);
+					}
+				}
+				if (lineBuffer.length() > 0) {
+					NVGRenderer.text(lineBuffer.toString(), currentX, currentY, Fonts.PRETENDARD_LIGHT, seg.color, fontSize);
+					currentX += NVGRenderer.textWidth(lineBuffer.toString(), Fonts.PRETENDARD_LIGHT, fontSize);
+					lineColor = seg.color;
+					lineBuffer.setLength(0);
+				}
+			}
+			if (lineBuffer.length() > 0) {
+				NVGRenderer.text(lineBuffer.toString(), currentX, currentY, Fonts.PRETENDARD_LIGHT, lineColor, fontSize);
+				currentX += NVGRenderer.textWidth(lineBuffer.toString(), Fonts.PRETENDARD_LIGHT, fontSize);
+			}
+			return currentY + lineH;
+		}
+
+		private List<ColorSegment> parseSegments(String line, int defaultColor) {
+			List<ColorSegment> segs = new ArrayList<>();
+			int color = defaultColor;
+			StringBuilder buf = new StringBuilder();
+			for (int i = 0; i < line.length(); i++) {
+				char c = line.charAt(i);
+				if (c == '&' && i + 1 < line.length()) {
+					char next = line.charAt(i + 1);
+					if (next == '&') {
+						// &&  → literal &
+						buf.append('\u0001'); // placeholder
+						i++;
+						continue;
+					}
+					int newColor = colorCodeToARGB(next, defaultColor);
+					if (newColor != -1) {
+						if (buf.length() > 0) { segs.add(new ColorSegment(buf.toString(), color)); buf.setLength(0); }
+						color = newColor;
+						i++;
+						continue;
+					}
+				}
+				buf.append(c);
+			}
+			if (buf.length() > 0) segs.add(new ColorSegment(buf.toString(), color));
+			return segs;
+		}
+
+		private int colorCodeToARGB(char code, int defaultColor) {
+			return switch (Character.toLowerCase(code)) {
+				case '0' -> 0xFF000000;
+				case '1' -> 0xFF0000AA;
+				case '2' -> 0xFF00AA00;
+				case '3' -> 0xFF00AAAA;
+				case '4' -> 0xFFAA0000;
+				case '5' -> 0xFFAA00AA;
+				case '6' -> 0xFFFFAA00;
+				case '7' -> 0xFFAAAAAA;
+				case '8' -> 0xFF555555;
+				case '9' -> 0xFF5555FF;
+				case 'a' -> 0xFF55FF55;
+				case 'b' -> 0xFF55FFFF;
+				case 'c' -> 0xFFFF5555;
+				case 'd' -> 0xFFFF55FF;
+				case 'e' -> 0xFFFFFF55;
+				case 'f' -> 0xFFFFFFFF;
+				case 'r' -> defaultColor;
+				default -> -1; // not a color code
+			};
+		}
+	}
+
+	@Override
+	public void onClose() {
+		if (LucentConfig.openAnimation && !closing) {
+			closing = true;
+			closeStartTime = System.currentTimeMillis();
+		} else super.onClose();
+	}
+
+	@Override
+	public void removed() {
+		super.removed();
+		if (moduleManager != null) moduleManager.saveConfigs();
+	}
+
 	@Override
 	protected void init() {
 		super.init();
+
+		LucentResourceManager.loadLucentIcons();
 
 		float standardScale = NVGRenderer.getStandardGuiScale();
 		float screenW = UDisplay.getScreenWidth() / standardScale;
@@ -364,12 +587,380 @@ public class ConfigScreen extends Screen {
 		contentW = WINDOW_W - SIDEBAR_W;
 		contentH = WINDOW_H - TOPBAR_H;
 
-		searchField = new EditBox(font, 0, 0, 0, 0, Component.literal("Search"));
+		int bw = 200, bh = 32;
+		int bx = winX + WINDOW_W - bw - PAD;
+		int by = winY + (TOPBAR_H - bh) / 2;
+
+		searchField = new EditBox(font, bx, by, bw, bh, Component.literal("Search"));
 		searchField.setMaxLength(64);
+		searchField.setBordered(false);
 		addWidget(searchField);
 		searchField.setFocused(false);
+		searchField.visible = false;
 
 		refreshUI();
+
+		// initialMod가 있으면 해당 모듈 세부설정으로 바로 진입
+		if (initialMod != null) {
+			pushNav("Mods", initialMod, "All");
+			initialMod = null;
+		}
+	}
+
+	@Override
+	public void renderBackground(GuiGraphics graphics, int mx, int my, float delta) {
+		float alpha = LucentConfig.openAnimation ? openAnimationProgress : 1f;
+		if (LucentConfig.uiBlur) {
+			graphics.fill(0, 0, width, height, UIColors.withAlpha(0x25000000, (int)(20 * alpha))); 
+			super.renderBackground(graphics, mx, my, delta);
+		} else graphics.fill(0, 0, width, height, UIColors.withAlpha(0x80000000, (int)(80 * alpha)));
+	}
+
+	@Override
+	public void render(GuiGraphics graphics, int mx, int my, float delta) {
+		if (startTime == -1L) startTime = System.currentTimeMillis();
+
+		if (LucentConfig.openAnimation) {
+			if (closing) {
+				if (closeStartTime == -1L) closeStartTime = System.currentTimeMillis();
+				float elapsed = (float)(System.currentTimeMillis() - closeStartTime);
+				openAnimationProgress = 1f - Math.min(1f, elapsed / 300f);
+				if (openAnimationProgress <= 0f) {
+					super.onClose();
+					return;
+				}
+			} else {
+				float elapsed = (float)(System.currentTimeMillis() - startTime);
+				openAnimationProgress = Math.min(1f, elapsed / 400f);
+			}
+		} else {
+			openAnimationProgress = 1f;
+			if (closing) {
+				super.onClose();
+				return;
+			}
+		}
+
+		if (searchField != null) {
+			boolean showSearch = currentSidebarPage.equals("Mods");
+
+			if (searchField.visible != showSearch) searchField.visible = showSearch;
+			if (!searchField.getValue().equals(lastSearchQuery)) {
+				lastSearchQuery = searchField.getValue();
+				if (showSearch) refreshUI();
+			}
+		}
+
+		NVGPIPRenderer.draw(graphics, 0, 0, width, height, () -> {
+			float gs  = NVGRenderer.getStandardGuiScale();
+			float smx = UMouse.getNvgScaledX(uiScale);
+			float smy = UMouse.getNvgScaledY(uiScale);
+
+			NVGRenderer.push();
+			
+			// Apply Animation
+			if (LucentConfig.openAnimation) {
+				float ease = UAnimation.Easing.spring(openAnimationProgress);
+				NVGRenderer.translate(width / 2f, height / 2f);
+				NVGRenderer.scale(0.9f + 0.1f * ease, 0.9f + 0.1f * ease);
+				NVGRenderer.translate(-width / 2f, -height / 2f);
+				NVGRenderer.globalAlpha(UAnimation.clamp(openAnimationProgress * 1.5f, 0f, 1f));
+			}
+			NVGRenderer.scale(gs * uiScale, gs * uiScale);
+
+			drawFrame();
+			renderSidebar();
+			renderTopBar();
+
+			if (currentSidebarPage.equals("Mods")) {
+				renderSearchBarBg();
+				if (currentModSettings == null) renderCategoryTabs();
+			} 
+ 
+			NVGRenderer.pushScissor(contentX - 2, scissorY - 2, contentW - SCROLLBAR_W - 2, scissorH + 4);
+			if (currentSidebarPage.equals("Mods") && currentModSettings != null) renderSettingsHeader();
+			
+			NVGRenderer.push();
+			NVGRenderer.translate(0, (float) -scrollOffset);
+			for (UIWidget w : widgets) {
+				w.render(graphics, (int) smx, (int) (smy + scrollOffset), delta);
+			}
+			for (UIWidget w : overlayWidgets) {
+				if (shouldSkipOverlay(w)) w.render(graphics, (int) smx, (int) (smy + scrollOffset), delta);
+			}
+			NVGRenderer.pop();
+			NVGRenderer.popScissor();
+
+			// For OPEN overlays, render them without scissor so dropdown is visible
+			for (UIWidget w : overlayWidgets) {
+				if (!shouldSkipOverlay(w)) {
+					int oy = w.getY();
+					w.setPosition(w.getX(), (int)(oy - scrollOffset));
+					w.render(graphics, (int) smx, (int) smy, delta);
+					w.renderOverlay(graphics, (int) smx, (int) smy, delta);
+					w.setPosition(w.getX(), oy);
+				}
+			}
+
+			if (maxScroll > 0) renderScrollbar(smx, smy);
+
+			NVGRenderer.pop();
+		});
+
+		super.render(graphics, mx, my, delta);
+	}
+
+	@Override
+	public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick) {
+		float mx = UMouse.getNvgScaledX(uiScale);
+		float my = UMouse.getNvgScaledY(uiScale);
+		int btn  = event.button();
+
+		if (btn == 0 && isScrollbarHit(mx, my)) {
+			scrollbarDragging = true;
+			scrollOffset = scrollbarThumbOffset(my);
+			return true;
+		}
+
+		if (currentSidebarPage.equals("Mods") && searchField != null && searchField.visible) {
+			int bw = 200, bh = 32;
+			int bx = winX + WINDOW_W - bw - PAD;
+			int by = winY + (TOPBAR_H - bh) / 2;
+			boolean hit = (mx >= bx && mx <= bx + bw && my >= by && my <= by + bh);
+			if (hit != searchFocused) {
+				searchFocused = hit;
+				searchField.setFocused(hit);
+				if (hit) this.setFocused(searchField);
+				else if (this.getFocused() == searchField) this.setFocused(null);
+			}
+			if (hit) return true;
+		}
+
+		for (UIWidget w : overlayWidgets) {
+			if (!shouldSkipOverlay(w)) {
+				if (w.mouseClicked(mx, my + scrollOffset, btn)) return true;
+			}
+		}
+
+		if (mx >= contentX && mx <= contentX + contentW && my >= scissorY && my <= scissorY + scissorH) {
+			for (UIWidget w : widgets) {
+				if (w.mouseClicked(mx, my + scrollOffset, btn)) return true;
+			}
+			for (UIWidget w : overlayWidgets) {
+				if (shouldSkipOverlay(w) && w.mouseClicked(mx, my + scrollOffset, btn)) return true;
+			}
+		}
+
+		float bx = winX + SIDEBAR_W + PAD;
+		float cy = winY + TOPBAR_H / 2f;
+		
+		// Back button ←
+		if (mx >= bx - 4 && mx <= bx + 20 && my >= cy - 20 && my <= cy + 10) {
+			if (!history.isEmpty()) {
+				goBack();
+				return true;
+			}
+		}
+		// Forward button →
+		if (mx >= bx + 28 && mx <= bx + 52 && my >= cy - 20 && my <= cy + 10) {
+			if (!forwardHistory.isEmpty()) {
+				goForward();
+				return true;
+			}
+		}
+
+		if (currentSidebarPage.equals("Mods") && currentModSettings == null) {
+			float catX = winX + SIDEBAR_W + PAD;
+			float catY = winY + TOPBAR_H;
+			
+			for (String cat : getCategories()) {
+				float tw = NVGRenderer.textWidth(cat, Fonts.PRETENDARD_MEDIUM, 13f);
+				int tabW = (int)(tw + 32);
+				if (mx >= catX && mx <= catX + tabW && my >= catY && my <= catY + 28f) {
+					currentCategory = cat;
+					refreshUI();
+					return true;
+				}
+				catX += tabW + 8;
+			}
+		}
+
+		if (mx >= winX && mx <= winX + SIDEBAR_W) {
+			int sy = winY + 96;
+			String[] pages = {"Mods", "Profiles", "Themes", "Preferences"};
+			int sy3 = sy + 36 + 36 + 32;
+			int[] ys = {sy, sy + 36, sy3, sy3 + 36};
+			
+			for (int i = 0; i < pages.length; i++) {
+				int ty = ys[i];
+				if (mx >= winX + 16 && mx <= winX + SIDEBAR_W - 16 && my >= ty && my <= ty + 36) {
+					String targetPage = pages[i];
+					if (!currentSidebarPage.equals(targetPage) || (targetPage.equals("Mods") && currentModSettings != null)) {
+						pushNav(targetPage, null, "All");
+						return true;
+					}
+				}
+			}
+
+			float editHudY = winY + WINDOW_H - 100;
+			if (mx >= winX + 16 && mx <= winX + SIDEBAR_W - 16 && my >= editHudY && my <= editHudY + 36) {
+				this.onClose();
+				minecraft.setScreen(new EditHUDScreen(moduleManager));
+				return true;
+			}
+
+			float closeY = winY + WINDOW_H - 100 + 38;
+			if (mx >= winX + 16 && mx <= winX + SIDEBAR_W - 16 && my >= closeY && my <= closeY + 36) {
+				this.onClose();
+				return true;
+			}
+		}
+
+		return super.mouseClicked(event, isDoubleClick);
+	}
+
+	@Override
+	public boolean mouseDragged(MouseButtonEvent event, double mouseX, double mouseY) {
+		float mx = UMouse.getNvgScaledX(uiScale), my = UMouse.getNvgScaledY(uiScale);
+		int btn  = event.button();
+
+		if (scrollbarDragging && btn == 0) {
+			scrollOffset = scrollbarThumbOffset(my);
+			return true;
+		}
+
+		for (UIWidget w : overlayWidgets) {
+			if (!shouldSkipOverlay(w) && w.mouseDragged(mx, my + scrollOffset, btn, event.x(), event.y())) return true;
+		}
+
+		for (UIWidget w : widgets) {
+			if (w.mouseDragged(mx, my + scrollOffset, btn, event.x(), event.y())) return true;
+		}
+		for (UIWidget w : overlayWidgets) {
+			if (shouldSkipOverlay(w) && w.mouseDragged(mx, my + scrollOffset, btn, event.x(), event.y())) return true;
+		}
+
+		return super.mouseDragged(event, mouseX, mouseY);
+	}
+
+	@Override
+	public boolean mouseReleased(MouseButtonEvent event) {
+		scrollbarDragging = false;
+		float mx = UMouse.getNvgScaledX(uiScale), my = UMouse.getNvgScaledY(uiScale);
+		int btn  = event.button();
+
+		for (UIWidget w : overlayWidgets) {
+			if (!shouldSkipOverlay(w)) {
+				if (w.mouseReleased(mx, my + scrollOffset, btn)) return true;
+			}
+		}
+
+		for (UIWidget w : widgets) {
+			if (w.mouseReleased(mx, my + scrollOffset, btn)) return true;
+		}
+		for (UIWidget w : overlayWidgets) {
+			if (shouldSkipOverlay(w) && w.mouseReleased(mx, my + scrollOffset, btn)) return true;
+		}
+		return super.mouseReleased(event);
+	}
+
+	@Override
+	public boolean mouseScrolled(double mouseX, double mouseY, double hAmt, double vAmt) {
+		float mx = UMouse.getNvgScaledX(uiScale), my = UMouse.getNvgScaledY(uiScale);
+
+		for (UIWidget w : overlayWidgets) {
+			if (!shouldSkipOverlay(w)) {
+				if (w.mouseScrolled(mx, my + scrollOffset, hAmt, vAmt)) return true;
+			}
+		}
+
+		if (mx >= contentX && mx <= contentX + contentW && my >= scissorY && my <= scissorY + scissorH) {
+			for (UIWidget w : overlayWidgets) {
+				if (shouldSkipOverlay(w)) {
+					if (w.mouseScrolled(mx, my + scrollOffset, hAmt, vAmt)) return true;
+				}
+			}
+			scrollOffset -= vAmt * 36;
+			scrollOffset  = UAnimation.clamp(scrollOffset, 0, maxScroll);
+			return true;
+		}
+		return super.mouseScrolled(mouseX, mouseY, hAmt, vAmt);
+	}
+
+	@Override
+	public boolean keyPressed(KeyEvent input) {
+		int key = input.key();
+
+		// waiting 상태인 KeyBindButton에게 먼저 이벤트를 전달
+		for (UIWidget w : widgets) {
+			if (w instanceof KeyBindButton kbb && kbb.isWaiting()) {
+				if (kbb.keyPressed(key, input.scancode(), input.modifiers())) return true;
+			}
+		}
+		for (UIWidget w : overlayWidgets) {
+			if (w instanceof KeyBindButton kbb && kbb.isWaiting()) {
+				if (kbb.keyPressed(key, input.scancode(), input.modifiers())) return true;
+			}
+		}
+
+		if (key == GLFW.GLFW_KEY_ESCAPE) {
+			this.onClose();
+			return true;
+		}
+
+		if (key == GLFW.GLFW_KEY_TAB || key == GLFW.GLFW_KEY_LEFT) {
+			if (!history.isEmpty()) goBack();
+			return true;
+		}
+
+		if (key == GLFW.GLFW_KEY_RIGHT) {
+			if (!forwardHistory.isEmpty()) goForward();
+			return true;
+		}
+
+		for (UIWidget w : widgets) {
+			if (w.keyPressed(key, input.scancode(), input.modifiers())) return true;
+		}
+		for (UIWidget w : overlayWidgets) {
+			if (!shouldSkipOverlay(w) && w.keyPressed(key, input.scancode(), input.modifiers())) return true;
+		}
+		return super.keyPressed(input);
+	}
+
+	@Override
+	public boolean keyReleased(KeyEvent input) {
+		int key = input.key();
+
+		for (UIWidget w : widgets) {
+			if (w instanceof KeyBindButton kbb && kbb.isWaiting()) {
+				if (kbb.keyReleased(key, input.scancode(), input.modifiers())) return true;
+			}
+		}
+		for (UIWidget w : overlayWidgets) {
+			if (w instanceof KeyBindButton kbb && kbb.isWaiting()) {
+				if (kbb.keyReleased(key, input.scancode(), input.modifiers())) return true;
+			}
+		}
+
+		for (UIWidget w : widgets) {
+			if (w.keyReleased(key, input.scancode(), input.modifiers())) return true;
+		}
+		for (UIWidget w : overlayWidgets) {
+			if (!shouldSkipOverlay(w) && w.keyReleased(key, input.scancode(), input.modifiers())) return true;
+		}
+
+		return super.keyReleased(input);
+	}
+
+	@Override
+	public boolean charTyped(CharacterEvent event) {
+		for (UIWidget w : widgets) {
+			if (w.charTyped((char) event.codepoint(), event.modifiers())) return true;
+		}
+		for (UIWidget w : overlayWidgets) {
+			if (!shouldSkipOverlay(w) && w.charTyped((char) event.codepoint(), event.modifiers())) return true;
+		}
+		return super.charTyped(event);
 	}
 
 	private void refreshUI() {
@@ -397,8 +988,6 @@ public class ConfigScreen extends Screen {
 		else if (currentSidebarPage.equals("Preferences")) buildPreferencesWidgets();
 		else buildPlaceholderWidgets(currentSidebarPage);
 	}
-
-
 
 	public void applyTheme(LucentTheme theme) {
 		ThemeManager.applyTheme(theme);
@@ -661,7 +1250,7 @@ public class ConfigScreen extends Screen {
 			boolean catOk = currentCategory.equals("All") || m.category.equals(currentCategory);
 			boolean qOk = q.isEmpty()
 				|| L10n.translate(m.name).toLowerCase().contains(q)
-				|| m.searchTags.toLowerCase().contains(q);
+				|| (m.searchTags != null && m.searchTags.toLowerCase().contains(q));
 			if (catOk && qOk) out.add(m);
 		}
 		return out;
@@ -676,13 +1265,18 @@ public class ConfigScreen extends Screen {
 		int itemW = contentW - PAD * 2;
 
 		for (Map.Entry<String, List<Object>> entry : groupConfigMembers().entrySet()) {
-			curY += 36; 
+			widgets.add(new CategoryLabelWidget(sx, curY, itemW, entry.getKey()));
+			curY += 40;
 
 			for (Object member : entry.getValue()) {
 				ModConfig cfg = (member instanceof Field f) ? f.getAnnotation(ModConfig.class) : ((Method)member).getAnnotation(ModConfig.class);
 				String cfgName = cfg.name();
 				String cfgDesc = cfg.description();
-				widgets.add(new SettingRowWidget(sx, curY, itemW, 74, L10n.translate(cfgName), L10n.translate(cfgDesc)));
+				
+				// 기본 높이를 74로 복구, 설명이 1줄을 넘을 때만 추가
+				int descLines = countDescLines(L10n.translate(cfgDesc), (float)(itemW - 32 - 110), 14f);
+				int rowH = 74 + Math.max(0, descLines - 1) * 17;
+				widgets.add(new SettingRowWidget(sx, curY, itemW, rowH, L10n.translate(cfgName), L10n.translate(cfgDesc)));
 
 				try {
 					Object val = null;
@@ -690,13 +1284,15 @@ public class ConfigScreen extends Screen {
 						f.setAccessible(true);
 						val = f.get(currentModSettings);
 					}
-					
-					int ux = sx + itemW - PAD; 
+
+					int ux = sx + itemW - PAD;
+					// 컨트롤들의 Y축 베이스 (박스 상단에서 약 25px 아래가 첫 줄 중앙)
+					int controlYBase = curY + 25; 
 
 					switch (cfg.type()) {
 
 						case SWITCH -> {
-							ToggleButton toggleButton = new ToggleButton(ux - 48, curY + 25, 48, 24, (boolean) val);
+							ToggleButton toggleButton = new ToggleButton(ux - 48, controlYBase, 48, 24, (boolean) val);
 							final Field field = (member instanceof Field f) ? f : null;
 							if (field != null) {
 								String fid = field.getName();
@@ -725,7 +1321,7 @@ public class ConfigScreen extends Screen {
 								else if (fType == int.class || fType == Integer.class) sType = Slider.SliderType.INT;
 							}
 
-							Slider slider = new Slider(ux - 290, curY + 25, 290, 24, cfg.min(), cfg.max(), cfg.step(), dVal, sType);
+							Slider slider = new Slider(ux - 290, controlYBase, 290, 24, cfg.min(), cfg.max(), cfg.step(), dVal, sType);
 							slider.setOnChange(v -> {
 								try {
 									if (field != null) {
@@ -740,7 +1336,7 @@ public class ConfigScreen extends Screen {
 						}
 
 						case SELECTOR -> {
-							Selector selector = new Selector(ux - 148, curY + 17, 148, 38, List.of(cfg.options()));
+							Selector selector = new Selector(ux - 148, controlYBase - 8, 148, 38, List.of(cfg.options()));
 							selector.setValue((String) val);
 							final Field field = (member instanceof Field f) ? f : null;
 							selector.setOnChange(v -> {
@@ -757,7 +1353,7 @@ public class ConfigScreen extends Screen {
 							else if (val instanceof Number nObj) initialColor = nObj.intValue();
 
 							int width = 64;
-							ColorPickerButton cp = new ColorPickerButton(ux - width, curY + 17, width, 38, initialColor);
+							ColorPickerButton cp = new ColorPickerButton(ux - width, controlYBase - 8, width, 38, initialColor);
 							final Field f = (member instanceof Field field) ? field : null;
 							cp.setOnChange(c -> { 
 								try { 
@@ -773,7 +1369,7 @@ public class ConfigScreen extends Screen {
 						case BUTTON -> {
 							String btnText = cfg.display();
 							int btnW = (btnText == null || btnText.isEmpty()) ? 44 : 100;
-							ActionButton actionButton = new ActionButton(ux - btnW, curY + 19, btnW, 34, btnText);
+							ActionButton actionButton = new ActionButton(ux - btnW, controlYBase - 6, btnW, 34, btnText);
 							if (member instanceof Method m) {
 								actionButton.setOnClick(() -> {
 									try {
@@ -790,18 +1386,18 @@ public class ConfigScreen extends Screen {
 						case KEYBIND -> {
 							KeyBind initialBind = null;
 							if (val instanceof KeyBind kb) initialBind = kb;
-							KeyBindButton kbb = new KeyBindButton(ux - 100, curY + 19, 100, 34, initialBind);
+							KeyBindButton kbb = new KeyBindButton(ux - 100, controlYBase - 6, 100, 34, initialBind);
 							final Field field = (member instanceof Field f) ? f : null;
 							kbb.setOnChange(v -> {
 								try {
 									if (field != null) field.set(currentModSettings, v);
 								} catch (Exception e) {}
 							});
-							overlayWidgets.add(kbb);
+							widgets.add(kbb);
 						}
 
 						case TEXT -> {
-							TextBox tb = new TextBox(ux - 200, curY + 19, 200, 34, (String) val);
+							TextBox tb = new TextBox(ux - 200, controlYBase - 6, 200, 34, (String) val);
 							final Field field = (member instanceof Field f) ? f : null;
 							tb.setOnChange(v -> {
 								try {
@@ -814,31 +1410,54 @@ public class ConfigScreen extends Screen {
 					}
 				} catch (Exception e) {}
 
-				curY += 84;
+				curY += rowH + 10;
 			}
 			curY += 16;
 		}
 		maxScroll = Math.max(0, curY - scissorY + 10 - scissorH);
 	}
 
+	/** 설명 텍스트가 maxWidth 안에서 몇 줄이 되는지 계산 */
+	private int countDescLines(String text, float maxWidth, float fontSize) {
+		if (text == null || text.isEmpty()) return 1;
+		String stripped = LucentUtils.stripColorCodes(text);
+		String[] parts = stripped.split("\\n", -1);
+		int total = 0;
+		for (String part : parts) {
+			if (part.isEmpty()) { total++; continue; }
+			float lineW = NVGRenderer.textWidth(part, Fonts.PRETENDARD_LIGHT, fontSize);
+			int linesForPart = (int) Math.ceil(Math.max(1.0, (double)lineW / maxWidth));
+			total += linesForPart;
+		}
+		return Math.max(1, total);
+	}
+
 	private Map<String, List<Object>> groupConfigMembers() {
 		String query = (searchField == null) ? "" : searchField.getValue().trim().toLowerCase();
 		Class<?> clazz = currentModSettings.getClass();
 		
-		List<Object> allMembers = new ArrayList<>();
-		for (Field field : clazz.getDeclaredFields()) {
-			if (field.isAnnotationPresent(ModConfig.class)) allMembers.add(field);
-		}
-		for (Method method : clazz.getDeclaredMethods()) {
-			if (method.isAnnotationPresent(ModConfig.class)) allMembers.add(method);
-		}
-
-		// Sort by priority (higher first), then name
-		allMembers.sort((a, b) -> {
-			ModConfig c1 = (a instanceof Field f) ? f.getAnnotation(ModConfig.class) : ((Method)a).getAnnotation(ModConfig.class);
-			ModConfig c2 = (b instanceof Field f) ? f.getAnnotation(ModConfig.class) : ((Method)b).getAnnotation(ModConfig.class);
-			if (c1.priority() != c2.priority()) return Integer.compare(c2.priority(), c1.priority());
-			return c1.name().compareToIgnoreCase(c2.name());
+		List<Object> allMembers = modMemberCache.computeIfAbsent(clazz, c -> {
+			List<Object> members = new ArrayList<>();
+			for (Field field : c.getDeclaredFields()) {
+				if (field.isAnnotationPresent(ModConfig.class)) {
+					field.setAccessible(true);
+					members.add(field);
+				}
+			}
+			for (Method method : c.getDeclaredMethods()) {
+				if (method.isAnnotationPresent(ModConfig.class)) {
+					method.setAccessible(true);
+					members.add(method);
+				}
+			}
+			// Sort by priority (higher first), then name
+			members.sort((a, b) -> {
+				ModConfig c1 = (a instanceof Field f) ? f.getAnnotation(ModConfig.class) : ((Method)a).getAnnotation(ModConfig.class);
+				ModConfig c2 = (b instanceof Field f) ? f.getAnnotation(ModConfig.class) : ((Method)b).getAnnotation(ModConfig.class);
+				if (c1.priority() != c2.priority()) return Integer.compare(c2.priority(), c1.priority());
+				return c1.name().compareToIgnoreCase(c2.name());
+			});
+			return members;
 		});
 
 		Map<String, List<Object>> map = new LinkedHashMap<>();
@@ -915,124 +1534,7 @@ public class ConfigScreen extends Screen {
 		);
 	}
 
-	@Override
-	public void renderBackground(GuiGraphics ctx, int mx, int my, float delta) {
-		float alpha = LucentConfig.openAnimation ? openAnimationProgress : 1f;
-		if (LucentConfig.uiBlur) {
-			ctx.fill(0, 0, width, height, UIColors.withAlpha(0x25000000, (int)(20 * alpha))); 
-			super.renderBackground(ctx, mx, my, delta);
-		}
-		else {
-			ctx.fill(0, 0, width, height, UIColors.withAlpha(0x80000000, (int)(80 * alpha)));
-		}
-	}
 
-	@Override
-	public void render(GuiGraphics ctx, int mx, int my, float delta) {
-		if (startTime == -1L) startTime = System.currentTimeMillis();
-
-		if (LucentConfig.openAnimation) {
-			if (closing) {
-				if (closeStartTime == -1L) closeStartTime = System.currentTimeMillis();
-				float elapsed = (float)(System.currentTimeMillis() - closeStartTime);
-				openAnimationProgress = 1f - Math.min(1f, elapsed / 300f);
-				if (openAnimationProgress <= 0f) {
-					super.onClose();
-					return;
-				}
-			} else {
-				float elapsed = (float)(System.currentTimeMillis() - startTime);
-				openAnimationProgress = Math.min(1f, elapsed / 400f);
-			}
-		} else {
-			openAnimationProgress = 1f;
-			if (closing) {
-				super.onClose();
-				return;
-			}
-		}
-
-		if (searchField != null) {
-			boolean showSearch = currentSidebarPage.equals("Mods");
-
-			if (searchField.visible != showSearch) searchField.visible = showSearch;
-			if (!searchField.getValue().equals(lastSearchQuery)) {
-				lastSearchQuery = searchField.getValue();
-				if (showSearch) refreshUI();
-			}
-		}
-
-		NVGPIPRenderer.draw(ctx, 0, 0, width, height, () -> {
-			float gs  = NVGRenderer.getStandardGuiScale();
-			float smx = UMouse.getScaledX(uiScale);
-			float smy = UMouse.getScaledY(uiScale);
-
-			NVGRenderer.push();
-			
-			// Apply Animation
-			if (LucentConfig.openAnimation) {
-				float ease = UAnimation.Easing.spring(openAnimationProgress);
-				NVGRenderer.translate(width / 2f, height / 2f);
-				NVGRenderer.scale(0.9f + 0.1f * ease, 0.9f + 0.1f * ease);
-				NVGRenderer.translate(-width / 2f, -height / 2f);
-				NVGRenderer.globalAlpha(UAnimation.clamp(openAnimationProgress * 1.5f, 0f, 1f));
-			}
-			NVGRenderer.scale(gs * uiScale, gs * uiScale);
-
-			drawFrame();
-			renderSidebar();
-			renderTopBar();
-
-			if (currentSidebarPage.equals("Mods")) {
-				renderSearchBarBg();
-				if (currentModSettings == null) renderCategoryTabs();
-			} 
- 
-			NVGRenderer.pushScissor(contentX - 2, scissorY - 2, contentW + 4, scissorH + 4);
-			if (currentSidebarPage.equals("Mods") && currentModSettings != null) renderSettingsHeader();
-			
-			NVGRenderer.push();
-			NVGRenderer.translate(0, (float) -scrollOffset);
-			for (UIWidget w : widgets) w.render(ctx, (int) smx, (int) (smy + scrollOffset), delta);
-			// Also render those that stay in the list when closed
-			for (UIWidget w : overlayWidgets) {
-				if (shouldSkipOverlay(w)) w.render(ctx, (int) smx, (int) (smy + scrollOffset), delta);
-			}
-			NVGRenderer.pop();
-			NVGRenderer.popScissor();
-
-			// For OPEN overlays, render them without scissor so dropdown is visible
-			for (UIWidget w : overlayWidgets) {
-				if (!shouldSkipOverlay(w)) {
-					int oy = w.getY();
-					w.setPosition(w.getX(), (int)(oy - scrollOffset));
-					w.render(ctx, (int) smx, (int) (smy + scrollOffset), delta);
-					w.renderOverlay(ctx, (int) smx, (int) (smy + scrollOffset), delta);
-					w.setPosition(w.getX(), oy);
-				}
-			}
-
-			NVGRenderer.pop();
-		});
-
-		super.render(ctx, mx, my, delta);
-	}
-
-	@Override
-	public void onClose() {
-		if (LucentConfig.openAnimation && !closing) {
-			closing = true;
-			closeStartTime = System.currentTimeMillis();
-		} else {
-			super.onClose();
-		}
-	}
-
-	@Override
-	public void removed() {
-		super.removed();
-		if (moduleManager != null) moduleManager.saveConfigs();
-	}
 
 	private void drawFrame() {
 		int round = 14;
@@ -1087,14 +1589,10 @@ public class ConfigScreen extends Screen {
 
 		NVGRenderer.text("←", cx, winY + 26f,  Fonts.PRETENDARD_MEDIUM, backColor, 20f);
 		NVGRenderer.text("→", cx + 32, winY + 26f,  Fonts.PRETENDARD_MEDIUM, fwdColor, 20f);
-		
+
 		String title = currentSidebarPage;
-		if (currentSidebarPage.equals("Mods") && currentModSettings != null) {
-			title = L10n.translate(currentModSettings.name);
-		} else {
-			// Sidebar page names might also be translatable or handled by keys
-			title = L10n.translate(title);
-		}
+		if (currentSidebarPage.equals("Mods") && currentModSettings != null) title = L10n.translate(currentModSettings.name);
+		else title = L10n.translate(title); // Sidebar page names might also be translatable or handled by keys
 		NVGRenderer.text(title, cx + 70, winY + 25f,  Fonts.PRETENDARD_SEMIBOLD, UIColors.TEXT_PRIMARY, 22f);
 	}
 
@@ -1125,9 +1623,7 @@ public class ConfigScreen extends Screen {
 				float cursorX = NVGRenderer.textWidth(beforeCursor, Fonts.PRETENDARD_MEDIUM, 14f);
 
 				float scrollX = 0f;
-				if (cursorX > textAreaW) {
-					scrollX = cursorX - textAreaW + 4f;
-				}
+				if (cursorX > textAreaW) scrollX = cursorX - textAreaW + 4f;
 
 				NVGRenderer.push();
 				NanoVG.nvgIntersectScissor(NVGRenderer.getVG(), (int) textAreaX, by, (int) textAreaW, bh);
@@ -1176,25 +1672,6 @@ public class ConfigScreen extends Screen {
 			NVGRenderer.text(L10n.translate(currentModSettings.name), sx, hy, Fonts.PRETENDARD_SEMIBOLD, UIColors.TEXT_PRIMARY, 26f);
 			NVGRenderer.text(L10n.translate(currentModSettings.description), sx, hy + 32, Fonts.PRETENDARD, UIColors.TEXT_SECONDARY, 14f);
 		}
-
-		int curY = contentY + 66;
-		for (Map.Entry<String, List<Object>> e : groupConfigMembers().entrySet()) {
-			float ry = curY + 14 - (float) scrollOffset;
-			if (ry > scissorY - 30 && ry < scissorY + scissorH) {
-				String catName = L10n.translate(e.getKey()).toUpperCase();
-				float catW = NVGRenderer.textWidth(catName, Fonts.PRETENDARD_SEMIBOLD, 12f);
-				float indent = 8f;
-				
-				NVGRenderer.text(catName, sx + indent, ry, Fonts.PRETENDARD_SEMIBOLD, UIColors.MUTED, 12f);
-				
-				float lineX = sx + indent + catW + 16f;
-				float lineW = (contentW - PAD * 2) - (lineX - sx);
-				NVGRenderer.rect(lineX, ry + 6f, lineW, 1.5f, UIColors.DIVIDER, 0.75f);
-			}
-			curY += 36;
-			curY += e.getValue().size() * 84;
-			curY += 16;
-		}
 	}
 
 	private List<String> getCategories() {
@@ -1204,312 +1681,40 @@ public class ConfigScreen extends Screen {
 		return cats;
 	}
 
-	@Override
-	public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick) {
-		float mx = UMouse.getScaledX(uiScale);
-		float my = UMouse.getScaledY(uiScale);
-		int btn  = event.button();
+	
+	private void renderScrollbar(float smx, float smy) {
+		float trackX = contentX + contentW - SCROLLBAR_W - 4;
+		float trackY = scissorY + 4;
+		float trackH = scissorH - 8;
+		float thumbH   = 40f;
+		float thumbT   = trackY + (float)(scrollOffset / maxScroll) * (trackH - thumbH);
 
-		if (currentSidebarPage.equals("Mods") && searchField != null && searchField.visible) {
-			int bw = 200, bh = 32;
-			int bx = winX + WINDOW_W - PAD - bw;
-			int by = winY + (TOPBAR_H - bh) / 2;
-			boolean hit = (mx >= bx && mx <= bx + bw && my >= by && my <= by + bh);
-			if (hit != searchFocused) {
-				searchFocused = hit;
-				searchField.setFocused(hit);
-				if (hit) this.setFocused(searchField);
-				else if (this.getFocused() == searchField) this.setFocused(null);
-			}
-		}
-
-		for (UIWidget w : overlayWidgets) {
-			if (!shouldSkipOverlay(w)) {
-				if (w.mouseClicked(mx, my + scrollOffset, btn)) return true;
-			}
-		}
-
-		if (mx >= contentX && mx <= contentX + contentW && my >= scissorY && my <= scissorY + scissorH) {
-			for (UIWidget w : widgets) {
-				if (w.mouseClicked(mx, my + scrollOffset, btn)) return true;
-			}
-			for (UIWidget w : overlayWidgets) {
-				if (shouldSkipOverlay(w) && w.mouseClicked(mx, my + scrollOffset, btn)) return true;
-			}
-		}
-
-		// 상단바 네비게이션 버튼 클릭
-		float bx = contentX + PAD;
-		float cy = winY + TOPBAR_H / 2f;
-		
-		// Back button ←
-		if (mx >= bx - 4 && mx <= bx + 20 && my >= cy - 20 && my <= cy + 10) {
-			if (!history.isEmpty()) {
-				goBack();
-				return true;
-			}
-		}
-		// Forward button →
-		if (mx >= bx + 28 && mx <= bx + 52 && my >= cy - 20 && my <= cy + 10) {
-			if (!forwardHistory.isEmpty()) {
-				goForward();
-				return true;
-			}
-		}
-
-		// 카테고리 탭 클릭
-		if (currentSidebarPage.equals("Mods") && currentModSettings == null && btn == 0) {
-			float catX = contentX + PAD;
-			float catY = contentY;
-			for (String cat : getCategories()) {
-				float tw = NVGRenderer.textWidth(cat, Fonts.PRETENDARD_MEDIUM, 13f);
-				int tabW = (int)(tw + 32);
-				if (mx >= catX && mx <= catX + tabW && my >= catY && my <= catY + 28f) {
-					currentCategory = cat;
-					refreshUI();
-					return true;
-				}
-				catX += tabW + 8f;
-			}
-		}
-
-		// 사이드바 탭 전환
-		if (btn == 0) {
-			//int ix = winX + PAD;
-			int sy = winY + 96; // Mods 시작 위치
-			
-			String[] pages  = {"Mods", "Profiles", "Themes", "Preferences"};
-			int sy3 = sy + 36 + 36 + 32; // Themes 시작 위치 (Profiles 이후 68px 간격)
-			int[] ys = {sy, sy + 36, sy3, sy3 + 36};
-			
-			for (int i = 0; i < pages.length; i++) {
-				int ty = ys[i];
-				if (mx >= winX + 16 && mx <= winX + SIDEBAR_W - 16 && my >= ty && my <= ty + 36) {
-					String targetPage = pages[i];
-					if (!currentSidebarPage.equals(targetPage) || (targetPage.equals("Mods") && currentModSettings != null)) {
-						pushNav(targetPage, null, "All");
-					}
-					return true;
-				}
-			}
-
-			float editHudY = winY + WINDOW_H - 100;
-			if (mx >= winX + 16 && mx <= winX + SIDEBAR_W - 16 && my >= editHudY && my <= editHudY + 36) {
-				this.onClose();
-				minecraft.setScreen(new EditHUDScreen(moduleManager));
-				return true;
-			}
-
-			float closeY = winY + WINDOW_H - 100 + 38;
-			if (mx >= winX + 16 && mx <= winX + SIDEBAR_W - 16 && my >= closeY && my <= closeY + 36) {
-				this.onClose();
-				return true;
-			}
-		}
-
-		return super.mouseClicked(event, isDoubleClick);
+		boolean hovSb  = smx >= trackX - 2 && smx <= trackX + SCROLLBAR_W + 2 && smy >= trackY && smy <= trackY + trackH;
+		int thumbColor = (scrollbarDragging || hovSb) ? 0x80FFFFFF : 0x4DFFFFFF;
+		NVGRenderer.rect(trackX, thumbT, SCROLLBAR_W, thumbH, thumbColor, 3f);
 	}
 
-	@Override
-	public boolean mouseDragged(MouseButtonEvent event, double mouseX, double mouseY) {
-		float mx = UMouse.getScaledX(uiScale), my = UMouse.getScaledY(uiScale);;
-		int btn  = event.button();
-
-		for (UIWidget w : overlayWidgets) {
-			if (!shouldSkipOverlay(w)) {
-				if (w.mouseDragged(mx, my + scrollOffset, btn, event.x(), event.y())) return true;
-			}
-		}
-
-		if (mx >= contentX && mx <= contentX + contentW && my >= scissorY && my <= scissorY + scissorH) {
-			for (UIWidget w : widgets) if (w.mouseDragged(mx, my + scrollOffset, btn, event.x(), event.y())) return true;
-			for (UIWidget w : overlayWidgets) if (shouldSkipOverlay(w) && w.mouseDragged(mx, my + scrollOffset, btn, event.x(), event.y())) return true;
-		}
-		return super.mouseDragged(event, mouseX, mouseY);
+	private boolean isScrollbarHit(float smx, float smy) {
+		if (maxScroll <= 0) return false;
+		float trackX = contentX + contentW - SCROLLBAR_W - 4;
+		float trackY = scissorY + 4;
+		float trackH = scissorH - 8;
+		// 클릭 판정 범위를 넉넉하게 좌우 10px씩 잡음
+		return smx >= trackX - 10 && smx <= trackX + SCROLLBAR_W + 10 && smy >= trackY && smy <= trackY + trackH;
 	}
 
-	@Override
-	public boolean mouseReleased(MouseButtonEvent event) {
-		float mx = UMouse.getScaledX(uiScale), my = UMouse.getScaledY(uiScale);
-		int btn  = event.button();
-
-		for (UIWidget w : overlayWidgets) {
-			if (!shouldSkipOverlay(w)) {
-				if (w.mouseReleased(mx, my + scrollOffset, btn)) return true;
-			}
-		}
-
-		if (mx >= contentX && mx <= contentX + contentW && my >= scissorY && my <= scissorY + scissorH) {
-			for (UIWidget w : widgets) if (w.mouseReleased(mx, my + scrollOffset, btn)) return true;
-			for (UIWidget w : overlayWidgets) if (shouldSkipOverlay(w) && w.mouseReleased(mx, my + scrollOffset, btn)) return true;
-		}
-		return super.mouseReleased(event);
-	}
-
-	@Override
-	public boolean mouseScrolled(double mouseX, double mouseY, double hAmt, double vAmt) {
-		float mx = UMouse.getScaledX(uiScale), my = UMouse.getScaledY(uiScale);
-
-		for (UIWidget w : overlayWidgets) {
-			if (!shouldSkipOverlay(w)) {
-				if (w.mouseScrolled(mx, my + scrollOffset, hAmt, vAmt)) return true;
-			}
-		}
-
-		if (mx >= contentX && mx <= contentX + contentW && my >= scissorY && my <= scissorY + scissorH) {
-			for (UIWidget w : overlayWidgets) {
-				if (shouldSkipOverlay(w)) {
-					if (w.mouseScrolled(mx, my + scrollOffset, hAmt, vAmt)) return true;
-				}
-			}
-			scrollOffset -= vAmt * 36;
-			scrollOffset  = UAnimation.clamp(scrollOffset, 0, maxScroll);
-			return true;
-		}
-		return super.mouseScrolled(mouseX, mouseY, hAmt, vAmt);
-	}
-
-	@Override
-	public boolean keyPressed(KeyEvent input) {
-		int key = input.key();
-
-		// waiting 상태인 KeyBindButton에게 먼저 이벤트를 전달
-		for (UIWidget w : overlayWidgets) {
-			if (w instanceof KeyBindButton kbb && kbb.isWaiting()) {
-				if (kbb.keyPressed(key, input.scancode(), input.modifiers())) return true;
-			}
-		}
-
-		if (key == GLFW.GLFW_KEY_ESCAPE) {
-			this.onClose();
-			return true;
-		}
-
-		if (key == GLFW.GLFW_KEY_TAB || key == GLFW.GLFW_KEY_LEFT) {
-			if (!history.isEmpty()) goBack();
-			return true;
-		}
-
-		if (key == GLFW.GLFW_KEY_RIGHT) {
-			if (!forwardHistory.isEmpty()) goForward();
-			return true;
-		}
-
-		for (UIWidget w : widgets) {
-			if (w.keyPressed(key, input.scancode(), input.modifiers())) return true;
-		}
-		for (UIWidget w : overlayWidgets) {
-			if (!shouldSkipOverlay(w) && w.keyPressed(key, input.scancode(), input.modifiers())) return true;
-		}
-		return super.keyPressed(input);
-	}
-
-	@Override
-	public boolean keyReleased(KeyEvent input) {
-		int key = input.key();
-
-		for (UIWidget w : overlayWidgets) {
-			if (w instanceof KeyBindButton kbb && kbb.isWaiting()) {
-				if (kbb.keyReleased(key, input.scancode(), input.modifiers())) return true;
-			}
-		}
-
-		for (UIWidget w : widgets) {
-			if (w.keyReleased(key, input.scancode(), input.modifiers())) return true;
-		}
-		for (UIWidget w : overlayWidgets) {
-			if (!shouldSkipOverlay(w) && w.keyReleased(key, input.scancode(), input.modifiers())) return true;
-		}
-
-		return super.keyReleased(input);
-	}
-
-	@Override
-	public boolean charTyped(CharacterEvent event) {
-		for (UIWidget w : widgets) {
-			if (w.charTyped((char) event.codepoint(), event.modifiers())) return true;
-		}
-		for (UIWidget w : overlayWidgets) {
-			if (!shouldSkipOverlay(w) && w.charTyped((char) event.codepoint(), event.modifiers())) return true;
-		}
-		return super.charTyped(event);
+	private float scrollbarThumbOffset(float smy) {
+		float trackY = scissorY + 4;
+		float trackH = scissorH - 8;
+		float thumbH = 40f; // 고정 크기
+		float clickY = smy - trackY - thumbH / 2f;
+		return (float) UAnimation.clamp((double)(clickY / (trackH - thumbH)) * maxScroll, 0, maxScroll);
 	}
 
 	private boolean shouldSkipOverlay(UIWidget widget) {
 		if (widget instanceof Selector selector && !selector.isOpen()) return true;
 		if (widget instanceof ColorPickerButton colorPickerButton && !colorPickerButton.isPickerOpen()) return true;
-		if (widget instanceof KeyBindButton keybindButton && !keybindButton.isWaiting()) return true;
 		return false;
 	}
 
-	private class ModCardWidget extends UIWidget {
-		private final Mod mod;
-		private static final int BAR_H = 30;
-
-		public ModCardWidget(int x, int y, int w, int h, Mod mod) {
-			super(x, y, w, h);
-			this.mod = mod;
-		}
-
-		@Override
-		protected void renderWidget(GuiGraphics ctx, int mx, int my, float delta) {
-			boolean hov = mx >= x && mx <= x + width && my >= y && my <= y + height;
-			int topBg   = hov ? UIColors.CARD_HOVER : UIColors.CARD_BG;
-			int barBg   = mod.isEnabled ? UIColors.ACCENT_BLUE : UIColors.TAB_BG; 
-			if (hov && !mod.isEnabled) barBg = UIColors.withAlphaFloat(UIColors.TAB_BG, 0.6f);
-
-			NVGRenderer.rect(x, y, width, height - BAR_H, topBg, 12, 12, 0, 0);
-			NVGRenderer.rect(x, y + height - BAR_H, width, BAR_H, barBg, 0, 0, 12, 12);
-
-			float midX = x + width / 2f;
-			float topH = height - BAR_H;
-
-			Image iconImg = null;
-			if (mod.icon != null && !mod.icon.isEmpty()) iconImg = LucentResourceManager.modIconsMap.get(mod.name);
-
-			if (iconImg != null) NVGRenderer.image(iconImg, midX - 22f, y + (topH - 44f) / 2f, 44f, 44f);
-			else {
-				float initialW = NVGRenderer.textWidth(mod.name, Fonts.PRETENDARD_SEMIBOLD, 20f);
-				NVGRenderer.text(mod.name, midX - initialW/2, y + (topH - 20) / 2, Fonts.PRETENDARD_SEMIBOLD, 0xFFFFFFFF, 20);
-			}
-
-			float barTop  = y + height - BAR_H;
-
-			NVGRenderer.text(L10n.translate(mod.name), x + 12f, barTop + 8f, Fonts.PRETENDARD_MEDIUM, UIColors.PURE_WHITE, 14f);
-
-			float divX = x + width - 36f;
-			NVGRenderer.rect(divX, barTop + 6f, 1, BAR_H - 12f, 0x55FFFFFF, 0f); // 약간 투명한 선
-			
-			if (LucentResourceManager.iconSettings != null) NVGRenderer.image(LucentResourceManager.iconSettings, divX + 10f, barTop + (BAR_H - 16f) / 2f, 16f, 16f);
-		}
-
-		@Override
-		public boolean mouseClicked(double mx, double my, int btn) {
-			if (btn == 0 && mx >= x && mx <= x + width && my >= y && my <= y + height) {
-				if (mx >= x + width - 36 && my >= y + height - BAR_H) pushNav("Mods", mod, currentCategory);
-				else mod.isEnabled = !mod.isEnabled;
-				return true;
-			}
-			return false;
-		}
-	}
-
-	private class SettingRowWidget extends UIWidget {
-		private final String label, description;
-
-		public SettingRowWidget(int x, int y, int w, int h, String label, String desc) {
-			super(x, y, w, h);
-			this.label       = label;
-			this.description = desc;
-		}
-
-		@Override
-		protected void renderWidget(GuiGraphics ctx, int mx, int my, float delta) {
-			boolean hov = mx >= x && mx <= x + width && my >= y && my <= y + height;
-			NVGRenderer.rect(x, y, width, height, hov ? UIColors.CARD_HOVER : UIColors.CARD_BG, 8f);
-			NVGRenderer.outlineRect(x, y, width, height, 1, UIColors.ITEM_BORDER, 8f);
-			NVGRenderer.text(label,       x + 16, y + 18, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_PRIMARY,   18f);
-			NVGRenderer.text(description, x + 16, y + 43, Fonts.PRETENDARD_LIGHT, UIColors.TEXT_SECONDARY, 14f);
-		}
-	}
 }

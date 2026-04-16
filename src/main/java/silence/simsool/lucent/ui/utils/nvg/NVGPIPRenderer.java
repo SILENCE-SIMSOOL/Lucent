@@ -31,7 +31,8 @@ public class NVGPIPRenderer extends PictureInPictureRenderer<NVGPIPRenderer.NVGR
 		GpuDevice device = RenderSystem.getDevice(); if (!(device instanceof GlDevice glDevice)) return;
 
 		DirectStateAccess bufferManager = glDevice.directStateAccess();
-		GpuTextureView depthTexObj = RenderSystem.outputDepthTextureOverride; if (!(depthTexObj != null && depthTexObj.texture() instanceof GlTexture glDepthTex)) return;
+		GpuTextureView depthTexObj = RenderSystem.outputDepthTextureOverride;
+		if (!(depthTexObj != null && depthTexObj.texture() instanceof GlTexture glDepthTex)) return;
 
 		int width = colorTex.getWidth(0);
 		int height = colorTex.getHeight(0);
@@ -49,7 +50,6 @@ public class NVGPIPRenderer extends PictureInPictureRenderer<NVGPIPRenderer.NVGR
 		state.renderContent.run();
 		NVGRenderer.endFrame();
 
-		// I don't know if it's meaningful
 		GlStateManager._disableDepthTest();
 		GlStateManager._disableCull();
 		GlStateManager._enableBlend();

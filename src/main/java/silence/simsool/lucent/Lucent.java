@@ -21,18 +21,19 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.config.api.LucentAPI;
+import silence.simsool.lucent.events.impl.LucentEvent;
 import silence.simsool.lucent.general.utils.LucentUtils;
-import silence.simsool.lucent.general.utils.UDisplay;
 import silence.simsool.lucent.general.utils.ULog;
 import silence.simsool.lucent.hud.HUDManager;
 import silence.simsool.lucent.ui.manager.LucentResourceManager;
+import silence.simsool.lucent.ui.utils.nvg.Fonts;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 
 public class Lucent implements ClientModInitializer {
 
 	public static final String ID = "lucent";
 	public static final String NAME = "Lucent";
-	public static final String VERSION = "1.0.8";
+	public static final String VERSION = "1.0.11";
 	public static String LATEST_VERSION = "Fetching...";
 
 	public static Minecraft mc = Minecraft.getInstance();
@@ -71,36 +72,30 @@ public class Lucent implements ClientModInitializer {
 		});
 	}
 
-	public static void init() {
-		
-	}
-
 	@Override
 	public void onInitializeClient() {
 		LOG.info("Lucent library initializing..");
 
-//		// Example mods
-//		config.registerExampleMods();
-//		hudManager.register(new ChattingHUD());
-//		hudManager.register(new TestHUD());
+		Fonts.initAsync();
 
-		//mc = Minecraft.getInstance();
 		config.loadGlobalConfig();
 		config.loadConfigs();
-		hudManager.loadAll();
+
+		// Example mods
+//		config.registerExampleMods();
+//		hudManager.register(new ChattingHUD());
+//		hudManager.register(new ExampleHUD());
+//		hudManager.loadAll();
 
 		SpecialGuiElementRegistry.register(context ->
 			new NVGPIPRenderer(context.vertexConsumers())
 		);
 
-		HudElementRegistry.attachElementBefore(
-		    VanillaHudElements.SLEEP,
+		HudElementRegistry.attachElementAfter(
+		    VanillaHudElements.SUBTITLES,
 		    Identifier.fromNamespaceAndPath(ID, "hud_element"),
-		    (guiGraphics, tickDelta) -> {
-		    	LucentResourceManager.loadIcons(config);
-		        int sw = UDisplay.getWidth();
-		        int sh = UDisplay.getHeight();
-		        hudManager.render(guiGraphics, sw, sh);
+		    (graphics, tickDelta) -> {
+		        hudManager.render(graphics, tickDelta);
 		    }
 		);
 
@@ -115,6 +110,26 @@ public class Lucent implements ClientModInitializer {
 					})
 				);
 			}
+		});
+
+		LucentEvent.KEY_INPUT_EVENT.register(key -> {
+
+			if (KeyBindingHelper.getBoundKeyOf(Lucent.CONFIG_KEY).equals(key)) {
+				mc.execute(() -> {
+					mc.setScreen(LucentAPI.createEditHUDScreen(config));
+				});
+				return true;
+			}
+			return false;
+		});
+
+		LucentEvent.INIT_FINISHED_EVENT.register(() -> {
+			
+		});
+
+		LucentEvent.RESOURCES_READY_EVENT.register(() -> {
+			LucentResourceManager.loadLucentIcons();
+			LucentResourceManager.loadModIcons(config);
 		});
 
 	}

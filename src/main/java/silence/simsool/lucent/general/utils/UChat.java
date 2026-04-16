@@ -62,4 +62,11 @@ public class UChat {
 		say(value != null ? value.toString() : "null");
 	}
 
+	public static String cleanColor(String in) { 
+		return in.replaceAll("(?i)\\u00A7.", "");
+	}
+
+//	public static String cleanColor(String in) { 
+//		return in.replaceAll("§[0-9a-fk-orxX]", "");
+//	}
 }

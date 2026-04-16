@@ -1,7 +1,5 @@
 package silence.simsool.lucent.config;
 
-import static silence.simsool.lucent.Lucent.mc;
-
 import java.awt.Color;
 import java.io.File;
 import java.io.FileReader;
@@ -20,16 +18,17 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 
+import static silence.simsool.lucent.Lucent.mc;
 import silence.simsool.lucent.client.dev.examplemods.ChattingMod;
 import silence.simsool.lucent.client.dev.examplemods.ExampleMod;
+import silence.simsool.lucent.config.api.LucentAPI;
 import silence.simsool.lucent.general.models.abstracts.Mod;
 import silence.simsool.lucent.general.models.data.KeyBind;
 import silence.simsool.lucent.general.models.interfaces.annotations.ModConfig;
-import silence.simsool.lucent.hud.HUDManager;
-import silence.simsool.lucent.config.api.LucentAPI;
 import silence.simsool.lucent.ui.theme.ThemeManager;
 
 public class ModManager {
+
 	public final List<Mod> modules = new ArrayList<>();
 	private final File configDirectory;
 	private static String currentProfile = "default";
@@ -143,7 +142,10 @@ public class ModManager {
 			}
 			@Override
 			public KeyBind read(JsonReader in) throws IOException {
-				if (in.peek() == JsonToken.NULL) { in.nextNull(); return KeyBind.none(); }
+				if (in.peek() == JsonToken.NULL) {
+					in.nextNull();
+					return KeyBind.none();
+				}
 				KeyBind kb = KeyBind.none();
 				in.beginObject();
 				while (in.hasNext()) {
@@ -208,57 +210,64 @@ public class ModManager {
 	public void loadConfigs() {
 		File profilesDir = new File(configDirectory, "profiles");
 		File profileDir = new File(profilesDir, currentProfile);
+		
+		// Ensure directory exists
 		if (!profileDir.exists()) profileDir.mkdirs();
 
-		for (Mod module : modules) {
-			File file = new File(profileDir, getFileName(module));
-			if (!file.exists()) {
-				saveModConfig(module, file);
-				continue;
+		File configFile = new File(profileDir, "config.json");
+		boolean needsResave = false;
+
+		if (!configFile.exists()) {
+			for (Mod module : modules) {
+				module.isEnabled = false;
 			}
+			if (!modules.isEmpty()) saveConfigs();
+			return;
+		}
 
-			try (FileReader reader = new FileReader(file)) {
-				JsonObject json = GSON.fromJson(reader, JsonObject.class); if (json == null) continue;
+		try (FileReader reader = new FileReader(configFile)) {
+			JsonObject root = GSON.fromJson(reader, JsonObject.class);
+			if (root == null) return;
+			JsonObject modulesJson = root.has("modules") ? root.getAsJsonObject("modules") : new JsonObject();
 
-				if (json.has("isEnabled")) module.isEnabled = json.get("isEnabled").getAsBoolean();
+			for (Mod module : modules) {
+				String key = module.name;
+				if (!modulesJson.has(key)) {
+					module.isEnabled = false; // 기본값 false로 설정
+					needsResave = true;
+					continue;
+				}
+				
+				JsonObject json = modulesJson.getAsJsonObject(key);
+				if (json.has("isEnabled")) {
+					module.isEnabled = json.get("isEnabled").getAsBoolean();
+				} else {
+					module.isEnabled = false;
+					needsResave = true;
+				}
 
 				for (Field field : module.getClass().getDeclaredFields()) {
 					if (field.isAnnotationPresent(ModConfig.class)) {
 						field.setAccessible(true);
-						String key = field.getName();
-						if (json.has(key)) {
+						String fkey = field.getName();
+						if (json.has(fkey)) {
 							try {
-								Object parsedValue = GSON.fromJson(json.get(key), field.getType());
-								field.set(module, parsedValue);
+								field.set(module, GSON.fromJson(json.get(fkey), field.getType()));
 							} catch (Exception e) {}
+						} else {
+							// data not in JSON, keep variable default but mark for resave
+							needsResave = true;
 						}
 					}
 				}
-			} catch (Exception e) {
-				// e.printStackTrace();
 			}
+		} catch (Exception e) {}
+		
+		if (needsResave && !modules.isEmpty()) {
+			saveConfigs();
 		}
-	}
-
-	private void saveModConfig(Mod module, File file) {
-		JsonObject json = new JsonObject();
-
-		json.addProperty("isEnabled", module.isEnabled);
-
-		for (Field field : module.getClass().getDeclaredFields()) {
-			if (field.isAnnotationPresent(ModConfig.class)) {
-				field.setAccessible(true);
-				try {
-					json.add(field.getName(), GSON.toJsonTree(field.get(module)));
-				} catch (Exception e) {}
-			}
-		}
-
-		try (FileWriter writer = new FileWriter(file)) {
-			GSON.toJson(json, writer);
-		} catch (Exception e) {
-			// e.printStackTrace();
-		}
+		
+		LucentAPI.getHUDManager().loadAll();
 	}
 
 	public void saveConfigs() {
@@ -266,9 +275,32 @@ public class ModManager {
 		File profileDir = new File(profilesDir, currentProfile);
 		if (!profileDir.exists()) profileDir.mkdirs();
 
+		JsonObject root = new JsonObject();
+		JsonObject modulesJson = new JsonObject();
+
 		for (Mod module : modules) {
-			File file = new File(profileDir, getFileName(module));
-			saveModConfig(module, file);
+			JsonObject json = new JsonObject();
+			json.addProperty("isEnabled", module.isEnabled);
+			for (Field field : module.getClass().getDeclaredFields()) {
+				if (field.isAnnotationPresent(ModConfig.class)) {
+					field.setAccessible(true);
+					try {
+						Object val = field.get(module);
+						if (val != null) {
+							json.add(field.getName(), GSON.toJsonTree(val));
+						}
+					} catch (Exception e) {}
+				}
+			}
+			modulesJson.add(module.name, json);
+		}
+
+		root.add("modules", modulesJson);
+
+		try (FileWriter writer = new FileWriter(new File(profileDir, "config.json"))) {
+			GSON.toJson(root, writer);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -316,7 +348,8 @@ public class ModManager {
 		} catch (Exception e) {}
 	}
 
-	private String getFileName(Mod module) {
-		return module.name.replaceAll("[^a-zA-Z0-9_\\-]", "") + ".json";
-	}
+//	private String getFileName(Mod module) {
+//		return module.name.replaceAll("[^a-zA-Z0-9_\\-]", "") + ".json";
+//	}
+
 }
