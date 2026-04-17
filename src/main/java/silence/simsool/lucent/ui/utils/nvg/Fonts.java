@@ -6,7 +6,8 @@ import java.nio.file.Files;
 
 import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.general.enums.FontList;
-import silence.simsool.lucent.general.utils.UFile;
+import silence.simsool.lucent.general.utils.OSUtils;
+import silence.simsool.lucent.general.utils.useful.UFile;
 import silence.simsool.lucent.ui.font.LucentFont;
 
 
@@ -17,7 +18,7 @@ public class Fonts {
 	public static LucentFont PRETENDARD_MEDIUM;
 	public static LucentFont PRETENDARD_SEMIBOLD;
 
-	private static final File FONT_DIR = new File(Lucent.mc.gameDirectory, "config/lucent/resources/fonts");
+	private static final File FONT_DIR = new File(OSUtils.getLucentDir(), "resources/fonts");
 	private static final String GITHUB_RAW_URL = "https://raw.githubusercontent.com/SILENCE-SIMSOOL/FontManager/main/pretendard/";
 
 	private static boolean initialized = false;

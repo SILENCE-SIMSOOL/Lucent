@@ -18,13 +18,12 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 
-import static silence.simsool.lucent.Lucent.mc;
-import silence.simsool.lucent.client.dev.examplemods.ChattingMod;
-import silence.simsool.lucent.client.dev.examplemods.ExampleMod;
 import silence.simsool.lucent.config.api.LucentAPI;
+import silence.simsool.lucent.examplemod.mods.ExampleMod;
 import silence.simsool.lucent.general.models.abstracts.Mod;
 import silence.simsool.lucent.general.models.data.KeyBind;
 import silence.simsool.lucent.general.models.interfaces.annotations.ModConfig;
+import silence.simsool.lucent.general.utils.OSUtils;
 import silence.simsool.lucent.ui.theme.ThemeManager;
 
 public class ModManager {
@@ -34,9 +33,7 @@ public class ModManager {
 	private static String currentProfile = "default";
 
 	private File getGlobalLucentDir() {
-		File f = new File(mc.gameDirectory, "config/lucent");
-		if (!f.exists()) f.mkdirs();
-		return f;
+		return OSUtils.getLucentDir();
 	}
 
 	private File getGlobalProfilesDir() {
@@ -70,7 +67,6 @@ public class ModManager {
 		Collections.sort(list);
 		list.add(0, "default");
 
-		// Ensure default folder exists physically
 		new File(profilesDir, "default").mkdirs();
 
 		return list;
@@ -164,7 +160,6 @@ public class ModManager {
 
 	public ModManager(File configDirectory) {
 		this.configDirectory = configDirectory;
-		if (!this.configDirectory.exists()) this.configDirectory.mkdirs();
 
 		// Ensure local profiles directory exists
 		File localProfilesDir = new File(configDirectory, "profiles");
@@ -180,7 +175,6 @@ public class ModManager {
 	}
 
 	public void registerExampleMods() {
-		register(new ChattingMod());
 		register(new ExampleMod());
 	}
 
@@ -210,17 +204,13 @@ public class ModManager {
 	public void loadConfigs() {
 		File profilesDir = new File(configDirectory, "profiles");
 		File profileDir = new File(profilesDir, currentProfile);
-		
-		// Ensure directory exists
+
 		if (!profileDir.exists()) profileDir.mkdirs();
 
 		File configFile = new File(profileDir, "config.json");
 		boolean needsResave = false;
 
 		if (!configFile.exists()) {
-			for (Mod module : modules) {
-				module.isEnabled = false;
-			}
 			if (!modules.isEmpty()) saveConfigs();
 			return;
 		}
@@ -233,7 +223,6 @@ public class ModManager {
 			for (Mod module : modules) {
 				String key = module.name;
 				if (!modulesJson.has(key)) {
-					module.isEnabled = false; // 기본값 false로 설정
 					needsResave = true;
 					continue;
 				}
@@ -275,8 +264,19 @@ public class ModManager {
 		File profileDir = new File(profilesDir, currentProfile);
 		if (!profileDir.exists()) profileDir.mkdirs();
 
-		JsonObject root = new JsonObject();
-		JsonObject modulesJson = new JsonObject();
+		File configFile = new File(profileDir, "config.json");
+		JsonObject root = null;
+
+		if (configFile.exists()) {
+			try (FileReader reader = new FileReader(configFile)) {
+				root = GSON.fromJson(reader, JsonObject.class);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		if (root == null) root = new JsonObject();
+		JsonObject modulesJson = root.has("modules") ? root.getAsJsonObject("modules") : new JsonObject();
 
 		for (Mod module : modules) {
 			JsonObject json = new JsonObject();
@@ -297,7 +297,7 @@ public class ModManager {
 
 		root.add("modules", modulesJson);
 
-		try (FileWriter writer = new FileWriter(new File(profileDir, "config.json"))) {
+		try (FileWriter writer = new FileWriter(configFile)) {
 			GSON.toJson(root, writer);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -333,7 +333,15 @@ public class ModManager {
 		File f = getGlobalLucentDir();
 		if (!f.exists()) f.mkdirs();
 		File file = new File(f, "lucent_global.json");
-		JsonObject json = new JsonObject();
+		
+		JsonObject json = null;
+		if (file.exists()) {
+			try (FileReader reader = new FileReader(file)) {
+				json = GSON.fromJson(reader, JsonObject.class);
+			} catch (Exception e) {}
+		}
+		
+		if (json == null) json = new JsonObject();
 
 		json.addProperty("currentProfile", currentProfile);
 

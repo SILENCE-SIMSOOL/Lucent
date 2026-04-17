@@ -5,7 +5,7 @@ import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.config.api.LucentAPI;
 import silence.simsool.lucent.general.enums.HUDAlignment;
 import silence.simsool.lucent.general.enums.RenderType;
-import silence.simsool.lucent.general.utils.UDisplay;
+import silence.simsool.lucent.general.utils.useful.UDisplay;
 import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 
 public abstract class LucentHUD {

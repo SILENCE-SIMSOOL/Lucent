@@ -21,9 +21,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.config.api.LucentAPI;
+import silence.simsool.lucent.events.LucentEventRegister;
 import silence.simsool.lucent.events.impl.LucentEvent;
+import silence.simsool.lucent.general.managers.LucentManagerRegister;
 import silence.simsool.lucent.general.utils.LucentUtils;
-import silence.simsool.lucent.general.utils.ULog;
+import silence.simsool.lucent.general.utils.render.ItemRenderer;
+import silence.simsool.lucent.general.utils.render.RoundRectPIPRenderer;
+import silence.simsool.lucent.general.utils.useful.ULog;
 import silence.simsool.lucent.hud.HUDManager;
 import silence.simsool.lucent.ui.manager.LucentResourceManager;
 import silence.simsool.lucent.ui.utils.nvg.Fonts;
@@ -33,7 +37,7 @@ public class Lucent implements ClientModInitializer {
 
 	public static final String ID = "lucent";
 	public static final String NAME = "Lucent";
-	public static final String VERSION = "1.0.11";
+	public static final String VERSION = "1.0.12";
 	public static String LATEST_VERSION = "Fetching...";
 
 	public static Minecraft mc = Minecraft.getInstance();
@@ -47,6 +51,8 @@ public class Lucent implements ClientModInitializer {
 			GLFW.GLFW_KEY_RIGHT_SHIFT, 
 			KEYBINDING_CATEGORY
 	));
+
+	public static boolean devMode = false;
 
 	static {
 		HttpClient.newHttpClient().sendAsync(
@@ -77,27 +83,32 @@ public class Lucent implements ClientModInitializer {
 		LOG.info("Lucent library initializing..");
 
 		Fonts.initAsync();
+		LucentEventRegister.initialize();
+		LucentManagerRegister.registerAll();
 
-		config.loadGlobalConfig();
-		config.loadConfigs();
-
-		// Example mods
-//		config.registerExampleMods();
-//		hudManager.register(new ChattingHUD());
-//		hudManager.register(new ExampleHUD());
-//		hudManager.loadAll();
+		if (devMode) config.registerExampleMods();
 
 		SpecialGuiElementRegistry.register(context ->
 			new NVGPIPRenderer(context.vertexConsumers())
 		);
 
-		HudElementRegistry.attachElementAfter(
-		    VanillaHudElements.SUBTITLES,
-		    Identifier.fromNamespaceAndPath(ID, "hud_element"),
-		    (graphics, tickDelta) -> {
-		        hudManager.render(graphics, tickDelta);
-		    }
+		SpecialGuiElementRegistry.register (context ->
+			new RoundRectPIPRenderer(context.vertexConsumers())
 		);
+
+		SpecialGuiElementRegistry.register (context ->
+			new ItemRenderer(context.vertexConsumers())
+		);
+
+		LucentEvent.INIT_FINISHED_EVENT.register(() -> {
+			config.loadGlobalConfig();
+			config.loadConfigs();
+		});
+
+		LucentEvent.RESOURCES_READY_EVENT.register(() -> {
+			LucentResourceManager.loadLucentIcons();
+			LucentResourceManager.loadModIcons(config);
+		});
 
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
 			String[] commands = {"lucent", "config"};
@@ -113,7 +124,6 @@ public class Lucent implements ClientModInitializer {
 		});
 
 		LucentEvent.KEY_INPUT_EVENT.register(key -> {
-
 			if (KeyBindingHelper.getBoundKeyOf(Lucent.CONFIG_KEY).equals(key)) {
 				mc.execute(() -> {
 					mc.setScreen(LucentAPI.createEditHUDScreen(config));
@@ -123,15 +133,13 @@ public class Lucent implements ClientModInitializer {
 			return false;
 		});
 
-		LucentEvent.INIT_FINISHED_EVENT.register(() -> {
-			
-		});
-
-		LucentEvent.RESOURCES_READY_EVENT.register(() -> {
-			LucentResourceManager.loadLucentIcons();
-			LucentResourceManager.loadModIcons(config);
-		});
-
+		HudElementRegistry.attachElementAfter(
+		    VanillaHudElements.SUBTITLES,
+		    Identifier.fromNamespaceAndPath(ID, "hud_element"),
+		    (graphics, tickDelta) -> {
+		        hudManager.render(graphics, tickDelta);
+		    }
+		);
 	}
 
 }

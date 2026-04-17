@@ -2,7 +2,7 @@ package silence.simsool.lucent.general.models.data;
 
 import org.lwjgl.glfw.GLFW;
 
-import silence.simsool.lucent.general.utils.UDisplay;
+import silence.simsool.lucent.general.utils.useful.UDisplay;
 
 /**
  * Represents a single key binding: one keyboard key or mouse button, plus optional modifier keys.

@@ -56,6 +56,19 @@ public class LucentEvent {
 		}
 	);
 
+	// Render Events
+	public static final Event<RenderExtractEvent> RENDER_EXTRACT_EVENT = EventFactory.createArrayBacked(RenderExtractEvent.class,
+		listeners -> partialTick -> {
+			for (RenderExtractEvent listener : listeners) listener.onExtract(partialTick);
+		}
+	);
+
+	public static final Event<RenderLastEvent> RENDER_LAST_EVENT = EventFactory.createArrayBacked(RenderLastEvent.class,
+		listeners -> partialTick -> {
+			for (RenderLastEvent listener : listeners) listener.onRenderLast(partialTick);
+		}
+	);
+
 	public static final Event<BlockInteractEvent> BLOCK_INTERACT_EVENT = EventFactory.createArrayBacked(BlockInteractEvent.class,
 		listeners -> pos -> {
 			for (BlockInteractEvent listener : listeners) {
@@ -116,6 +129,16 @@ public class LucentEvent {
 
 	@FunctionalInterface public interface BlockUpdateEvent {
 		void onBlockUpdate(BlockPos pos, BlockState oldState, BlockState newState);
+	}
+
+	@FunctionalInterface
+	public interface RenderExtractEvent {
+		void onExtract(float partialTick);
+	}
+
+	@FunctionalInterface
+	public interface RenderLastEvent {
+		void onRenderLast(float partialTick);
 	}
 
 	@FunctionalInterface public interface BlockInteractEvent {

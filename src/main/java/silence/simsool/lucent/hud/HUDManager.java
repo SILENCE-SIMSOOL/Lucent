@@ -18,7 +18,8 @@ import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.general.enums.HUDAlignment;
 import silence.simsool.lucent.general.enums.RenderType;
 import silence.simsool.lucent.general.models.abstracts.LucentHUD;
-import silence.simsool.lucent.general.utils.UDisplay;
+import silence.simsool.lucent.general.utils.OSUtils;
+import silence.simsool.lucent.general.utils.useful.UDisplay;
 import silence.simsool.lucent.ui.screens.EditHUDScreen;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 
@@ -159,7 +160,7 @@ public class HUDManager {
 
 	private File getHudConfigFile() {
 		String profile = Lucent.config.getCurrentProfile();
-		File profilesDir = new File("config/lucent", "profiles");
+		File profilesDir = new File(OSUtils.getLucentDir(), "profiles");
 		File profileDir = new File(profilesDir, profile);
 		return new File(profileDir, "hud.json");
 	}

@@ -5,6 +5,7 @@ import java.io.File;
 import net.minecraft.client.gui.screens.Screen;
 import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.config.ModManager;
+import silence.simsool.lucent.general.utils.OSUtils;
 import silence.simsool.lucent.hud.HUDManager;
 import silence.simsool.lucent.ui.screens.ConfigScreen;
 import silence.simsool.lucent.ui.screens.EditHUDScreen;
@@ -32,7 +33,8 @@ public class LucentAPI {
 	 * @return A modern ModuleManager instance
 	 */
 	public static ModManager createModManager(String directoryName) {
-		return new ModManager(new File("config/" + directoryName));
+		if (directoryName.equals("lucent")) return new ModManager(OSUtils.getLucentDir());
+		return new ModManager(new File(OSUtils.getLucentDir(), directoryName));
 	}
 
 	/**

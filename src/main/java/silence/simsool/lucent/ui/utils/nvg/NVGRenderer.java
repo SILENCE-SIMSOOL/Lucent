@@ -65,7 +65,7 @@ import silence.simsool.lucent.general.enums.Direction;
 import silence.simsool.lucent.general.enums.GradientType;
 import silence.simsool.lucent.general.models.data.nvg.NVGFont;
 import silence.simsool.lucent.general.models.data.nvg.NVGImage;
-import silence.simsool.lucent.general.utils.UDisplay;
+import silence.simsool.lucent.general.utils.useful.UDisplay;
 import silence.simsool.lucent.ui.font.LucentFont;
 import silence.simsool.lucent.ui.utils.UIColors;
 

@@ -1,7 +1,6 @@
 package silence.simsool.lucent.ui.screens;
 
 import java.awt.Color;
-import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -24,7 +23,6 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
 import silence.simsool.lucent.Lucent;
-import static silence.simsool.lucent.Lucent.mc;
 import silence.simsool.lucent.config.LucentConfig;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.general.models.abstracts.Mod;
@@ -34,8 +32,9 @@ import silence.simsool.lucent.general.models.data.NavState;
 import silence.simsool.lucent.general.models.interfaces.annotations.ModConfig;
 import silence.simsool.lucent.general.utils.L10n;
 import silence.simsool.lucent.general.utils.LucentUtils;
-import silence.simsool.lucent.general.utils.UDisplay;
-import silence.simsool.lucent.general.utils.UMouse;
+import silence.simsool.lucent.general.utils.OSUtils;
+import silence.simsool.lucent.general.utils.useful.UDisplay;
+import silence.simsool.lucent.general.utils.useful.UMouse;
 import silence.simsool.lucent.ui.manager.LucentResourceManager;
 import silence.simsool.lucent.ui.theme.ThemeManager;
 import silence.simsool.lucent.ui.utils.UAnimation;
@@ -45,14 +44,14 @@ import silence.simsool.lucent.ui.utils.nvg.Fonts;
 import silence.simsool.lucent.ui.utils.nvg.Image;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
-import silence.simsool.lucent.ui.widget.ActionButton;
-import silence.simsool.lucent.ui.widget.ColorPickerButton;
-import silence.simsool.lucent.ui.widget.KeyBindButton;
-import silence.simsool.lucent.ui.widget.Selector;
-import silence.simsool.lucent.ui.widget.Slider;
-import silence.simsool.lucent.ui.widget.TextBox;
-import silence.simsool.lucent.ui.widget.ToggleButton;
-import silence.simsool.lucent.ui.widget.base.UIWidget;
+import silence.simsool.lucent.ui.widget.UIWidget;
+import silence.simsool.lucent.ui.widget.components.ActionButton;
+import silence.simsool.lucent.ui.widget.components.KeyBindButton;
+import silence.simsool.lucent.ui.widget.components.Selector;
+import silence.simsool.lucent.ui.widget.components.Slider;
+import silence.simsool.lucent.ui.widget.components.TextBox;
+import silence.simsool.lucent.ui.widget.components.ToggleButton;
+import silence.simsool.lucent.ui.widget.components.color.ColorPickerButton;
 
 public class ConfigScreen extends Screen {
 
@@ -1007,6 +1006,10 @@ public class ConfigScreen extends Screen {
 		forwardHistory.clear();
 		currentSidebarPage = page;
 		currentModSettings = mod;
+		if (mod != null && searchField != null) {
+			searchField.setValue("");
+			lastSearchQuery = "";
+		}
 		currentCategory = cat;
 		scrollOffset = 0; // New page starts at top
 
@@ -1175,7 +1178,7 @@ public class ConfigScreen extends Screen {
 
 		ActionButton openConfig = new ActionButton(sx, rowY, btnW, 36, L10n.translate("lucent.preferences.open_config"));
 		openConfig.setOnClick(() -> {
-			Util.getPlatform().openPath(new File(mc.gameDirectory, "config/lucent").toPath());
+			Util.getPlatform().openPath(OSUtils.getLucentDir().toPath());
 		});
 		widgets.add(openConfig);
 
