@@ -1,14 +1,17 @@
 package silence.simsool.lucent.events;
 
-import static silence.simsool.lucent.Lucent.mc;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents;
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
+import static silence.simsool.lucent.Lucent.mc;
 import silence.simsool.lucent.events.impl.LucentEvent;
 import silence.simsool.lucent.events.impl.ScreenEvent;
+import silence.simsool.lucent.general.utils.useful.UChat;
 
 public class LucentEventRegister {
 
@@ -16,18 +19,40 @@ public class LucentEventRegister {
 
 	public static void initialize() {
 
+		ClientReceiveMessageEvents.ALLOW_GAME.register((component, isActionBar) -> {
+			String message = component.getString(); 
+			String chat = UChat.cleanColor(message);
+
+			LucentEvent.MessageEvent event = new LucentEvent.MessageEvent(message, chat);
+
+			if (isActionBar) LucentEvent.ACTIONBAR_EVENT.invoker().onActionBar(event);
+			else LucentEvent.CHAT_EVENT.invoker().onChat(event);
+
+			return !event.isCanceled();
+		});
+
 		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) ->
-			LucentEvent.WORLD_LOAD_EVENT.invoker().onWorldLoad()
+			LucentEvent.SERVER_JOIN_EVENT.invoker().onServerJoin()
 		);
+
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
-			LucentEvent.WORLD_UNLOAD_EVENT.invoker().onWorldUnload()
+			LucentEvent.SERVER_DISCONNECT_EVENT.invoker().onServerDisconnect()
 		);
+
+		ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((client, world) -> {
+			LucentEvent.WORLD_LOAD_EVENT.invoker().onWorldLoad();
+		});
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (client.player != null && client.level != null) {
 				LucentEvent.TICK_EVENT.invoker().onTick();
 
 				tickCounter++;
+
+				if (tickCounter % 5 == 0) LucentEvent.TICK_EVENT.MEDIUM.invoker().onTick();
+
+				if (tickCounter % 10 == 0) LucentEvent.TICK_EVENT.HIGH.invoker().onTick();
+
 				if (tickCounter >= 20) {
 					LucentEvent.EVERY_SECOND_EVENT.invoker().onEverySecond();
 					tickCounter = 0;

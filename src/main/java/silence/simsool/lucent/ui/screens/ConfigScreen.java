@@ -25,11 +25,13 @@ import net.minecraft.util.Util;
 import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.config.LucentConfig;
 import silence.simsool.lucent.config.ModManager;
+import silence.simsool.lucent.general.enums.Align;
 import silence.simsool.lucent.general.models.abstracts.Mod;
 import silence.simsool.lucent.general.models.data.KeyBind;
 import silence.simsool.lucent.general.models.data.LucentTheme;
 import silence.simsool.lucent.general.models.data.NavState;
 import silence.simsool.lucent.general.models.interfaces.annotations.ModConfig;
+import silence.simsool.lucent.general.models.interfaces.annotations.ModConfigExtra;
 import silence.simsool.lucent.general.utils.L10n;
 import silence.simsool.lucent.general.utils.LucentUtils;
 import silence.simsool.lucent.general.utils.OSUtils;
@@ -879,6 +881,11 @@ public class ConfigScreen extends Screen {
 					if (w.mouseScrolled(mx, my + scrollOffset, hAmt, vAmt)) return true;
 				}
 			}
+			
+			for (UIWidget w : overlayWidgets) {
+				if (w instanceof ColorPickerButton cp && cp.isPickerOpen()) return true;
+			}
+
 			scrollOffset -= vAmt * 36;
 			scrollOffset  = UAnimation.clamp(scrollOffset, 0, maxScroll);
 			return true;
@@ -1288,8 +1295,7 @@ public class ConfigScreen extends Screen {
 						val = f.get(currentModSettings);
 					}
 
-					int ux = sx + itemW - PAD;
-					// 컨트롤들의 Y축 베이스 (박스 상단에서 약 25px 아래가 첫 줄 중앙)
+					int ux = sx + itemW - PAD; // 컨트롤들의 Y축 베이스 (박스 상단에서 약 25px 아래가 첫 줄 중앙)
 					int controlYBase = curY + 25; 
 
 					switch (cfg.type()) {
@@ -1418,6 +1424,359 @@ public class ConfigScreen extends Screen {
 			curY += 16;
 		}
 		maxScroll = Math.max(0, curY - scissorY + 10 - scissorH);
+		curY += buildExtraBlocks(sx, curY, itemW);
+		maxScroll = Math.max(0, curY - scissorY + 10 - scissorH);
+	}
+
+	/** Group Extra fields by category */
+	private Map<String, List<Field>> groupExtraMembers() {
+		String query = (searchField == null) ? "" : searchField.getValue().trim().toLowerCase();
+		Class<?> clazz = currentModSettings.getClass();
+		List<Field> allFields = new ArrayList<>();
+		for (Field f : clazz.getDeclaredFields()) {
+			if (f.isAnnotationPresent(ModConfigExtra.class)) {
+				f.setAccessible(true);
+				allFields.add(f);
+			}
+		}
+		allFields.sort((a, b) -> {
+			ModConfigExtra ca = a.getAnnotation(ModConfigExtra.class);
+			ModConfigExtra cb = b.getAnnotation(ModConfigExtra.class);
+			if (ca.priority() != cb.priority()) return Integer.compare(cb.priority(), ca.priority());
+			return ca.name().compareToIgnoreCase(cb.name());
+		});
+
+		Map<String, List<Field>> map = new LinkedHashMap<>();
+		for (Field f : allFields) {
+			ModConfigExtra cfg = f.getAnnotation(ModConfigExtra.class);
+			if (!query.isEmpty()) {
+				boolean match = L10n.translate(cfg.name()).toLowerCase().contains(query)
+						|| L10n.translate(cfg.description()).toLowerCase().contains(query)
+						|| L10n.translate(cfg.category()).toLowerCase().contains(query);
+				if (!match) continue;
+			}
+			if (!cfg.parent().isEmpty() && !isParentActive(cfg.parent())) continue;
+			map.computeIfAbsent(cfg.category(), k -> new ArrayList<>()).add(f);
+		}
+
+		// Sort categories based on @ModConfig.CategoryPriority annotation
+		List<String> sortedCats = new ArrayList<>(map.keySet());
+		sortedCats.sort((cat1, cat2) -> {
+			int p1 = getExtraCategoryPriority(cat1, map.get(cat1));
+			int p2 = getExtraCategoryPriority(cat2, map.get(cat2));
+			if (p1 != p2) return Integer.compare(p2, p1);
+			return cat1.compareToIgnoreCase(cat2);
+		});
+
+		Map<String, List<Field>> finalMap = new LinkedHashMap<>();
+		for (String cat : sortedCats) finalMap.put(cat, map.get(cat));
+		return finalMap;
+	}
+
+	/** Returns the priority of an Extra category (@ModConfig.CategoryPriority → Fallback to max field priority) */
+	private int getExtraCategoryPriority(String category, List<Field> fields) {
+		// 1. Check for @ModConfig.CategoryPriority annotation
+		Class<?> clazz = currentModSettings.getClass();
+		ModConfig.CategoryPriority[] annos = clazz.getAnnotationsByType(ModConfig.CategoryPriority.class);
+		for (ModConfig.CategoryPriority cp : annos) {
+			if (cp.name().equalsIgnoreCase(category)) return cp.priority();
+		}
+		// 2. Fallback to the maximum priority among fields
+		int max = Integer.MIN_VALUE;
+		for (Field f : fields) {
+			int p = f.getAnnotation(ModConfigExtra.class).priority();
+			if (p > max) max = p;
+		}
+		return max == Integer.MIN_VALUE ? 0 : max;
+	}
+
+	/** Builds the entire Extra block and returns the consumed height */
+	private int buildExtraBlocks(int sx, int startY, int itemW) {
+		Map<String, List<Field>> groups = groupExtraMembers();
+		if (groups.isEmpty()) return 0;
+
+		int curY = startY;
+		int blockPadH = 12;
+		int colGap = 10; // 열 사이 간격
+		int colW = (itemW - blockPadH * 2 - colGap) / 2; // 2열, 좌우 패딩 고려
+		int cellH = 44;
+		int cellPad = 8;
+
+		for (Map.Entry<String, List<Field>> entry : groups.entrySet()) {
+			String category = entry.getKey();
+			List<Field> fields = entry.getValue();
+
+			widgets.add(new CategoryLabelWidget(sx, curY, itemW, category));
+			curY += 40;
+
+			int totalRows = countExtraRows(fields);
+			int blockH = blockPadH * 2 + totalRows * cellH + Math.max(0, totalRows - 1) * 4;
+
+			final int bx = sx, by = curY, bw = itemW, bh = blockH;
+			widgets.add(new UIWidget(bx, by, bw, bh) {
+				@Override
+				protected void renderWidget(GuiGraphics ctx, int mx, int my, float delta) {
+					NVGRenderer.rect(bx, by, bw, bh, UIColors.CARD_BG, 10f);
+					NVGRenderer.outlineRect(bx, by, bw, bh, 1f, UIColors.ITEM_BORDER, 10f);
+				}
+			});
+
+			int rowIdx = 0;
+			int colIdx = 0;
+			for (Field field : fields) {
+				ModConfigExtra cfg = field.getAnnotation(ModConfigExtra.class);
+				if (cfg.forceline() && colIdx != 0) {
+					rowIdx++;
+					colIdx = 0;
+				}
+				int cellX = sx + blockPadH + colIdx * (colW + colGap);
+				int cellY = curY + blockPadH + rowIdx * (cellH + 4);
+				buildExtraCell(field, cfg, cellX, cellY, colW, cellH, cellPad);
+				colIdx++;
+				if (colIdx >= 2) {
+					colIdx = 0;
+					rowIdx++;
+				}
+			}
+			curY += blockH + 16;
+		}
+		return curY - startY;
+	}
+
+	/** Calculate total row count (with forceline) */
+	private int countExtraRows(List<Field> fields) {
+		int rows = 0, col = 0;
+		for (Field f : fields) {
+			ModConfigExtra cfg = f.getAnnotation(ModConfigExtra.class);
+			if (cfg.forceline() && col != 0) { rows++; col = 0; }
+			col++;
+			if (col >= 2) { col = 0; rows++; }
+		}
+		if (col > 0) rows++;
+		return Math.max(1, rows);
+	}
+
+	/**
+	 * Extra 셀 하나 빌드.
+	 * forcewidget=false(기본): [타이틀 | 위젯] — 타이틀 왼쪽, 위젯 오른쪽
+	 *   align=LEFT  → 위젯이 타이틀 바로 오른쪽에 붙음(왼쪽 정렬)
+	 *   align=RIGHT → 위젯이 오른쪽 끝에 붙음
+	 * forcewidget=true: [위젯 | 타이틀] — 위젯 왼쪽, 타이틀 오른쪽
+	 *   align=LEFT  → 타이틀이 위젯 바로 오른쪽에 붙음
+	 *   align=RIGHT → 타이틀이 오른쪽 끝에 붙음
+	 */
+	private void buildExtraCell(Field field, ModConfigExtra cfg, int cx, int cy, int colW, int cellH, int pad) {
+		try {
+			field.setAccessible(true);
+			Object val = field.get(currentModSettings);
+
+			String label = L10n.translate(cfg.name());
+			String desc  = cfg.description();
+			int textColor = UIColors.TEXT_PRIMARY;
+			float fontSize = 13f;
+			boolean widgetFirst = cfg.forcewidget();
+			Align align = cfg.align();
+
+			// 설명 있으면 호버 툴팁 위젯
+			if (desc != null && !desc.isEmpty()) {
+				widgets.add(new ExtraTooltipWidget(cx, cy, colW, cellH, L10n.translate(desc)));
+			}
+
+			int widgetW, widgetH;
+			switch (cfg.type()) {
+				case SWITCH  -> { widgetW = 40; widgetH = 20; }
+				case SLIDER  -> { widgetW = Math.min(240, colW - pad * 2 - 40); widgetH = 18; }
+				case SELECTOR-> { widgetW = Math.min(110, colW - pad * 2 - 20); widgetH = 28; }
+				case COLOR   -> { widgetW = 50;  widgetH = 28; }
+				case BUTTON  -> { String bt = cfg.display(); widgetW = (bt == null || bt.isEmpty()) ? 36 : Math.min(80, colW - pad * 2 - 20); widgetH = 26; }
+				case KEYBIND -> { widgetW = Math.min(80, colW - pad * 2 - 20); widgetH = 26; }
+				case TEXT    -> { widgetW = Math.min(110, colW - pad * 2 - 20); widgetH = 24; }
+				default      -> { widgetW = 60;  widgetH = 24; }
+			}
+
+			int widgetX, labelX;
+			float labelW;
+			int widgetPadding = 12;
+
+			// forcewidget : true
+			if (widgetFirst) {
+				widgetX = cx + pad;
+				int rightAreaStart = widgetX + widgetW + widgetPadding;
+				int rightAreaEnd   = cx + colW - pad;
+				labelW = rightAreaEnd - rightAreaStart;
+
+				if (align == Align.LEFT) labelX = rightAreaStart;
+				else labelX = (int)(rightAreaEnd - NVGRenderer.textWidth(label, Fonts.PRETENDARD_MEDIUM, fontSize));
+
+			}
+
+			// forcewidget : false
+			else {
+				if (align == Align.RIGHT) widgetX = cx + colW - pad - widgetW;
+				else {
+					widgetX = (int)(cx + pad + NVGRenderer.textWidth(label, Fonts.PRETENDARD_MEDIUM, fontSize) + widgetPadding);
+					widgetX = Math.min(widgetX, cx + colW - pad - widgetW); // protect overflow
+				}
+				labelX = cx + pad;
+				labelW = widgetX - cx - pad - 4;
+			}
+
+			int widgetY = cy + (cellH - widgetH) / 2;
+
+			switch (cfg.type()) {
+				case SWITCH -> {
+					ToggleButton tb = new ToggleButton(widgetX, widgetY, widgetW, widgetH, (boolean) val);
+					String fid = field.getName();
+					tb.setId(fid);
+					if (toggleAnimCache.containsKey(fid)) tb.setAnimProgress(toggleAnimCache.get(fid));
+					tb.setOnChange(v -> {
+						try {
+							field.set(currentModSettings, v);
+							refreshUI(true);
+						} catch (Exception e) {}
+					});
+					widgets.add(tb);
+				}
+				case SLIDER -> {
+					double dVal = (val instanceof Number n) ? n.doubleValue() : 0.0;
+					Slider.SliderType sType = Slider.SliderType.DOUBLE;
+					Class<?> fType = field.getType();
+					if (fType == float.class || fType == Float.class) sType = Slider.SliderType.FLOAT;
+					else if (fType == int.class || fType == Integer.class) sType = Slider.SliderType.INT;
+					Slider slider = new Slider(widgetX, widgetY, widgetW, widgetH, cfg.min(), cfg.max(), cfg.step(), dVal, sType);
+					slider.setOnChange(v -> {
+						try {
+							Class<?> ft = field.getType();
+							if (ft == float.class || ft == Float.class) field.set(currentModSettings, v.floatValue());
+							else if (ft == int.class || ft == Integer.class) field.set(currentModSettings, (int) Math.round(v));
+							else field.set(currentModSettings, v);
+						} catch (Exception e) {}
+					});
+					widgets.add(slider);
+				}
+				case SELECTOR -> {
+					Selector sel = new Selector(widgetX, widgetY, widgetW, widgetH, List.of(cfg.options()));
+					sel.setValue((String) val);
+					sel.setOnChange(v -> {
+						try {
+							field.set(currentModSettings, v);
+						} catch (Exception e) {}
+					});
+					overlayWidgets.add(sel);
+				}
+				case COLOR -> {
+					int initialColor = 0xFFFFFFFF;
+					if (val instanceof Color cObj) initialColor = cObj.getRGB();
+					else if (val instanceof Number nObj) initialColor = nObj.intValue();
+					ColorPickerButton cp = new ColorPickerButton(widgetX, widgetY, widgetW, widgetH, initialColor);
+					cp.setOnChange(c -> {
+						try {
+							if (field.getType() == Color.class) field.set(currentModSettings, new Color(c, true));
+							else field.set(currentModSettings, c);
+						} catch (Exception e) {}
+					});
+					overlayWidgets.add(cp);
+				}
+				case BUTTON -> {
+					String btnText = cfg.display();
+					ActionButton ab = new ActionButton(widgetX, widgetY, widgetW, widgetH, btnText);
+					if (field.getType() == Runnable.class && val instanceof Runnable r) ab.setOnClick(r);
+					widgets.add(ab);
+				}
+				case KEYBIND -> {
+					KeyBind initialBind = (val instanceof KeyBind kb) ? kb : null;
+					KeyBindButton kbb = new KeyBindButton(widgetX, widgetY, widgetW, widgetH, initialBind);
+					kbb.setOnChange(v -> {
+						try {
+							field.set(currentModSettings, v);
+						} catch (Exception e) {}
+					});
+					widgets.add(kbb);
+				}
+				case TEXT -> {
+					TextBox tb2 = new TextBox(widgetX, widgetY, widgetW, widgetH, (String) val);
+					tb2.setOnChange(v -> {
+						try {
+							field.set(currentModSettings, v);
+						} catch (Exception e) {}
+					});
+					widgets.add(tb2);
+				}
+			}
+
+			if (labelW > 0) renderExtraLabel(label, labelX, cy, labelW, cellH, fontSize, textColor);
+
+		} catch (Exception ignored) {}
+	}
+
+	private void renderExtraLabel(String label, float lx, int cy, float maxW, int cellH, float fontSize, int color) {
+		final float fx = lx, fy = cy + (cellH - fontSize) / 2f, fw = maxW;
+		final String text = label;
+		final int fc = color;
+		final float fs = fontSize;
+		widgets.add(new UIWidget((int)fx, (int)fy, (int)fw, (int)fs + 2) {
+			@Override
+			protected void renderWidget(GuiGraphics ctx, int mx, int my, float delta) {
+				NVGRenderer.push();
+				NanoVG.nvgIntersectScissor(NVGRenderer.getVG(), fx, fy - 2, fw, fs + 4);
+				NVGRenderer.text(text, fx, fy, Fonts.PRETENDARD_MEDIUM, fc, fs);
+				NVGRenderer.pop();
+			}
+		});
+	}
+
+	/** Hover Tooltip for ExtraConfig Widget */
+	private class ExtraTooltipWidget extends UIWidget {
+		private final String tooltip;
+		private long hoverStartMs = -1L;
+		private float tooltipAlpha = 0f;
+		private int lastMx = Integer.MIN_VALUE, lastMy = Integer.MIN_VALUE;
+		private static final long DELAY_MS = 2000L;
+		private static final float FADE_MS = 500f;
+		private static final int TIP_PAD = 8;
+
+		public ExtraTooltipWidget(int x, int y, int w, int h, String tooltip) {
+			super(x, y, w, h);
+			this.tooltip = tooltip;
+		}
+
+		@Override
+		protected void renderWidget(GuiGraphics ctx, int mx, int my, float delta) {
+			boolean hovering = mx >= x && mx <= x + width && my >= y && my <= y + height;
+			if (hovering) {
+				// 마우스가 조금이라도 움직이면 리셋
+				boolean moved = (mx != lastMx || my != lastMy);
+				lastMx = mx; lastMy = my;
+				if (moved) {
+					hoverStartMs = System.currentTimeMillis();
+					tooltipAlpha = 0f;
+				}
+				else if (hoverStartMs < 0) {
+					hoverStartMs = System.currentTimeMillis();
+				}
+				long elapsed = System.currentTimeMillis() - hoverStartMs;
+				if (elapsed >= DELAY_MS) {
+					float fadeProgress = Math.min(1f, (elapsed - DELAY_MS) / FADE_MS);
+					tooltipAlpha = UAnimation.Easing.easeOut(fadeProgress);
+				}
+				if (tooltipAlpha > 0f) {
+					float fs = 12f;
+					float tw = NVGRenderer.textWidth(tooltip, Fonts.PRETENDARD_LIGHT, fs);
+					float bw = tw + TIP_PAD * 2;
+					float bh = fs + TIP_PAD * 2;
+					float tx = x + (width - bw) / 2f;
+					float ty = y - bh - 6;
+					NVGRenderer.rect(tx, ty, bw, bh, UIColors.withAlpha(0xF0202028, (int)(tooltipAlpha * 0xF0)), 6f);
+					NVGRenderer.outlineRect(tx, ty, bw, bh, 1f, UIColors.withAlpha(UIColors.ITEM_BORDER, (int)(tooltipAlpha * 255)), 6f);
+					NVGRenderer.text(tooltip, tx + TIP_PAD, ty + TIP_PAD, Fonts.PRETENDARD_LIGHT, UIColors.withAlpha(UIColors.TEXT_PRIMARY, (int)(tooltipAlpha * 255)), fs);
+				}
+			} else {
+				hoverStartMs = -1L;
+				tooltipAlpha = 0f;
+				lastMx = Integer.MIN_VALUE;
+				lastMy = Integer.MIN_VALUE;
+			}
+		}
 	}
 
 	/** 설명 텍스트가 maxWidth 안에서 몇 줄이 되는지 계산 */

@@ -2,7 +2,7 @@ package silence.simsool.lucent.examplemod.huds;
 
 import net.minecraft.client.gui.GuiGraphics;
 import silence.simsool.lucent.examplemod.mods.ExampleMod;
-import silence.simsool.lucent.general.enums.HUDAlignment;
+import silence.simsool.lucent.general.enums.Align;
 import silence.simsool.lucent.general.enums.RenderType;
 import silence.simsool.lucent.general.models.abstracts.LucentHUD;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
@@ -18,7 +18,7 @@ public class ExampleHUD extends LucentHUD {
 				ExampleMod.class, // (Optional): Depends on the activation status of the specified mod class. If no class is specified, isEnabled() and disable() must be overridden.
 				0.01f, 0.05f, // (Required): Initial position
 				1.0f, // (Required): Initial scale
-				HUDAlignment.LEFT // (Required): Initial alignment
+				Align.LEFT // (Required): Initial alignment
 		);
 	}
 

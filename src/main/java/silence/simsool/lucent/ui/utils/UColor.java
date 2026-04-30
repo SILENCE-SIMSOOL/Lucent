@@ -1,5 +1,7 @@
 package silence.simsool.lucent.ui.utils;
 
+import java.awt.Color;
+
 public class UColor {
 
 	public static int argb(int a, int r, int g, int b) {
@@ -66,15 +68,25 @@ public class UColor {
 		return argb(getAlpha(color), r, g, b);
 	}
 
-	public static int lighten(int color, float amount) {
+	public static Color darken(Color color, float amount) {
+		int r = (int) (color.getRed()   * (1 - amount));
+		int g = (int) (color.getGreen() * (1 - amount));
+		int b = (int) (color.getBlue()  * (1 - amount));
+		return new Color(r, g, b, color.getAlpha());
+	}
+
+	public static int brighten(int color, float amount) {
 		int r = getRed(color)   + (int)((255 - getRed(color))   * amount);
 		int g = getGreen(color) + (int)((255 - getGreen(color)) * amount);
 		int b = getBlue(color)  + (int)((255 - getBlue(color))  * amount);
 		return argb(getAlpha(color), r, g, b);
 	}
-	
-	public static int brighten(int color, float amount) {
-		return lighten(color, amount);
+
+	public static Color brighten(Color color, float amount) {
+		int r = color.getRed()   + (int) ((255 - color.getRed())   * amount);
+		int g = color.getGreen() + (int) ((255 - color.getGreen()) * amount);
+		int b = color.getBlue()  + (int) ((255 - color.getBlue())  * amount);
+		return new Color(r, g, b, color.getAlpha());
 	}
 
 	public static float[] toHSV(int color) {

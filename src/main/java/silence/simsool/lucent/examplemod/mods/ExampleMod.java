@@ -5,14 +5,16 @@ import java.awt.Color;
 import org.lwjgl.glfw.GLFW;
 
 import silence.simsool.lucent.Lucent;
+import silence.simsool.lucent.general.enums.Align;
 import silence.simsool.lucent.general.enums.ConfigType;
 import silence.simsool.lucent.general.models.abstracts.Mod;
 import silence.simsool.lucent.general.models.data.KeyBind;
 import silence.simsool.lucent.general.models.interfaces.annotations.ModConfig;
+import silence.simsool.lucent.general.models.interfaces.annotations.ModConfigExtra;
 import silence.simsool.lucent.general.utils.useful.UChat;
 import silence.simsool.lucent.general.utils.useful.ULog;
 
-// Category priority can be set; if not specified, "General" is placed at the top by default, followed by the rest.
+//Category priority can be set; if not specified, "General" is placed at the top by default, followed by the rest.
 @ModConfig.CategoryPriority(name = "General", priority = 1000)
 @ModConfig.CategoryPriority(name = "Appearance", priority = 500)
 @ModConfig.CategoryPriority(name = "Test Category", priority = 100)
@@ -35,7 +37,7 @@ public class ExampleMod extends Mod {
 		return Lucent.config.isModuleEnabled(ExampleMod.class);
 	}
 
-// --------------------------------- General -----------------------------------------
+//───────────────────────────────── General ─────────────────────────────────────────
 	// SWITCH
 	@ModConfig(
 		type = ConfigType.SWITCH, // (Type): boolean
@@ -80,8 +82,8 @@ public class ExampleMod extends Mod {
 		name = "Example int Selector",
 		description = "",
 		min = 0,  // (Required): Minimum value of the slider
-		max = 10, // (Required) Maximum value of the slider
-		step = 1, // (Optional) The amount of change per step (Default: 1)
+		max = 10, // (Required): Maximum value of the slider
+		step = 1, // (Optional): The amount of change per step (Default: 1)
 		priority = 500
 	)
 	public static int ExampleSliderInt = 5;
@@ -129,7 +131,7 @@ public class ExampleMod extends Mod {
 	}
 
 
-// --------------------------------- Advanced ----------------------------------------
+//───────────────────────────────── Advanced ────────────────────────────────────────
 	@ModConfig(
 		type = ConfigType.SWITCH,
 		name = "Advanced Switch",
@@ -147,7 +149,8 @@ public class ExampleMod extends Mod {
 	)
 	public static Color AdvancedParent = new Color(85, 255, 85, 255);
 
-// --------------------------------- Example -----------------------------------------
+
+//───────────────────────────────── Example ─────────────────────────────────────────
 	@ModConfig(
 		type = ConfigType.SWITCH,
 		name = "Clear Background",
@@ -166,5 +169,58 @@ public class ExampleMod extends Mod {
 		priority = 5
 	)
 	public static double ChatOpacity = 0.8;
+
+
+//──────────────────────────── ModConfigExtra Example ──────────────────────────────
+	@ModConfigExtra(
+		type = ConfigType.SWITCH,
+		name = "Extra Switch 1",
+		description = "This is switch-1 description.",
+		category = "Extra Example",
+		priority = 5
+	)
+	public static boolean ExtraSwitch1 = true;
+
+	@ModConfigExtra(
+		type = ConfigType.SWITCH,
+		name = "Extra Switch 2",
+		description = "This is the description for switch 2.",
+		category = "Extra Example",
+		forceline = true, // (Optional): Forces a new line when enabled.
+		forcewidget = true, // (Optional): Places the widget button before the title when enabled.
+		align = Align.RIGHT, // (Optional): Aligns to the right and increases spacing between widget and title.
+		priority = 4
+	)
+	public static boolean ExtraSwitch2 = true;
+
+	@ModConfigExtra(
+		type = ConfigType.SWITCH,
+		name = "Extra Switch 3",
+		category = "Extra Example",
+		description = "This is switch-3 description.",
+		forcewidget = true, align = Align.LEFT,
+		priority = 3
+	)
+	public static boolean ExtraSwitch3 = true;
+
+	@ModConfigExtra(
+		type = ConfigType.SWITCH,
+		name = "Extra Switch 4",
+		description = "This is switch-4 description.",
+		category = "Extra Example",
+		forcewidget = true, align = Align.LEFT,
+		priority = 2
+	)
+	public static boolean ExtraSwitch4 = true;
+
+	@ModConfigExtra(
+		type = ConfigType.SWITCH,
+		name = "Extra Switch 5",
+		description = "This is switch-5 description.",
+		category = "Extra Example",
+		forcewidget = true, align = Align.LEFT,
+		priority = 1
+	)
+	public static boolean ExtraSwitch5 = true;
 
 }

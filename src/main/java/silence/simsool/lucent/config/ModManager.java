@@ -23,6 +23,7 @@ import silence.simsool.lucent.examplemod.mods.ExampleMod;
 import silence.simsool.lucent.general.models.abstracts.Mod;
 import silence.simsool.lucent.general.models.data.KeyBind;
 import silence.simsool.lucent.general.models.interfaces.annotations.ModConfig;
+import silence.simsool.lucent.general.models.interfaces.annotations.ModConfigExtra;
 import silence.simsool.lucent.general.utils.OSUtils;
 import silence.simsool.lucent.ui.theme.ThemeManager;
 
@@ -40,6 +41,13 @@ public class ModManager {
 		File f = new File(getGlobalLucentDir(), "profiles");
 		if (!f.exists()) f.mkdirs();
 		return f;
+	}
+
+	public File getHudConfigFile() {
+		File profilesDir = new File(configDirectory, "profiles");
+		File profileDir = new File(profilesDir, currentProfile);
+		if (!profileDir.exists()) profileDir.mkdirs();
+		return new File(profileDir, "hud.json");
 	}
 
 	public String getCurrentProfile() {
@@ -180,23 +188,23 @@ public class ModManager {
 
 	@SuppressWarnings("unchecked")
 	public <T extends Mod> T getModule(Class<T> moduleClass) {
-		for (Mod m : modules) {
-			if (moduleClass.isAssignableFrom(m.getClass())) {
-				return (T) m;
+		for (Mod mod : modules) {
+			if (moduleClass.isAssignableFrom(mod.getClass())) {
+				return (T) mod;
 			}
 		}
 		return null;
 	}
 
 	public boolean isModuleEnabled(Class<? extends Mod> moduleClass) {
-		Mod m = getModule(moduleClass);
-		return m != null && m.isEnabled;
+		Mod mod = getModule(moduleClass);
+		return mod != null && mod.isEnabled;
 	}
 
 	public void setModuleEnabled(Class<? extends Mod> moduleClass, boolean enabled) {
-		Mod m = getModule(moduleClass);
-		if (m != null) {
-			m.isEnabled = enabled;
+		Mod mod = getModule(moduleClass);
+		if (mod != null) {
+			mod.isEnabled = enabled;
 			saveConfigs();
 		}
 	}
@@ -236,7 +244,7 @@ public class ModManager {
 				}
 
 				for (Field field : module.getClass().getDeclaredFields()) {
-					if (field.isAnnotationPresent(ModConfig.class)) {
+					if (field.isAnnotationPresent(ModConfig.class) || field.isAnnotationPresent(ModConfigExtra.class)) {
 						field.setAccessible(true);
 						String fkey = field.getName();
 						if (json.has(fkey)) {
@@ -282,7 +290,7 @@ public class ModManager {
 			JsonObject json = new JsonObject();
 			json.addProperty("isEnabled", module.isEnabled);
 			for (Field field : module.getClass().getDeclaredFields()) {
-				if (field.isAnnotationPresent(ModConfig.class)) {
+				if (field.isAnnotationPresent(ModConfig.class) || field.isAnnotationPresent(ModConfigExtra.class)) {
 					field.setAccessible(true);
 					try {
 						Object val = field.get(module);
@@ -330,9 +338,9 @@ public class ModManager {
 	}
 
 	public void saveGlobalConfig() {
-		File f = getGlobalLucentDir();
-		if (!f.exists()) f.mkdirs();
-		File file = new File(f, "lucent_global.json");
+		File globalFile = getGlobalLucentDir();
+		if (!globalFile.exists()) globalFile.mkdirs();
+		File file = new File(globalFile, "lucent_global.json");
 		
 		JsonObject json = null;
 		if (file.exists()) {
@@ -355,9 +363,5 @@ public class ModManager {
 			GSON.toJson(json, writer);
 		} catch (Exception e) {}
 	}
-
-//	private String getFileName(Mod module) {
-//		return module.name.replaceAll("[^a-zA-Z0-9_\\-]", "") + ".json";
-//	}
 
 }

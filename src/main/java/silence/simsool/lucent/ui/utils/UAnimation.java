@@ -177,14 +177,21 @@ public class UAnimation {
 	/** Format based on decimal places (matching step) */
 	public static String formatForStep(double value, double step) {
 		if (step >= 1) return String.valueOf((int) Math.round(value));
+		
 		int decimals = 0;
 		double s = step;
-
 		while (s < 1 && decimals < 10) {
 			s *= 10;
 			decimals++;
 		}
-		return String.format("%." + decimals + "f", value);
+		
+		String formatted = String.format("%." + decimals + "f", value);
+		if (formatted.contains(".")) {
+			while (formatted.endsWith("0") && !formatted.endsWith(".0")) {
+				formatted = formatted.substring(0, formatted.length() - 1);
+			}
+		}
+		return formatted;
 	}
 
 	// ────────────────────────────────────────────────

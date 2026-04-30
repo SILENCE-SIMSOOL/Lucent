@@ -37,7 +37,7 @@ public class Lucent implements ClientModInitializer {
 
 	public static final String ID = "lucent";
 	public static final String NAME = "Lucent";
-	public static final String VERSION = "1.0.12";
+	public static final String VERSION = "1.0.16";
 	public static String LATEST_VERSION = "Fetching...";
 
 	public static Minecraft mc = Minecraft.getInstance();
@@ -52,7 +52,7 @@ public class Lucent implements ClientModInitializer {
 			KEYBINDING_CATEGORY
 	));
 
-	public static boolean devMode = false;
+	public static boolean devMode = true;
 
 	static {
 		HttpClient.newHttpClient().sendAsync(

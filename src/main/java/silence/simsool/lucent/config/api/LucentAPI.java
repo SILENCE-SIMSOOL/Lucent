@@ -5,6 +5,7 @@ import java.io.File;
 import net.minecraft.client.gui.screens.Screen;
 import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.config.ModManager;
+import silence.simsool.lucent.general.models.abstracts.LucentHUD;
 import silence.simsool.lucent.general.utils.OSUtils;
 import silence.simsool.lucent.hud.HUDManager;
 import silence.simsool.lucent.ui.screens.ConfigScreen;
@@ -33,8 +34,7 @@ public class LucentAPI {
 	 * @return A modern ModuleManager instance
 	 */
 	public static ModManager createModManager(String directoryName) {
-		if (directoryName.equals("lucent")) return new ModManager(OSUtils.getLucentDir());
-		return new ModManager(new File(OSUtils.getLucentDir(), directoryName));
+		return new ModManager(new File(OSUtils.getLucentDir(), "config/" + directoryName));
 	}
 
 	/**
@@ -56,6 +56,18 @@ public class LucentAPI {
 	 */
 	public static Screen createEditHUDScreen(ModManager manager) {
 		return new EditHUDScreen(manager);
+	}
+
+	/**
+	 * Registers a HUD element bound to the specified ModManager.
+	 * Use this instead of calling getHUDManager().register(hud) directly,
+	 * so that the correct config manager is associated with the HUD.
+	 *
+	 * @param manager Your mod's global ModManager instance
+	 * @param hud     The HUD element to register
+	 */
+	public static void registerHUD(ModManager manager, LucentHUD hud) {
+		getHUDManager().register(manager, hud);
 	}
 
 }

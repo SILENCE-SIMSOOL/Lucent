@@ -9,17 +9,16 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.ClientboundPingPacket;
+import silence.simsool.lucent.events.impl.LucentEvent;
 import silence.simsool.lucent.events.impl.PacketEvent;
 
 @Mixin(value = Connection.class, priority = 500)
-public abstract class MixinConnection_PacketEvent {
+public abstract class MixinConnection {
 
-	@Inject(
-		method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V",
-		at = @At(value = "INVOKE", target = "Lnet/minecraft/network/Connection;genericsFtw(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;)V"),
-		cancellable = true
-	)
+	@Inject(method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/Connection;genericsFtw(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;)V"), cancellable = true)
 	private void onChannelRead0(ChannelHandlerContext ctx, Packet<?> packet, CallbackInfo ci) {
+		if (packet instanceof ClientboundPingPacket pingPacket && pingPacket.getId() != 0) LucentEvent.SERVER_TICK_EVENT.invoker().onTick();
 		if (PacketEvent.RECEIVE.invoker().onPacketReceive(packet)) ci.cancel();
 	}
 

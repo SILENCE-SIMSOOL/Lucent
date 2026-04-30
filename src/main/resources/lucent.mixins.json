@@ -15,7 +15,7 @@
 		"mixins.events.input.MixinKeyMapping_KEY_INPUT_EVENT",
 		"mixins.events.MixinMinecraft",
 		"mixins.events.packet.MixinClientPacketListener",
-		"mixins.events.packet.MixinConnection_PacketEvent",
+		"mixins.events.packet.MixinConnection",
 		"mixins.events.world.MixinLevelChunk_BLOCK_UPDATE_EVENT"
 	]
 }

@@ -2,26 +2,37 @@ package silence.simsool.lucent.general.models.abstracts;
 
 import net.minecraft.client.gui.GuiGraphics;
 import silence.simsool.lucent.Lucent;
+import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.config.api.LucentAPI;
-import silence.simsool.lucent.general.enums.HUDAlignment;
+import silence.simsool.lucent.general.enums.Align;
 import silence.simsool.lucent.general.enums.RenderType;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
 import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 
 public abstract class LucentHUD {
+
 	public static boolean isEditHudOpen = false;
 	public final String id;
 	public final Class<? extends Mod> moduleClass;
 	public float x;
 	public float y;
 	public float scale; // (0.5 ~ 2.0 / 0.1 unit)
-	public HUDAlignment alignment;
+	public Align alignment;
+	private ModManager parentManager;
 
-	protected LucentHUD(String id, float defaultX, float defaultY, float defaultScale, HUDAlignment defaultAlignment) {
+	public void setParentManager(ModManager manager) {
+		this.parentManager = manager;
+	}
+
+	public ModManager getParentManager() {
+		return parentManager != null ? parentManager : Lucent.config;
+	}
+
+	protected LucentHUD(String id, float defaultX, float defaultY, float defaultScale, Align defaultAlignment) {
 		this(id, null, defaultX, defaultY, defaultScale, defaultAlignment);
 	}
 
-	protected LucentHUD(String id, Class<? extends Mod> moduleClass, float defaultX, float defaultY, float defaultScale, HUDAlignment defaultAlignment) {
+	protected LucentHUD(String id, Class<? extends Mod> moduleClass, float defaultX, float defaultY, float defaultScale, Align defaultAlignment) {
 		this.id = id;
 		this.moduleClass = moduleClass;
 		this.x = defaultX;
@@ -44,7 +55,7 @@ public abstract class LucentHUD {
 	 * Subclasses can override this to tie visibility to mod settings.
 	 */
 	public boolean isEnabled() {
-		return moduleClass == null || Lucent.config.isModuleEnabled(moduleClass);
+		return moduleClass == null || getParentManager().isModuleEnabled(moduleClass);
 	}
 
 	/**
@@ -53,7 +64,7 @@ public abstract class LucentHUD {
 	 */
 	public void disable() {
 		if (moduleClass != null) {
-			Lucent.config.setModuleEnabled(moduleClass, false);
+			getParentManager().setModuleEnabled(moduleClass, false);
 		}
 	}
 
@@ -134,4 +145,5 @@ public abstract class LucentHUD {
 	public void save() {
 		LucentAPI.getHUDManager().save();
 	}
+
 }

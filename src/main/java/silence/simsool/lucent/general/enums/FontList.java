@@ -1,6 +1,7 @@
 package silence.simsool.lucent.general.enums;
 
 public enum FontList {
+
 	DEFAULT("pretendard"),
 	PRETENDARD("pretendard"),
 	PRETENDARD_MEDIUM("pretendard_medium"),
@@ -17,4 +18,5 @@ public enum FontList {
 	public String getName() {
 		return name;
 	}
+
 }

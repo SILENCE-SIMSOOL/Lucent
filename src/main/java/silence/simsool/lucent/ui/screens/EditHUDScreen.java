@@ -15,7 +15,7 @@ import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.config.LucentConfig;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.config.api.LucentAPI;
-import silence.simsool.lucent.general.enums.HUDAlignment;
+import silence.simsool.lucent.general.enums.Align;
 import silence.simsool.lucent.general.enums.RenderType;
 import silence.simsool.lucent.general.models.abstracts.LucentHUD;
 import silence.simsool.lucent.general.models.abstracts.Mod;
@@ -135,7 +135,7 @@ public class EditHUDScreen extends Screen {
 			}
 		}
 
-		for (LucentHUD hud : LucentAPI.getHUDManager().getHuds()) {
+		for (LucentHUD hud : LucentAPI.getHUDManager().getHUDs()) {
 			if (hud.isEnabled() && hud.getRenderType() == RenderType.MINECRAFT) {
 				hud.preview(guiGraphics);
 			}
@@ -149,7 +149,7 @@ public class EditHUDScreen extends Screen {
 				NVGRenderer.globalAlpha(UAnimation.clamp(animP * 1.5f, 0, 1));
 			}
 
-			for (LucentHUD hud : LucentAPI.getHUDManager().getHuds()) {
+			for (LucentHUD hud : LucentAPI.getHUDManager().getHUDs()) {
 				if (hud.isEnabled() && hud.getRenderType() == RenderType.NANOVG) {
 					hud.preview(guiGraphics);
 				}
@@ -177,7 +177,7 @@ public class EditHUDScreen extends Screen {
 			return true;
 		}
 
-		List<LucentHUD> huds = LucentAPI.getHUDManager().getHuds();
+		List<LucentHUD> huds = LucentAPI.getHUDManager().getHUDs();
 
 		if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
 			for (int i = huds.size() - 1; i >= 0; i--) {
@@ -312,7 +312,7 @@ public class EditHUDScreen extends Screen {
 
 			// Shift 키를 누르면 자석 비활성
 			if (!shiftDown) {
-				for (LucentHUD other : LucentAPI.getHUDManager().getHuds()) {
+				for (LucentHUD other : LucentAPI.getHUDManager().getHUDs()) {
 					if (!other.isEnabled() || other == draggingMove) continue;
 	
 					float orx = other.getRenderX(), ory = other.getRenderY();
@@ -397,14 +397,14 @@ public class EditHUDScreen extends Screen {
 
 		drawCrosshair(vw, vh);
 
-		for (LucentHUD hud : LucentAPI.getHUDManager().getHuds()) {
+		for (LucentHUD hud : LucentAPI.getHUDManager().getHUDs()) {
 			if (hud.isEnabled()) drawHudBorder(hud, mx, my);
 		}
 
 		drawCrosshair(vw, vh);
 
 		if (draggingMove == null && draggingScale == null && contextMenuHud == null) {
-			for (LucentHUD hud : LucentAPI.getHUDManager().getHuds()) {
+			for (LucentHUD hud : LucentAPI.getHUDManager().getHUDs()) {
 				if (hud.isEnabled() && isInsideHud(hud, mx, my)) {
 					drawTooltip(hud, mx, my, vw, vh);
 					break;
@@ -521,7 +521,7 @@ public class EditHUDScreen extends Screen {
 		if (matchX) NVGRenderer.line(cx, 0, cx, vh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 150));
 
 		// Requirement 2: Alignment with other HUDs
-		for (LucentHUD other : LucentAPI.getHUDManager().getHuds()) {
+		for (LucentHUD other : LucentAPI.getHUDManager().getHUDs()) {
 			if (!other.isEnabled() || other == draggingMove) continue;
 
 			float orx = other.getRenderX(), ory = other.getRenderY();
@@ -633,7 +633,7 @@ public class EditHUDScreen extends Screen {
 	}
 
 	private void drawContextMenu(float vw, float vh) {
-		HUDAlignment[] opts = HUDAlignment.values();
+		Align[] opts = Align.values();
 		float iH = 28f, iW = 130f, pad = 8f;
 		// opts + separator + Delete + separator + Settings
 		float totalH = iH * opts.length + 2 * (iH + 5f) + pad * 2;
@@ -645,7 +645,7 @@ public class EditHUDScreen extends Screen {
 		NVGRenderer.outlineRect(cx, cy, iW, totalH, 1f, UIColors.withAlpha(0xFFFFFFFF, 15), 8f);
 
 		for (int i = 0; i < opts.length; i++) {
-			HUDAlignment opt = opts[i];
+			Align opt = opts[i];
 			float iy  = cy + pad + i * iH;
 			boolean selected = contextMenuHud.alignment == opt;
 
@@ -695,7 +695,7 @@ public class EditHUDScreen extends Screen {
 
 	private void handleContextMenuClick(float mx, float my) {
 		if (contextMenuHud == null) return;
-		HUDAlignment[] opts = HUDAlignment.values();
+		Align[] opts = Align.values();
 		float iH = 28f, iW = 130f, pad = 8f;
 		float totalH = iH * opts.length + 2 * (iH + 5f) + pad * 2;
 
@@ -713,12 +713,25 @@ public class EditHUDScreen extends Screen {
 		float setY = sep2Y + 2.5f;
 
 		if (my >= setY && my < setY + iH) {
-			// 해당 HUD의 moduleClass로 모듈 찾아서 세부설정으로 이동
 			LucentHUD targetHud = contextMenuHud;
 			contextMenuHud = null;
-			ModManager mgr = parentManager != null ? parentManager : Lucent.config;
+			ModManager mgr = targetHud.getParentManager();
 			Mod targetMod = null;
-			if (targetHud.moduleClass != null) targetMod = mgr.getModule(targetHud.moduleClass);
+			if (targetHud.moduleClass != null) {
+				targetMod = mgr.getModule(targetHud.moduleClass);
+				if (targetMod == null) {
+					for (LucentHUD h : LucentAPI.getHUDManager().getHUDs()) {
+						ModManager candidate = h.getParentManager();
+						if (candidate == mgr) continue;
+						Mod found = candidate.getModule(targetHud.moduleClass);
+						if (found != null) {
+							mgr = candidate;
+							targetMod = found;
+							break;
+						}
+					}
+				}
+			}
 			if (targetMod != null) mc.setScreen(new ConfigScreen(mgr, targetMod));
 			else mc.setScreen(new ConfigScreen(mgr));
 			return;
@@ -727,6 +740,7 @@ public class EditHUDScreen extends Screen {
 		if (my >= delY && my < sep2Y) {
 			contextMenuHud.disable();
 			LucentAPI.getHUDManager().save();
+			contextMenuHud = null;
 			return;
 		}
 

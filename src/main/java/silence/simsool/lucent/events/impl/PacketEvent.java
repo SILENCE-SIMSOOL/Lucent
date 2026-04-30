@@ -1,13 +1,17 @@
 package silence.simsool.lucent.events.impl;
 
+import static net.fabricmc.fabric.api.event.EventFactory.createArrayBacked;
+
 import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.network.protocol.Packet;
 
 public final class PacketEvent {
 
-	public static final Event<Receive> RECEIVE = EventFactory.createArrayBacked(Receive.class,
-		listeners -> packet -> {
+	/**
+	 * Event fired when a packet is received by the client.
+	 */
+	public static final Event<Receive> RECEIVE = createArrayBacked(
+		Receive.class, listeners -> packet -> {
 			for (Receive listener : listeners) {
 				if (listener.onPacketReceive(packet)) return true;
 			}
@@ -15,8 +19,11 @@ public final class PacketEvent {
 		}
 	);
 
-	public static final Event<Send> SEND = EventFactory.createArrayBacked(Send.class,
-		listeners -> packet -> {
+	/**
+	 * Event fired when a packet is about to be sent from the client.
+	 */
+	public static final Event<Send> SEND = createArrayBacked(
+		Send.class, listeners -> packet -> {
 			for (Send listener : listeners) {
 				if (listener.onPacketSend(packet)) return true;
 			}
@@ -24,13 +31,25 @@ public final class PacketEvent {
 		}
 	);
 
-	@FunctionalInterface public interface Receive {
-		/** @return true면 패킷 처리 취소 */
+	@FunctionalInterface
+	public interface Receive {
+		/**
+		 * Called when a packet is received.
+		 *
+		 * @param packet The received packet
+		 * @return true to cancel packet processing; false otherwise
+		 */
 		boolean onPacketReceive(Packet<?> packet);
 	}
 
-	@FunctionalInterface public interface Send {
-		/** @return true면 패킷 전송 취소 */
+	@FunctionalInterface
+	public interface Send {
+		/**
+		 * Called when a packet is being sent.
+		 *
+		 * @param packet The packet to be sent
+		 * @return true to cancel the packet transmission; false otherwise
+		 */
 		boolean onPacketSend(Packet<?> packet);
 	}
 

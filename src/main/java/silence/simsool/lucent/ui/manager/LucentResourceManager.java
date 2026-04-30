@@ -10,6 +10,7 @@ import silence.simsool.lucent.ui.utils.nvg.Image;
 import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 
 public class LucentResourceManager {
+
 	public static Image iconMods, iconProfiles, iconThemes, iconPreferences, iconEditHud, iconClose, iconSearch, iconSettings, iconDelete, iconEdit;
 	public static final Map<String, Image> modIconsMap = new HashMap<>();
 
