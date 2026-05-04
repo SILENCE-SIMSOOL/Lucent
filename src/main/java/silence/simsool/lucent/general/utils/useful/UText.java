@@ -3,6 +3,7 @@ package silence.simsool.lucent.general.utils.useful;
 import static silence.simsool.lucent.Lucent.mc;
 
 import java.util.List;
+import java.util.Random;
 
 import org.joml.Matrix3x2fStack;
 
@@ -112,6 +113,16 @@ public class UText {
 			drawText(graphics, line, x, currentY, scale, scaleRatio, color, shadow);
 			currentY += lineHeight;
 		}
+	}
+
+	public static String generateRandomString(int length) {
+		Random random = new Random();
+		StringBuilder result = new StringBuilder(length);
+		for (int i = 0; i < length; i++) {
+			char randomChar = (char) ('a' + random.nextInt(26));
+			result.append(randomChar);
+		}
+		return result.toString();
 	}
 
 }

@@ -2,12 +2,24 @@ package silence.simsool.lucent.general.utils.useful;
 
 import static silence.simsool.lucent.Lucent.mc;
 
+import java.awt.AWTException;
 import java.awt.Desktop;
+import java.awt.Image;
+import java.awt.SystemTray;
+import java.awt.Toolkit;
+import java.awt.TrayIcon;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 public class UDesktop {
@@ -154,4 +166,41 @@ public class UDesktop {
 	public static void setClipboardString(String str) {
 		mc.keyboardHandler.setClipboard(str);
 	}
+
+	public static boolean copyToClipboard(String text) {
+		try {
+			StringSelection selection = new StringSelection(text);
+			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+			clipboard.setContents(selection, selection);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public static void createSystemNotification(String title, String text, TrayIcon.MessageType type, long time) {
+		SystemTray sTray = SystemTray.getSystemTray();
+		Image image = Toolkit.getDefaultToolkit().createImage(new byte[0]);
+		TrayIcon trayIcon = new TrayIcon(image, "System Tray Notification");
+		trayIcon.setImageAutoSize(true);
+		try {
+			sTray.add(trayIcon);
+		} catch (AWTException e) {
+			e.printStackTrace();
+		}
+		trayIcon.displayMessage(title, text, type);
+		new Timer().schedule(new TimerTask() {
+			@Override
+			public void run() {
+				sTray.remove(trayIcon);
+			}
+		}, time);
+	}
+
+	public static String getUTC() {
+		LocalDateTime utcTime = LocalDateTime.now(ZoneOffset.UTC);
+		return utcTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH"));
+	}
+
 }

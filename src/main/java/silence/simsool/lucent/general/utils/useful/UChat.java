@@ -1,20 +1,23 @@
 package silence.simsool.lucent.general.utils.useful;
 
-import static silence.simsool.lucent.Lucent.mc;
-
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.util.Mth;
+import static silence.simsool.lucent.Lucent.mc;
 
 public class UChat {
 
 	// --- chat ---
 	public static void chat(Component component) {
-		if (mc.player != null) {
-			mc.player.displayClientMessage(component, false);
+//      This method is detected in LucentEvent.CHAT_EVENT and will not be used.
+//		if (mc.player != null) {
+//			mc.player.displayClientMessage(component, false);
+//		}
+		if (mc.gui != null && mc.gui.getChat() != null) {
+			mc.gui.getChat().addMessage(component);
 		}
 	}
 

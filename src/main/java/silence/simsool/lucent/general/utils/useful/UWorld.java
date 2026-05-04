@@ -37,7 +37,16 @@ public class UWorld {
 	}
 
 	public static BlockState getBlockStateAt(int x, int y, int z) {
-		return getBlockStateAt(x, y, z);
+		return getBlockStateAt(new BlockPos(x, y, z));
+	}
+
+	public static boolean isAir(BlockPos pos) {
+		BlockState state = mc.level.getBlockState(pos); if (state == null) return true;
+		return state == null || state.isAir();
+	}
+
+	public static boolean isAir(int x, int y, int z) {
+		return isAir(new BlockPos(x, y, z));
 	}
 
 }
