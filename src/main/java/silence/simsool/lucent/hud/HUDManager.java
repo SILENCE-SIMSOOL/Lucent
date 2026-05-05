@@ -14,7 +14,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
 import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.config.ModManager;
@@ -90,8 +89,8 @@ public class HUDManager {
 		return null;
 	}
 
-	public void render(GuiGraphics graphics, DeltaTracker tickDelta) {
-		if (huds.isEmpty() || mc.player == null || mc.level == null || mc.screen instanceof EditHUDScreen || mc.options.hideGui) return;
+	public void render(GuiGraphics graphics) {
+		if (huds.isEmpty() || mc.screen instanceof EditHUDScreen) return;
 
 		// mc draw
 		for (LucentHUD hud : huds) {

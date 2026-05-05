@@ -7,50 +7,48 @@ import net.minecraft.network.protocol.Packet;
 
 public final class PacketEvent {
 
-	/**
-	 * Event fired when a packet is received by the client.
-	 */
+	public static class PacketReceiveEvent {
+		public Packet<?> packet;
+		private boolean canceled = false;
+		public PacketReceiveEvent(Packet<?> packet) { this.packet = packet; }
+		public void cancel() { this.canceled = true; }
+		public boolean isCanceled() { return canceled; }
+	}
+
+	public static class PacketSendEvent {
+		public Packet<?> packet;
+		private boolean canceled = false;
+		public PacketSendEvent(Packet<?> packet) { this.packet = packet; }
+		public void cancel() { this.canceled = true; }
+		public boolean isCanceled() { return canceled; }
+	}
+
 	public static final Event<Receive> RECEIVE = createArrayBacked(
-		Receive.class, listeners -> packet -> {
+		Receive.class, listeners -> event -> {
 			for (Receive listener : listeners) {
-				if (listener.onPacketReceive(packet)) return true;
+				listener.onPacketReceive(event);
+				if (event.isCanceled()) break;
 			}
-			return false;
 		}
 	);
 
-	/**
-	 * Event fired when a packet is about to be sent from the client.
-	 */
 	public static final Event<Send> SEND = createArrayBacked(
-		Send.class, listeners -> packet -> {
+		Send.class, listeners -> event -> {
 			for (Send listener : listeners) {
-				if (listener.onPacketSend(packet)) return true;
+				listener.onPacketSend(event);
+				if (event.isCanceled()) break;
 			}
-			return false;
 		}
 	);
 
 	@FunctionalInterface
 	public interface Receive {
-		/**
-		 * Called when a packet is received.
-		 *
-		 * @param packet The received packet
-		 * @return true to cancel packet processing; false otherwise
-		 */
-		boolean onPacketReceive(Packet<?> packet);
+		void onPacketReceive(PacketReceiveEvent event);
 	}
 
 	@FunctionalInterface
 	public interface Send {
-		/**
-		 * Called when a packet is being sent.
-		 *
-		 * @param packet The packet to be sent
-		 * @return true to cancel the packet transmission; false otherwise
-		 */
-		boolean onPacketSend(Packet<?> packet);
+		void onPacketSend(PacketSendEvent event);
 	}
 
 }

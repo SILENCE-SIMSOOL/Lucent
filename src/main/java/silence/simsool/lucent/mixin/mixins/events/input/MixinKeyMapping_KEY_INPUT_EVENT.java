@@ -15,7 +15,9 @@ public class MixinKeyMapping_KEY_INPUT_EVENT {
 
 	@Inject(method = "click", at = @At("HEAD"), cancellable = true)
 	private static void onKeyClick(InputConstants.Key key, CallbackInfo ci) {
-		if (LucentEvent.KEY_INPUT_EVENT.invoker().onKeyInput(key)) ci.cancel();
+		LucentEvent.KeyInputEventData event = new LucentEvent.KeyInputEventData(key);
+		LucentEvent.KEY_INPUT_EVENT.invoker().onKeyInput(event);
+		if (event.isCanceled()) ci.cancel();
 	}
 
 }

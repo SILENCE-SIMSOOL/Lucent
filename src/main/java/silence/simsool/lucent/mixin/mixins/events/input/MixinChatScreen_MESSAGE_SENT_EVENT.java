@@ -13,7 +13,9 @@ public class MixinChatScreen_MESSAGE_SENT_EVENT {
 
 	@Inject(method = "handleChatInput", at = @At("HEAD"), cancellable = true)
 	private void onHandleChatInput(String message, boolean addToHistory, CallbackInfo ci) {
-		if (LucentEvent.MESSAGE_SENT_EVENT.invoker().onMessageSent(message)) ci.cancel();
+		LucentEvent.MessageSentEventData event = new LucentEvent.MessageSentEventData(message);
+		LucentEvent.MESSAGE_SENT_EVENT.invoker().onMessageSent(event);
+		if (event.isCanceled()) ci.cancel();
 	}
 
 }

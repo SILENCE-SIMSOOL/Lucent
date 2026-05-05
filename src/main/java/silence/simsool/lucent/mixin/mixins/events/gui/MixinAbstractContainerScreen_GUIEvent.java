@@ -1,6 +1,7 @@
 package silence.simsool.lucent.mixin.mixins.events.gui;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -8,31 +9,45 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.world.inventory.ClickType;
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import silence.simsool.lucent.events.impl.GUIEvent;
 
 @Mixin(AbstractContainerScreen.class)
-public class MixinAbstractContainerScreen_GUIEvent {
+public abstract class MixinAbstractContainerScreen_GUIEvent {
 
-	@Inject(method = "render", at = @At("HEAD"), cancellable = true)
-	private void onRender(GuiGraphics guiGraphics, int mouseX, int mouseY, float deltaTicks, CallbackInfo ci) {
-		if (GUIEvent.RENDER.invoker().onGuiRender((Screen) (Object) this, guiGraphics, mouseX, mouseY)) ci.cancel();
+	@Shadow protected int leftPos;
+	@Shadow protected int topPos;
+	@Shadow protected int imageWidth;
+	@Shadow protected int imageHeight;
+
+	@Inject(method = "removed", at = @At("HEAD"), cancellable = false)
+	public void onRemoved(CallbackInfo ci) {
+		Screen self = (Screen) (Object) this;
+		AbstractContainerMenu menu = ((AbstractContainerScreen<?>) (Object) this).getMenu();
+		GUIEvent.Close event = new GUIEvent.Close(self, menu);
+		GUIEvent.Close.EVENT.invoker().onClose(event);
+		if (event.isCanceled()) ci.cancel();
 	}
 
-	@Inject(method = "renderSlot", at = @At("HEAD"), cancellable = true)
-	private void onRenderSlot(GuiGraphics guiGraphics, Slot slot, int i, int j, CallbackInfo ci) {
-		if (GUIEvent.RENDER_SLOT.invoker().onRenderSlot((Screen) (Object) this, guiGraphics, slot)) ci.cancel();
-	}
+	@Inject(method = "renderContents", at = @At("TAIL"))
+	public void onRenderContents(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+		Screen self = (Screen) (Object) this;
 
-	@Inject(method = "slotClicked", at = @At("HEAD"), cancellable = true)
-	public void onSlotClicked(Slot slot, int slotId, int button, ClickType actionType, CallbackInfo ci) {
-		if (GUIEvent.SLOT_CLICK.invoker().onSlotClick((Screen) (Object) this, slotId, button)) ci.cancel();
-	}
+		GUIEvent.Container.All.EVENT.invoker().onContainer(
+			new GUIEvent.Container.All(guiGraphics, self, mouseX, mouseY, leftPos, topPos, imageWidth, imageHeight)
+		);
 
-	@Inject(method = "renderTooltip", at = @At("HEAD"), cancellable = true)
-	public void onRenderTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY, CallbackInfo ci) {
-		if (GUIEvent.DRAW_TOOLTIP.invoker().onDrawTooltip((Screen) (Object) this, guiGraphics, mouseX, mouseY)) ci.cancel();
+		if (self instanceof InventoryScreen) {
+			GUIEvent.Container.Inventory.EVENT.invoker().onInventory(
+				new GUIEvent.Container.Inventory(guiGraphics, self, mouseX, mouseY, leftPos, topPos, imageWidth, imageHeight)
+			);
+		}
+		else {
+			GUIEvent.Container.Chest.EVENT.invoker().onChest(
+				new GUIEvent.Container.Chest(guiGraphics, self, mouseX, mouseY, leftPos, topPos, imageWidth, imageHeight)
+			);
+		}
 	}
 
 }

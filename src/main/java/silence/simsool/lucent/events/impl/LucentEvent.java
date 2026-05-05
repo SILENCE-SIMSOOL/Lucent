@@ -6,7 +6,10 @@ import com.mojang.blaze3d.platform.InputConstants;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.BossEvent;
 import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.ArrayList;
 
 public class LucentEvent {
 
@@ -118,6 +121,43 @@ public class LucentEvent {
 		}
 	}
 
+	public static class TabCompletionEvent {
+		private final String fullInput;
+		private final String beforeCursor;
+		private final ArrayList<String> existing;
+		private String[] additional;
+
+		public TabCompletionEvent(String fullInput, String beforeCursor, ArrayList<String> existing) {
+			this.fullInput = fullInput;
+			this.beforeCursor = beforeCursor;
+			this.existing = existing;
+		}
+
+		public void post() {
+			TAB_COMPLETION_EVENT.invoker().onTabComplete(this);
+		}
+
+		public String[] intoSuggestionArray() {
+			return additional;
+		}
+
+		public void setAdditional(String[] additional) {
+			this.additional = additional;
+		}
+
+		public String getFullInput() {
+			return fullInput;
+		}
+
+		public String getBeforeCursor() {
+			return beforeCursor;
+		}
+
+		public ArrayList<String> getExisting() {
+			return existing;
+		}
+	}
+
 	/**
 	 * Event fired when a chat message is received.
 	 */
@@ -169,12 +209,67 @@ public class LucentEvent {
 		}
 	);
 
+	public static class BlockUpdateEventData {
+		public BlockPos pos;
+		public BlockState oldState;
+		public BlockState newState;
+		public BlockUpdateEventData(BlockPos pos, BlockState oldState, BlockState newState) {
+			this.pos = pos;
+			this.oldState = oldState;
+			this.newState = newState;
+		}
+	}
+
+	public static class RenderExtractEventData {
+		public float partialTick;
+		public RenderExtractEventData(float partialTick) {
+			this.partialTick = partialTick;
+		}
+	}
+
+	public static class RenderLastEventData {
+		public float partialTick;
+		public RenderLastEventData(float partialTick) {
+			this.partialTick = partialTick;
+		}
+	}
+
+	public static class BlockInteractEventData {
+		public BlockPos pos;
+		private boolean canceled = false;
+		public BlockInteractEventData(BlockPos pos) {
+			this.pos = pos;
+		}
+		public void cancel() { this.canceled = true; }
+		public boolean isCanceled() { return canceled; }
+	}
+
+	public static class KeyInputEventData {
+		public InputConstants.Key key;
+		private boolean canceled = false;
+		public KeyInputEventData(InputConstants.Key key) {
+			this.key = key;
+		}
+		public void cancel() { this.canceled = true; }
+		public boolean isCanceled() { return canceled; }
+	}
+
+	public static class MessageSentEventData {
+		public String message;
+		private boolean canceled = false;
+		public MessageSentEventData(String message) {
+			this.message = message;
+		}
+		public void cancel() { this.canceled = true; }
+		public boolean isCanceled() { return canceled; }
+	}
+
 	/**
 	 * Event fired when a block state is updated.
 	 */
 	public static final Event<BlockUpdateEvent> BLOCK_UPDATE_EVENT = createArrayBacked(
-		BlockUpdateEvent.class, listeners -> (pos, oldState, newState) -> {
-			for (BlockUpdateEvent listener : listeners) listener.onBlockUpdate(pos, oldState, newState);
+		BlockUpdateEvent.class, listeners -> event -> {
+			for (BlockUpdateEvent listener : listeners) listener.onBlockUpdate(event);
 		}
 	);
 
@@ -182,8 +277,8 @@ public class LucentEvent {
 	 * Event fired during the render data extraction phase.
 	 */
 	public static final Event<RenderExtractEvent> RENDER_EXTRACT_EVENT = createArrayBacked(
-		RenderExtractEvent.class, listeners -> partialTick -> {
-			for (RenderExtractEvent listener : listeners) listener.onExtract(partialTick);
+		RenderExtractEvent.class, listeners -> event -> {
+			for (RenderExtractEvent listener : listeners) listener.onExtract(event);
 		}
 	);
 
@@ -191,8 +286,8 @@ public class LucentEvent {
 	 * Event fired after all rendering is completed.
 	 */
 	public static final Event<RenderLastEvent> RENDER_LAST_EVENT = createArrayBacked(
-		RenderLastEvent.class, listeners -> partialTick -> {
-			for (RenderLastEvent listener : listeners) listener.onRenderLast(partialTick);
+		RenderLastEvent.class, listeners -> event -> {
+			for (RenderLastEvent listener : listeners) listener.onRenderLast(event);
 		}
 	);
 
@@ -200,11 +295,10 @@ public class LucentEvent {
 	 * Event fired when interacting with a block.
 	 */
 	public static final Event<BlockInteractEvent> BLOCK_INTERACT_EVENT = createArrayBacked(
-		BlockInteractEvent.class, listeners -> pos -> {
+		BlockInteractEvent.class, listeners -> event -> {
 			for (BlockInteractEvent listener : listeners) {
-				if (listener.onBlockInteract(pos)) return true;
-			}
-			return false;
+				listener.onBlockInteract(event);
+				if (event.isCanceled()) break; }
 		}
 	);
 
@@ -212,11 +306,10 @@ public class LucentEvent {
 	 * Event fired upon keyboard input.
 	 */
 	public static final Event<KeyInputEvent> KEY_INPUT_EVENT = createArrayBacked(
-		KeyInputEvent.class, listeners -> key -> {
+		KeyInputEvent.class, listeners -> event -> {
 			for (KeyInputEvent listener : listeners) {
-				if (listener.onKeyInput(key)) return true;
-			}
-			return false;
+				listener.onKeyInput(event);
+				if (event.isCanceled()) break; }
 		}
 	);
 
@@ -224,11 +317,21 @@ public class LucentEvent {
 	 * Event fired when a message is being sent.
 	 */
 	public static final Event<MessageSentEvent> MESSAGE_SENT_EVENT = createArrayBacked(
-		MessageSentEvent.class, listeners -> message -> {
+		MessageSentEvent.class, listeners -> event -> {
 			for (MessageSentEvent listener : listeners) {
-				if (listener.onMessageSent(message)) return true;
+				listener.onMessageSent(event);
+				if (event.isCanceled()) break; }
+		}
+	);
+
+	/**
+	 * Event fired for tab completion suggestions.
+	 */
+	public static final Event<TabCompleteEvent> TAB_COMPLETION_EVENT = createArrayBacked(
+		TabCompleteEvent.class, listeners -> event -> {
+			for (TabCompleteEvent listener : listeners) {
+				listener.onTabComplete(event);
 			}
-			return false;
 		}
 	);
 
@@ -292,55 +395,64 @@ public class LucentEvent {
 
 	@FunctionalInterface 
 	public interface BlockUpdateEvent {
-		/** * Called when a block update occurs.
-		 * * @param pos      The coordinates of the block
-		 * @param oldState The previous state of the block
-		 * @param newState The new state of the block
-		 */
-		void onBlockUpdate(BlockPos pos, BlockState oldState, BlockState newState);
+		void onBlockUpdate(BlockUpdateEventData event);
 	}
 
 	@FunctionalInterface
 	public interface RenderExtractEvent {
-		/** * Called during the rendering data extraction phase.
-		 * * @param partialTick Progress between the last and next tick (0.0 - 1.0)
-		 */
-		void onExtract(float partialTick);
+		void onExtract(RenderExtractEventData event);
 	}
 
 	@FunctionalInterface
 	public interface RenderLastEvent {
-		/** * Called after all world and entity rendering is complete.
-		 * * @param partialTick Progress between the last and next tick (0.0 - 1.0)
-		 */
-		void onRenderLast(float partialTick);
+		void onRenderLast(RenderLastEventData event);
 	}
 
 	@FunctionalInterface 
 	public interface BlockInteractEvent {
-		/** * Called when interacting with a block.
-		 * * @param pos The coordinates of the target block
-		 * @return true to cancel the interaction; false otherwise
-		 */
-		boolean onBlockInteract(BlockPos pos);
+		void onBlockInteract(BlockInteractEventData event);
 	}
 
 	@FunctionalInterface 
 	public interface KeyInputEvent {
-		/** * Called when a key is pressed.
-		 * * @param key The key that was input
-		 * @return true to consume the input; false otherwise
-		 */
-		boolean onKeyInput(InputConstants.Key key);
+		void onKeyInput(KeyInputEventData event);
 	}
 
 	@FunctionalInterface 
 	public interface MessageSentEvent {
-		/** * Called when a message is about to be sent from the client.
-		 * * @param message The message string to be sent
-		 * @return true to cancel sending; false otherwise
+		void onMessageSent(MessageSentEventData event);
+	}
+
+	@FunctionalInterface
+	public interface TabCompleteEvent {
+		/** * Called to provide tab completion suggestions.
+		 * * @param event Object containing tab completion data
 		 */
-		boolean onMessageSent(String message);
+		void onTabComplete(TabCompletionEvent event);
+	}
+
+	// ─────────────────────────── BossBar ──────────────────────────────────────
+
+	public static class BossBarRenderEventData {
+		public final BossEvent bossBar;
+		private boolean canceled = false;
+		public BossBarRenderEventData(BossEvent bossBar) { this.bossBar = bossBar; }
+		public void cancel() { this.canceled = true; }
+		public boolean isCanceled() { return canceled; }
+	}
+
+	public static final Event<BossBarRenderEvent> BOSS_BAR_RENDER_EVENT = createArrayBacked(
+		BossBarRenderEvent.class, listeners -> event -> {
+			for (BossBarRenderEvent l : listeners) {
+				l.onBossBarRender(event);
+				if (event.isCanceled()) break;
+			}
+		}
+	);
+
+	@FunctionalInterface
+	public interface BossBarRenderEvent {
+		void onBossBarRender(BossBarRenderEventData event);
 	}
 
 }

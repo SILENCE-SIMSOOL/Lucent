@@ -1274,158 +1274,181 @@ public class ConfigScreen extends Screen {
 		int curY  = scissorY + 66;
 		int itemW = contentW - PAD * 2;
 
-		for (Map.Entry<String, List<Object>> entry : groupConfigMembers().entrySet()) {
-			widgets.add(new CategoryLabelWidget(sx, curY, itemW, entry.getKey()));
-			curY += 40;
+		Map<String, List<Object>> configGroups = groupConfigMembers();
+		Map<String, List<Field>> extraGroups = groupExtraMembers();
 
-			for (Object member : entry.getValue()) {
-				ModConfig cfg = (member instanceof Field f) ? f.getAnnotation(ModConfig.class) : ((Method)member).getAnnotation(ModConfig.class);
-				String cfgName = cfg.name();
-				String cfgDesc = cfg.description();
-				
-				// 기본 높이를 74로 복구, 설명이 1줄을 넘을 때만 추가
-				int descLines = countDescLines(L10n.translate(cfgDesc), (float)(itemW - 32 - 110), 14f);
-				int rowH = 74 + Math.max(0, descLines - 1) * 17;
-				widgets.add(new SettingRowWidget(sx, curY, itemW, rowH, L10n.translate(cfgName), L10n.translate(cfgDesc)));
+		List<String> allCategories = new ArrayList<>();
+		for (String cat : configGroups.keySet()) if (!allCategories.contains(cat)) allCategories.add(cat);
+		for (String cat : extraGroups.keySet()) if (!allCategories.contains(cat)) allCategories.add(cat);
 
-				try {
-					Object val = null;
-					if (member instanceof Field f) {
-						f.setAccessible(true);
-						val = f.get(currentModSettings);
+		allCategories.sort((cat1, cat2) -> {
+			int p1 = getMergedCategoryPriority(cat1, configGroups.get(cat1), extraGroups.get(cat1));
+			int p2 = getMergedCategoryPriority(cat2, configGroups.get(cat2), extraGroups.get(cat2));
+			if (p1 != p2) return Integer.compare(p2, p1);
+			return cat1.compareToIgnoreCase(cat2);
+		});
+
+		for (String category : allCategories) {
+			List<Object> configMembers = configGroups.get(category);
+			List<Field> extraMembers = extraGroups.get(category);
+
+			boolean hasConfig = configMembers != null && !configMembers.isEmpty();
+			boolean hasExtra = extraMembers != null && !extraMembers.isEmpty();
+
+			if (hasConfig || hasExtra) {
+				widgets.add(new CategoryLabelWidget(sx, curY, itemW, category));
+				curY += 40;
+			}
+
+			if (hasConfig) {
+				for (Object member : configMembers) {
+					curY += buildConfigRowAndReturnHeight(member, sx, curY, itemW);
+				}
+				curY += 16;
+			}
+
+			if (hasExtra) {
+				curY += buildExtraBlockForCategory(sx, curY, itemW, extraMembers);
+			}
+		}
+
+		maxScroll = Math.max(0, curY - scissorY + 10 - scissorH);
+	}
+
+	private int buildConfigRowAndReturnHeight(Object member, int sx, int curY, int itemW) {
+		ModConfig cfg = (member instanceof Field f) ? f.getAnnotation(ModConfig.class) : ((Method)member).getAnnotation(ModConfig.class);
+		String cfgName = cfg.name();
+		String cfgDesc = cfg.description();
+		
+		// 기본 높이를 74로 복구, 설명이 1줄을 넘을 때만 추가
+		int descLines = countDescLines(L10n.translate(cfgDesc), (float)(itemW - 32 - 110), 14f);
+		int rowH = 74 + Math.max(0, descLines - 1) * 17;
+		widgets.add(new SettingRowWidget(sx, curY, itemW, rowH, L10n.translate(cfgName), L10n.translate(cfgDesc)));
+
+		try {
+			Object val = null;
+			if (member instanceof Field f) {
+				f.setAccessible(true);
+				val = f.get(currentModSettings);
+			}
+
+			int ux = sx + itemW - PAD; // 컨트롤들의 Y축 베이스 (박스 상단에서 약 25px 아래가 첫 줄 중앙)
+			int controlYBase = curY + 25; 
+
+			switch (cfg.type()) {
+				case SWITCH -> {
+					ToggleButton toggleButton = new ToggleButton(ux - 48, controlYBase, 48, 24, (boolean) val);
+					final Field field = (member instanceof Field f) ? f : null;
+					if (field != null) {
+						String fid = field.getName();
+						toggleButton.setId(fid);
+						if (toggleAnimCache.containsKey(fid)) {
+							toggleButton.setAnimProgress(toggleAnimCache.get(fid));
+						}
+					}
+					toggleButton.setOnChange(v -> {
+						try {
+							if (field != null) field.set(currentModSettings, v);
+							refreshUI(true); // Preserve scroll position and animation state
+						} catch (Exception e) {}
+					});
+					widgets.add(toggleButton);
+				}
+				case SLIDER -> {
+					double dVal = (val instanceof Number n) ? n.doubleValue() : 0.0;
+					final Field field = (member instanceof Field f) ? f : null;
+					Slider.SliderType sType = Slider.SliderType.DOUBLE;
+
+					if (field != null) {
+						Class<?> fType = field.getType();
+						if (fType == float.class || fType == Float.class) sType = Slider.SliderType.FLOAT;
+						else if (fType == int.class || fType == Integer.class) sType = Slider.SliderType.INT;
 					}
 
-					int ux = sx + itemW - PAD; // 컨트롤들의 Y축 베이스 (박스 상단에서 약 25px 아래가 첫 줄 중앙)
-					int controlYBase = curY + 25; 
-
-					switch (cfg.type()) {
-
-						case SWITCH -> {
-							ToggleButton toggleButton = new ToggleButton(ux - 48, controlYBase, 48, 24, (boolean) val);
-							final Field field = (member instanceof Field f) ? f : null;
-							if (field != null) {
-								String fid = field.getName();
-								toggleButton.setId(fid);
-								if (toggleAnimCache.containsKey(fid)) {
-									toggleButton.setAnimProgress(toggleAnimCache.get(fid));
-								}
-							}
-							toggleButton.setOnChange(v -> {
-								try {
-									if (field != null) field.set(currentModSettings, v);
-									refreshUI(true); // Preserve scroll position and animation state
-								} catch (Exception e) {}
-							});
-							widgets.add(toggleButton);
-						}
-
-						case SLIDER -> {
-							double dVal = (val instanceof Number n) ? n.doubleValue() : 0.0;
-							final Field field = (member instanceof Field f) ? f : null;
-							Slider.SliderType sType = Slider.SliderType.DOUBLE;
-
+					Slider slider = new Slider(ux - 290, controlYBase, 290, 24, cfg.min(), cfg.max(), cfg.step(), dVal, sType);
+					slider.setOnChange(v -> {
+						try {
 							if (field != null) {
 								Class<?> fType = field.getType();
-								if (fType == float.class || fType == Float.class) sType = Slider.SliderType.FLOAT;
-								else if (fType == int.class || fType == Integer.class) sType = Slider.SliderType.INT;
+								if (fType == float.class || fType == Float.class) field.set(currentModSettings, v.floatValue());
+								else if (fType == int.class || fType == Integer.class) field.set(currentModSettings, (int) Math.round(v));
+								else field.set(currentModSettings, v);
 							}
+						} catch (Exception e) {}
+					});
+					widgets.add(slider);
+				}
+				case SELECTOR -> {
+					Selector selector = new Selector(ux - 148, controlYBase - 8, 148, 38, List.of(cfg.options()));
+					selector.setValue((String) val);
+					final Field field = (member instanceof Field f) ? f : null;
+					selector.setOnChange(v -> {
+						try {
+							if (field != null) field.set(currentModSettings, v);
+						} catch (Exception e) {}
+					});
+					overlayWidgets.add(selector);
+				}
+				case COLOR -> {
+					int initialColor = 0xFFFFFFFF;
+					if (val instanceof Color cObj) initialColor = cObj.getRGB();
+					else if (val instanceof Number nObj) initialColor = nObj.intValue();
 
-							Slider slider = new Slider(ux - 290, controlYBase, 290, 24, cfg.min(), cfg.max(), cfg.step(), dVal, sType);
-							slider.setOnChange(v -> {
-								try {
-									if (field != null) {
-										Class<?> fType = field.getType();
-										if (fType == float.class || fType == Float.class) field.set(currentModSettings, v.floatValue());
-										else if (fType == int.class || fType == Integer.class) field.set(currentModSettings, (int) Math.round(v));
-										else field.set(currentModSettings, v);
-									}
-								} catch (Exception e) {}
-							});
-							widgets.add(slider);
-						}
-
-						case SELECTOR -> {
-							Selector selector = new Selector(ux - 148, controlYBase - 8, 148, 38, List.of(cfg.options()));
-							selector.setValue((String) val);
-							final Field field = (member instanceof Field f) ? f : null;
-							selector.setOnChange(v -> {
-								try {
-									if (field != null) field.set(currentModSettings, v);
-								} catch (Exception e) {}
-							});
-							overlayWidgets.add(selector);
-						}
-
-						case COLOR -> {
-							int initialColor = 0xFFFFFFFF;
-							if (val instanceof Color cObj) initialColor = cObj.getRGB();
-							else if (val instanceof Number nObj) initialColor = nObj.intValue();
-
-							int width = 64;
-							ColorPickerButton cp = new ColorPickerButton(ux - width, controlYBase - 8, width, 38, initialColor);
-							final Field f = (member instanceof Field field) ? field : null;
-							cp.setOnChange(c -> { 
-								try { 
-									if (f != null) {
-										if (f.getType() == Color.class) f.set(currentModSettings, new Color(c, true));
-										else f.set(currentModSettings, c);
-									}
-								} catch (Exception e) {} 
-							});
-							overlayWidgets.add(cp);
-						}
-
-						case BUTTON -> {
-							String btnText = cfg.display();
-							int btnW = (btnText == null || btnText.isEmpty()) ? 44 : 100;
-							ActionButton actionButton = new ActionButton(ux - btnW, controlYBase - 6, btnW, 34, btnText);
-							if (member instanceof Method m) {
-								actionButton.setOnClick(() -> {
-									try {
-										m.setAccessible(true);
-										m.invoke(currentModSettings);
-									} catch (Exception e) {}
-								});
-							} else if (member instanceof @SuppressWarnings("unused") Field f && val instanceof Runnable r) {
-								actionButton.setOnClick(r);
+					int width = 64;
+					ColorPickerButton cp = new ColorPickerButton(ux - width, controlYBase - 8, width, 38, initialColor);
+					final Field f = (member instanceof Field field) ? field : null;
+					cp.setOnChange(c -> { 
+						try { 
+							if (f != null) {
+								if (f.getType() == Color.class) f.set(currentModSettings, new Color(c, true));
+								else f.set(currentModSettings, c);
 							}
-							widgets.add(actionButton);
-						}
-
-						case KEYBIND -> {
-							KeyBind initialBind = null;
-							if (val instanceof KeyBind kb) initialBind = kb;
-							KeyBindButton kbb = new KeyBindButton(ux - 100, controlYBase - 6, 100, 34, initialBind);
-							final Field field = (member instanceof Field f) ? f : null;
-							kbb.setOnChange(v -> {
-								try {
-									if (field != null) field.set(currentModSettings, v);
-								} catch (Exception e) {}
-							});
-							widgets.add(kbb);
-						}
-
-						case TEXT -> {
-							TextBox tb = new TextBox(ux - 200, controlYBase - 6, 200, 34, (String) val);
-							final Field field = (member instanceof Field f) ? f : null;
-							tb.setOnChange(v -> {
-								try {
-									if (field != null) field.set(currentModSettings, v);
-								} catch (Exception e) {}
-							});
-							widgets.add(tb);
-						}
-
+						} catch (Exception e) {} 
+					});
+					overlayWidgets.add(cp);
+				}
+				case BUTTON -> {
+					String btnText = cfg.display();
+					int btnW = (btnText == null || btnText.isEmpty()) ? 44 : 100;
+					ActionButton actionButton = new ActionButton(ux - btnW, controlYBase - 6, btnW, 34, btnText);
+					if (member instanceof Method m) {
+						actionButton.setOnClick(() -> {
+							try {
+								m.setAccessible(true);
+								m.invoke(currentModSettings);
+							} catch (Exception e) {}
+						});
+					} else if (member instanceof @SuppressWarnings("unused") Field f && val instanceof Runnable r) {
+						actionButton.setOnClick(r);
 					}
-				} catch (Exception e) {}
-
-				curY += rowH + 10;
+					widgets.add(actionButton);
+				}
+				case KEYBIND -> {
+					KeyBind initialBind = null;
+					if (val instanceof KeyBind kb) initialBind = kb;
+					KeyBindButton kbb = new KeyBindButton(ux - 100, controlYBase - 6, 100, 34, initialBind);
+					final Field field = (member instanceof Field f) ? f : null;
+					kbb.setOnChange(v -> {
+						try {
+							if (field != null) field.set(currentModSettings, v);
+						} catch (Exception e) {}
+					});
+					widgets.add(kbb);
+				}
+				case TEXT -> {
+					TextBox tb = new TextBox(ux - 200, controlYBase - 6, 200, 34, (String) val);
+					final Field field = (member instanceof Field f) ? f : null;
+					tb.setOnChange(v -> {
+						try {
+							if (field != null) field.set(currentModSettings, v);
+						} catch (Exception e) {}
+					});
+					widgets.add(tb);
+				}
 			}
-			curY += 16;
-		}
-		maxScroll = Math.max(0, curY - scissorY + 10 - scissorH);
-		curY += buildExtraBlocks(sx, curY, itemW);
-		maxScroll = Math.max(0, curY - scissorY + 10 - scissorH);
+		} catch (Exception e) {}
+
+		return rowH + 10;
 	}
 
 	/** Group Extra fields by category */
@@ -1459,88 +1482,48 @@ public class ConfigScreen extends Screen {
 			map.computeIfAbsent(cfg.category(), k -> new ArrayList<>()).add(f);
 		}
 
-		// Sort categories based on @ModConfig.CategoryPriority annotation
-		List<String> sortedCats = new ArrayList<>(map.keySet());
-		sortedCats.sort((cat1, cat2) -> {
-			int p1 = getExtraCategoryPriority(cat1, map.get(cat1));
-			int p2 = getExtraCategoryPriority(cat2, map.get(cat2));
-			if (p1 != p2) return Integer.compare(p2, p1);
-			return cat1.compareToIgnoreCase(cat2);
-		});
-
-		Map<String, List<Field>> finalMap = new LinkedHashMap<>();
-		for (String cat : sortedCats) finalMap.put(cat, map.get(cat));
-		return finalMap;
+		return map;
 	}
 
-	/** Returns the priority of an Extra category (@ModConfig.CategoryPriority → Fallback to max field priority) */
-	private int getExtraCategoryPriority(String category, List<Field> fields) {
-		// 1. Check for @ModConfig.CategoryPriority annotation
-		Class<?> clazz = currentModSettings.getClass();
-		ModConfig.CategoryPriority[] annos = clazz.getAnnotationsByType(ModConfig.CategoryPriority.class);
-		for (ModConfig.CategoryPriority cp : annos) {
-			if (cp.name().equalsIgnoreCase(category)) return cp.priority();
-		}
-		// 2. Fallback to the maximum priority among fields
-		int max = Integer.MIN_VALUE;
-		for (Field f : fields) {
-			int p = f.getAnnotation(ModConfigExtra.class).priority();
-			if (p > max) max = p;
-		}
-		return max == Integer.MIN_VALUE ? 0 : max;
-	}
 
-	/** Builds the entire Extra block and returns the consumed height */
-	private int buildExtraBlocks(int sx, int startY, int itemW) {
-		Map<String, List<Field>> groups = groupExtraMembers();
-		if (groups.isEmpty()) return 0;
 
-		int curY = startY;
+	private int buildExtraBlockForCategory(int sx, int curY, int itemW, List<Field> fields) {
 		int blockPadH = 12;
 		int colGap = 10; // 열 사이 간격
 		int colW = (itemW - blockPadH * 2 - colGap) / 2; // 2열, 좌우 패딩 고려
 		int cellH = 44;
 		int cellPad = 8;
 
-		for (Map.Entry<String, List<Field>> entry : groups.entrySet()) {
-			String category = entry.getKey();
-			List<Field> fields = entry.getValue();
+		int totalRows = countExtraRows(fields);
+		int blockH = blockPadH * 2 + totalRows * cellH + Math.max(0, totalRows - 1) * 4;
 
-			widgets.add(new CategoryLabelWidget(sx, curY, itemW, category));
-			curY += 40;
-
-			int totalRows = countExtraRows(fields);
-			int blockH = blockPadH * 2 + totalRows * cellH + Math.max(0, totalRows - 1) * 4;
-
-			final int bx = sx, by = curY, bw = itemW, bh = blockH;
-			widgets.add(new UIWidget(bx, by, bw, bh) {
-				@Override
-				protected void renderWidget(GuiGraphics ctx, int mx, int my, float delta) {
-					NVGRenderer.rect(bx, by, bw, bh, UIColors.CARD_BG, 10f);
-					NVGRenderer.outlineRect(bx, by, bw, bh, 1f, UIColors.ITEM_BORDER, 10f);
-				}
-			});
-
-			int rowIdx = 0;
-			int colIdx = 0;
-			for (Field field : fields) {
-				ModConfigExtra cfg = field.getAnnotation(ModConfigExtra.class);
-				if (cfg.forceline() && colIdx != 0) {
-					rowIdx++;
-					colIdx = 0;
-				}
-				int cellX = sx + blockPadH + colIdx * (colW + colGap);
-				int cellY = curY + blockPadH + rowIdx * (cellH + 4);
-				buildExtraCell(field, cfg, cellX, cellY, colW, cellH, cellPad);
-				colIdx++;
-				if (colIdx >= 2) {
-					colIdx = 0;
-					rowIdx++;
-				}
+		final int bx = sx, by = curY, bw = itemW, bh = blockH;
+		widgets.add(new UIWidget(bx, by, bw, bh) {
+			@Override
+			protected void renderWidget(GuiGraphics ctx, int mx, int my, float delta) {
+				NVGRenderer.rect(bx, by, bw, bh, UIColors.CARD_BG, 10f);
+				NVGRenderer.outlineRect(bx, by, bw, bh, 1f, UIColors.ITEM_BORDER, 10f);
 			}
-			curY += blockH + 16;
+		});
+
+		int rowIdx = 0;
+		int colIdx = 0;
+		for (Field field : fields) {
+			ModConfigExtra cfg = field.getAnnotation(ModConfigExtra.class);
+			if (cfg.forceline() && colIdx != 0) {
+				rowIdx++;
+				colIdx = 0;
+			}
+			int cellX = sx + blockPadH + colIdx * (colW + colGap);
+			int cellY = curY + blockPadH + rowIdx * (cellH + 4);
+			buildExtraCell(field, cfg, cellX, cellY, colW, cellH, cellPad);
+			colIdx++;
+			if (colIdx >= 2) {
+				colIdx = 0;
+				rowIdx++;
+			}
 		}
-		return curY - startY;
+		return blockH + 16;
 	}
 
 	/** Calculate total row count (with forceline) */
@@ -1837,34 +1820,28 @@ public class ConfigScreen extends Screen {
 			map.computeIfAbsent(cfg.category(), k -> new ArrayList<>()).add(member);
 		}
 
-		// Sort Categories by their max element priority
-		List<String> sortedCats = new ArrayList<>(map.keySet());
-		sortedCats.sort((cat1, cat2) -> {
-			int p1 = getCategoryPriority(cat1, map.get(cat1));
-			int p2 = getCategoryPriority(cat2, map.get(cat2));
-			if (p1 != p2) return Integer.compare(p2, p1);
-			return cat1.compareToIgnoreCase(cat2);
-		});
-
-		Map<String, List<Object>> finalMap = new LinkedHashMap<>();
-		for (String cat : sortedCats) finalMap.put(cat, map.get(cat));
-		
-		return finalMap;
+		return map;
 	}
 
-	private int getCategoryPriority(String category, List<Object> members) {
-		// 1. Check for explicit @CategoryPriority on the class
+	private int getMergedCategoryPriority(String category, List<Object> cMembers, List<Field> eMembers) {
 		Class<?> clazz = currentModSettings.getClass();
 		ModConfig.CategoryPriority[] annos = clazz.getAnnotationsByType(ModConfig.CategoryPriority.class);
 		for (ModConfig.CategoryPriority cp : annos) {
 			if (cp.name().equalsIgnoreCase(category)) return cp.priority();
 		}
-
-		// 2. Fallback to max element priority
+		
 		int max = Integer.MIN_VALUE;
-		for (Object m : members) {
-			ModConfig cfg = (m instanceof Field f) ? f.getAnnotation(ModConfig.class) : ((Method)m).getAnnotation(ModConfig.class);
-			if (cfg.priority() > max) max = cfg.priority();
+		if (cMembers != null) {
+			for (Object m : cMembers) {
+				ModConfig cfg = (m instanceof Field f) ? f.getAnnotation(ModConfig.class) : ((Method)m).getAnnotation(ModConfig.class);
+				if (cfg.priority() > max) max = cfg.priority();
+			}
+		}
+		if (eMembers != null) {
+			for (Field f : eMembers) {
+				int p = f.getAnnotation(ModConfigExtra.class).priority();
+				if (p > max) max = p;
+			}
 		}
 		return max == Integer.MIN_VALUE ? 0 : max;
 	}

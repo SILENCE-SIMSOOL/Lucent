@@ -14,15 +14,14 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.SpecialGuiElementRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.Identifier;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.config.api.LucentAPI;
 import silence.simsool.lucent.events.LucentEventRegister;
+import silence.simsool.lucent.events.impl.GUIEvent;
 import silence.simsool.lucent.events.impl.LucentEvent;
+import silence.simsool.lucent.examplemod.huds.ExampleHUD;
 import silence.simsool.lucent.general.managers.LucentManagerRegister;
 import silence.simsool.lucent.general.utils.LucentUtils;
 import silence.simsool.lucent.general.utils.render.ItemRenderer;
@@ -37,7 +36,7 @@ public class Lucent implements ClientModInitializer {
 
 	public static final String ID = "lucent";
 	public static final String NAME = "Lucent";
-	public static final String VERSION = "1.0.18";
+	public static final String VERSION = "1.0.21";
 	public static String LATEST_VERSION = "Fetching...";
 
 	public static Minecraft mc = Minecraft.getInstance();
@@ -52,30 +51,10 @@ public class Lucent implements ClientModInitializer {
 			KEYBINDING_CATEGORY
 	));
 
-	public static boolean devMode = true;
+	public static boolean devMode = false;
 
 	static {
-		HttpClient.newHttpClient().sendAsync(
-			HttpRequest.newBuilder(URI.create("https://api.github.com/repos/SILENCE-SIMSOOL/Lucent/releases/latest")).build(),
-			HttpResponse.BodyHandlers.ofString()
-		).thenAccept(res -> {
-			try {
-				if (res.statusCode() == 200) {
-					String body = res.body();
-					int idx = body.indexOf("\"tag_name\":");
-					if (idx != -1) {
-						String val = body.substring(idx + 11);
-						int quoteStart = val.indexOf("\"") + 1;
-						int quoteEnd = val.indexOf("\"", quoteStart);
-						String version = val.substring(quoteStart, quoteEnd);
-						if (version.startsWith("v")) version = version.substring(1);
-						LATEST_VERSION = version;
-					} else LATEST_VERSION = "Unknown";
-				} else LATEST_VERSION = "Unknown";
-			} catch(Exception e){
-				LATEST_VERSION = "Unknown";
-			}
-		});
+		updateLatestVersion();
 	}
 
 	@Override
@@ -86,7 +65,10 @@ public class Lucent implements ClientModInitializer {
 		LucentEventRegister.initialize();
 		LucentManagerRegister.registerAll();
 
-		if (devMode) config.registerExampleMods();
+		if (devMode) {
+			config.registerExampleMods();
+			LucentAPI.registerHUD(config, new ExampleHUD());
+		}
 
 		SpecialGuiElementRegistry.register(context ->
 			new NVGPIPRenderer(context.vertexConsumers())
@@ -123,23 +105,50 @@ public class Lucent implements ClientModInitializer {
 			}
 		});
 
-		LucentEvent.KEY_INPUT_EVENT.register(key -> {
-			if (KeyBindingHelper.getBoundKeyOf(Lucent.CONFIG_KEY).equals(key)) {
+		LucentEvent.KEY_INPUT_EVENT.register(event -> {
+			if (KeyBindingHelper.getBoundKeyOf(Lucent.CONFIG_KEY).equals(event.key)) {
 				mc.execute(() -> {
 					mc.setScreen(LucentAPI.createEditHUDScreen(config));
 				});
-				return true;
 			}
-			return false;
 		});
 
-		HudElementRegistry.attachElementAfter(
-		    VanillaHudElements.SUBTITLES,
-		    Identifier.fromNamespaceAndPath(ID, "hud_element"),
-		    (graphics, tickDelta) -> {
-		        hudManager.render(graphics, tickDelta);
-		    }
-		);
+//		HudElementRegistry.attachElementAfter(
+//		    VanillaHudElements.SUBTITLES,
+//		    Identifier.fromNamespaceAndPath(ID, "hud_element"),
+//		    (graphics, tickDelta) -> {
+//		        hudManager.render(graphics, tickDelta);
+//		    }
+//		);
+
+		GUIEvent.RenderHUD.EVENT.register(event -> {
+			hudManager.render(event.graphics);
+		});
+
+	}
+
+	private static void updateLatestVersion() {
+		HttpClient.newHttpClient().sendAsync(
+				HttpRequest.newBuilder(URI.create("https://api.github.com/repos/SILENCE-SIMSOOL/Lucent/releases/latest")).build(),
+				HttpResponse.BodyHandlers.ofString()
+		).thenAccept(res -> {
+			try {
+				if (res.statusCode() == 200) {
+					String body = res.body();
+					int idx = body.indexOf("\"tag_name\":");
+					if (idx != -1) {
+						String val = body.substring(idx + 11);
+						int quoteStart = val.indexOf("\"") + 1;
+						int quoteEnd = val.indexOf("\"", quoteStart);
+						String version = val.substring(quoteStart, quoteEnd);
+						if (version.startsWith("v")) version = version.substring(1);
+						LATEST_VERSION = version;
+					} else LATEST_VERSION = "Unknown";
+				} else LATEST_VERSION = "Unknown";
+			} catch(Exception e){
+				LATEST_VERSION = "Unknown";
+			}
+		});
 	}
 
 }

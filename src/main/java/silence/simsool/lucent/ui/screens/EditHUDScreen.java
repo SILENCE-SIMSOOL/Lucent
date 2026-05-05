@@ -22,6 +22,7 @@ import silence.simsool.lucent.general.models.abstracts.Mod;
 import silence.simsool.lucent.general.utils.LucentUtils;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
 import silence.simsool.lucent.general.utils.useful.UMouse;
+import silence.simsool.lucent.ui.manager.LucentResourceManager;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UIColors;
 import silence.simsool.lucent.ui.utils.nvg.Fonts;
@@ -101,6 +102,9 @@ public class EditHUDScreen extends Screen {
 	@Override
 	protected void init() {
 		super.init();
+
+		LucentResourceManager.loadLucentIcons();
+
 		this.startTime = System.currentTimeMillis();
 		this.closing = false;
 		this.closeStartTime = -1L;

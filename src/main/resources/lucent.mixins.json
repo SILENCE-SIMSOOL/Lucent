@@ -9,10 +9,10 @@
 	],
 	"client": [
 		"mixins.events.gui.MixinAbstractContainerScreen_GUIEvent",
-		"mixins.events.gui.MixinBossHealthOverlay_GUIEvent",
-		"mixins.events.gui.MixinScreen_ScreenEvent",
+		"mixins.events.gui.MixinBossHealthOverlay",
 		"mixins.events.input.MixinChatScreen_MESSAGE_SENT_EVENT",
 		"mixins.events.input.MixinKeyMapping_KEY_INPUT_EVENT",
+		"mixins.events.MixinCommandDispatcher",
 		"mixins.events.MixinMinecraft",
 		"mixins.events.packet.MixinClientPacketListener",
 		"mixins.events.packet.MixinConnection",

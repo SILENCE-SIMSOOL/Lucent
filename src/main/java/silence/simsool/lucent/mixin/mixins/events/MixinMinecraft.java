@@ -33,7 +33,9 @@ public class MixinMinecraft {
 	@Inject(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;useItemOn(Lnet/minecraft/client/player/LocalPlayer;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;"), cancellable = true)
 	private void onStartUseItemBlock(CallbackInfo ci) {
 		if (!(this.hitResult instanceof BlockHitResult blockHit)) return;
-		if (LucentEvent.BLOCK_INTERACT_EVENT.invoker().onBlockInteract(blockHit.getBlockPos())) ci.cancel();
+		LucentEvent.BlockInteractEventData event = new LucentEvent.BlockInteractEventData(blockHit.getBlockPos());
+		LucentEvent.BLOCK_INTERACT_EVENT.invoker().onBlockInteract(event);
+		if (event.isCanceled()) ci.cancel();
 	}
 
 }

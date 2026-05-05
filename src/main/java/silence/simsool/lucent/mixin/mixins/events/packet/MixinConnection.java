@@ -13,18 +13,22 @@ import net.minecraft.network.protocol.common.ClientboundPingPacket;
 import silence.simsool.lucent.events.impl.LucentEvent;
 import silence.simsool.lucent.events.impl.PacketEvent;
 
-@Mixin(value = Connection.class, priority = 500)
+@Mixin(value = Connection.class, priority = 999)
 public abstract class MixinConnection {
 
 	@Inject(method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/Connection;genericsFtw(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;)V"), cancellable = true)
 	private void onChannelRead0(ChannelHandlerContext ctx, Packet<?> packet, CallbackInfo ci) {
 		if (packet instanceof ClientboundPingPacket pingPacket && pingPacket.getId() != 0) LucentEvent.SERVER_TICK_EVENT.invoker().onTick();
-		if (PacketEvent.RECEIVE.invoker().onPacketReceive(packet)) ci.cancel();
+		PacketEvent.PacketReceiveEvent event = new PacketEvent.PacketReceiveEvent(packet);
+		PacketEvent.RECEIVE.invoker().onPacketReceive(event);
+		if (event.isCanceled()) ci.cancel();
 	}
 
 	@Inject(method = "sendPacket", at = @At("HEAD"), cancellable = true)
 	private void onSendPacket(Packet<?> packet, ChannelFutureListener listener, boolean flush, CallbackInfo ci) {
-		if (PacketEvent.SEND.invoker().onPacketSend(packet)) ci.cancel();
+		PacketEvent.PacketSendEvent event = new PacketEvent.PacketSendEvent(packet);
+		PacketEvent.SEND.invoker().onPacketSend(event);
+		if (event.isCanceled()) ci.cancel();
 	}
 
 }
