@@ -1,12 +1,18 @@
 package silence.simsool.lucent.general.utils.useful;
 
+import static silence.simsool.lucent.Lucent.mc;
+
+import java.util.Optional;
+
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.util.Mth;
-import static silence.simsool.lucent.Lucent.mc;
+import net.minecraft.world.item.ItemStack;
 
 public class UChat {
 
@@ -109,6 +115,46 @@ public class UChat {
 	public static String applyColor(String text) {
 		if (text == null) return null;
 		return text.replace("&&", "\u0000").replaceAll("&([0-9a-fA-Fk-orK-OR])", "§$1").replace("\u0000", "&");
+	}
+
+	// --- Component ---
+	public static String getString(ItemStack stack) {
+		if (stack == null || stack.isEmpty()) return "";
+		return componentToLegacy(stack.getHoverName());
+	}
+
+	public static String getString(Component component) {
+		return componentToLegacy(component);
+	}
+
+	public static String componentToLegacy(Component component) {
+		if (component == null) return "";
+		
+		StringBuilder sb = new StringBuilder();
+
+		component.visit((style, text) -> {
+			TextColor color = style.getColor();
+			
+			if (color != null) {
+				for (ChatFormatting formatting : ChatFormatting.values()) {
+					if (formatting.getColor() != null && formatting.getColor().equals(color.getValue())) {
+						sb.append(formatting.toString());
+						break;
+					}
+				}
+			}
+
+			if (style.isBold()) sb.append("§l");
+			if (style.isItalic()) sb.append("§o");
+			if (style.isUnderlined()) sb.append("§n");
+			if (style.isStrikethrough()) sb.append("§m");
+			if (style.isObfuscated()) sb.append("§k");
+
+			sb.append(text);
+			return Optional.<String>empty();
+		}, Style.EMPTY);
+
+		return sb.toString();
 	}
 
 }

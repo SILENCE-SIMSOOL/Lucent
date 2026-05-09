@@ -8,6 +8,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.Slot;
 
 public final class GUIEvent {
 
@@ -30,10 +31,10 @@ public final class GUIEvent {
 		}
 	}
 
-	public static class Open {
+	public static class OPEN {
 		public final Screen screen;
 
-		public Open(Screen screen) {
+		public OPEN(Screen screen) {
 			this.screen = screen;
 		}
 
@@ -45,16 +46,16 @@ public final class GUIEvent {
 
 		@FunctionalInterface
 		public interface Handler {
-			void onOpen(Open event);
+			void onOpen(OPEN event);
 		}
 	}
 
-	public static class Close {
+	public static class CLOSE {
 		public final Screen screen;
 		public final AbstractContainerMenu handler;
 		private boolean canceled = false;
 
-		public Close(Screen screen, AbstractContainerMenu handler) {
+		public CLOSE(Screen screen, AbstractContainerMenu handler) {
 			this.screen = screen;
 			this.handler = handler;
 		}
@@ -78,11 +79,11 @@ public final class GUIEvent {
 
 		@FunctionalInterface
 		public interface Handler {
-			void onClose(Close event);
+			void onClose(CLOSE event);
 		}
 	}
 
-	public static class Click {
+	public static class CLICK {
 		public final double mouseX;
 		public final double mouseY;
 		public final int button;
@@ -90,7 +91,7 @@ public final class GUIEvent {
 		public final Screen screen;
 		private boolean canceled = false;
 
-		public Click(double mouseX, double mouseY, int button, boolean state, Screen screen) {
+		public CLICK(double mouseX, double mouseY, int button, boolean state, Screen screen) {
 			this.mouseX = mouseX;
 			this.mouseY = mouseY;
 			this.button = button;
@@ -117,11 +118,11 @@ public final class GUIEvent {
 
 		@FunctionalInterface
 		public interface Handler {
-			void onClick(Click  event);
+			void onClick(CLICK  event);
 		}
 	}
 
-	public static class Key {
+	public static class KEY {
 		public final String keyName;
 		public final int key;
 		public final char character;
@@ -129,7 +130,7 @@ public final class GUIEvent {
 		public final Screen screen;
 		private boolean canceled = false;
 
-		public Key(String keyName, int key, char character, int scanCode, Screen screen) {
+		public KEY(String keyName, int key, char character, int scanCode, Screen screen) {
 			this.keyName = keyName;
 			this.key = key;
 			this.character = character;
@@ -156,11 +157,11 @@ public final class GUIEvent {
 
 		@FunctionalInterface
 		public interface Handler {
-			void onKey(Key event);
+			void onKey(KEY event);
 		}
 	}
 
-	public static final class Slot {
+	public static final class SLOT {
 
 		public static class Click {
 			public final Slot slot;
@@ -228,7 +229,7 @@ public final class GUIEvent {
 
 	}
 
-	public static final class Container {
+	public static final class CONTAINER {
 
 		public static class All {
 			public final GuiGraphics graphics;

@@ -15,9 +15,12 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.inventory.ClickType;
 import silence.simsool.lucent.Lucent;
+import silence.simsool.lucent.events.impl.DropItemEvent;
 import silence.simsool.lucent.events.impl.GUIEvent;
 import silence.simsool.lucent.events.impl.LucentEvent;
+import silence.simsool.lucent.general.enums.DropType;
 import silence.simsool.lucent.general.utils.useful.UChat;
 
 public class LucentEventRegister {
@@ -88,29 +91,38 @@ public class LucentEventRegister {
 		ScreenEvents.BEFORE_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
 			if (mc.level == null || mc.player == null) return;
 
-			if (screen != null) GUIEvent.Open.EVENT.invoker().onOpen(new GUIEvent.Open(screen));
+			if (screen != null) GUIEvent.OPEN.EVENT.invoker().onOpen(new GUIEvent.OPEN(screen));
 
 			ScreenMouseEvents.allowMouseClick(screen).register((s, click) -> {
-				GUIEvent.Click event = new GUIEvent.Click(click.x(), click.y(), click.button(), true, s);
-				GUIEvent.Click.EVENT.invoker().onClick(event);
+				GUIEvent.CLICK event = new GUIEvent.CLICK(click.x(), click.y(), click.button(), true, s);
+				GUIEvent.CLICK.EVENT.invoker().onClick(event);
 				return !event.isCanceled();
 			});
 
 			ScreenMouseEvents.allowMouseRelease(screen).register((s, click) -> {
-				GUIEvent.Click event = new GUIEvent.Click(click.x(), click.y(), click.button(), false, s);
-				GUIEvent.Click.EVENT.invoker().onClick(event);
+				GUIEvent.CLICK event = new GUIEvent.CLICK(click.x(), click.y(), click.button(), false, s);
+				GUIEvent.CLICK.EVENT.invoker().onClick(event);
 				return !event.isCanceled();
 			});
 
 			ScreenKeyboardEvents.allowKeyPress(screen).register((s, keyInput) -> {
 				String keyName = GLFW.glfwGetKeyName(keyInput.key(), keyInput.scancode());
 				char charTyped = (keyName != null && !keyName.isEmpty()) ? keyName.charAt(0) : '\u0000';
-				GUIEvent.Key event = new GUIEvent.Key(keyName, keyInput.key(), charTyped, keyInput.scancode(), s);
-				GUIEvent.Key.EVENT.invoker().onKey(event);
+				GUIEvent.KEY event = new GUIEvent.KEY(keyName, keyInput.key(), charTyped, keyInput.scancode(), s);
+				GUIEvent.KEY.EVENT.invoker().onKey(event);
 				return !event.isCanceled();
 			});
 		});
 
+		// ───────────────────────────── Drop Item ──────────────────────────────
+
+		GUIEvent.SLOT.Click.EVENT.register((event) -> {
+			if (event.actionType == ClickType.THROW && event.slot.hasItem()) {
+				DropItemEvent.DropItem dropEvent = new DropItemEvent.DropItem(event.slot.getItem(), DropType.INVENTORY_KEY_DROP, event.button == 1);
+				DropItemEvent.EVENT.invoker().onDropItem(dropEvent);
+				if (dropEvent.isCanceled()) event.cancel();
+			}
+		});
 	}
 
 }
