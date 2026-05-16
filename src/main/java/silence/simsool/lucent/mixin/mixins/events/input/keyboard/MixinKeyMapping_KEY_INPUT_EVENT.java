@@ -1,4 +1,4 @@
-package silence.simsool.lucent.mixin.mixins.events.input;
+package silence.simsool.lucent.mixin.mixins.events.input.keyboard;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
