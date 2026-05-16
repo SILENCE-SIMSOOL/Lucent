@@ -4,7 +4,9 @@ import static net.fabricmc.fabric.api.event.EventFactory.createArrayBacked;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.fabric.api.event.Event;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.level.block.state.BlockState;
@@ -454,5 +456,38 @@ public class LucentEvent {
 	public interface BossBarRenderEvent {
 		void onBossBarRender(BossBarRenderEventData event);
 	}
+
+	public static class RenderLivingPreEventData {
+		public final LivingEntityRenderState state;
+		public final PoseStack poseStack;
+		private boolean canceled = false;
+
+		public RenderLivingPreEventData(LivingEntityRenderState state, PoseStack poseStack) {
+			this.state = state;
+			this.poseStack = poseStack;
+		}
+
+		public void cancel() { this.canceled = true; }
+
+		public boolean isCanceled() { return canceled; }
+	}
+
+	public static final Event<RenderLivingPreEvent> RENDER_LIVING_PRE_EVENT = createArrayBacked(
+			RenderLivingPreEvent.class, listeners -> event -> {
+				for (RenderLivingPreEvent listener : listeners) {
+					listener.onRenderLivingPre(event);
+
+					if (event.isCanceled()) break;
+				}
+			}
+	);
+
+	@FunctionalInterface
+	public interface RenderLivingPreEvent {
+		void onRenderLivingPre(RenderLivingPreEventData event);
+	}
+
+
+
 
 }

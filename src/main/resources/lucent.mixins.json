@@ -18,6 +18,7 @@
 		"mixins.events.packet.MixinClientPacketListener",
 		"mixins.events.packet.MixinConnection",
 		"mixins.events.player.MixinLocalPlayer",
-		"mixins.events.world.MixinLevelChunk_BLOCK_UPDATE_EVENT"
+		"mixins.events.world.MixinLevelChunk_BLOCK_UPDATE_EVENT",
+		"mixins.events.render.MixinLivingEntityRenderer"
 	]
 }
