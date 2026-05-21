@@ -27,4 +27,8 @@ public class UInventory {
 		return slotNumber < (size - 36);
 	}
 
+	public static boolean isChestItem(int inventorySize, int slotNumber) {
+		return slotNumber < (inventorySize - 36);
+	}
+
 }
