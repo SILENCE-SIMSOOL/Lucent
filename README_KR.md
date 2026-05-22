@@ -2,7 +2,7 @@
 	<img src="https://raw.githubusercontent.com/SILENCE-SIMSOOL/Lucent/main/docs/icon.png" alt="Lucent Icon" width="128" height="128" />
 </h3>
 
-<h1 align="center"루센트</h1>
+<h1 align="center">루센트</h1>
 
 <p align="center">
 	마인크래프트 패브릭 모드 개발을 위한 라이브러리로, 고급 설정 시스템, 커스터마이징 가능한 HUD 엔진, 그리고 하드웨어 가속 기반 Vector UI 툴킷을 제공합니다.
