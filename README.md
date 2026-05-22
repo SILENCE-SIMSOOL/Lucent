@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-	<a href="https://github.com/SILENCE-SIMSOOL/Lucent">Documentation</a>
+	<a href="https://github.com/SILENCE-SIMSOOL/Lucent/tree/main/docs">Documentation</a>
 	·
 	<a href="https://github.com/SILENCE-SIMSOOL/Lucent/issues">Report Bug</a>
 	·
