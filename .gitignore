@@ -1,6 +1,5 @@
 # default
 ! Compile.bat
-*.md
 *.py
 *.launch
 *.zip
