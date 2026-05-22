@@ -11,14 +11,14 @@ This guide covers how to display custom typography in Lucent, detailing the pre-
 Lucent uses the modern, highly readable **Pretendard** font family. The system handles asynchronous font downloading and initializes these variations:
 
 ### Available Fonts (via `Fonts` Utility)
-Access these static references defined in [Fonts](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/ui/utils/nvg/Fonts.java):
+Access these static references defined in [Fonts](../../src/main/java/silence/simsool/lucent/ui/utils/nvg/Fonts.java):
 
 - `Fonts.PRETENDARD_LIGHT` (Lightweight weight)
 - `Fonts.PRETENDARD` (Regular/Default weight)
 - `Fonts.PRETENDARD_MEDIUM` (Medium weight)
 - `Fonts.PRETENDARD_SEMIBOLD` (Semi-bold weight)
 
-The backend enum listing all metadata is available at [FontList](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/general/enums/FontList.java).
+The backend enum listing all metadata is available at [FontList](../../src/main/java/silence/simsool/lucent/general/enums/FontList.java).
 
 ---
 
@@ -27,7 +27,7 @@ The backend enum listing all metadata is available at [FontList](https://github.
 Lucent provides two rendering paths depending on your active graphics framework:
 
 ### Path A: NanoVG GPU Rendering (Recommended for Custom Screens)
-If you are drawing inside a NanoVG context via `NVGPIPRenderer`, use the static draw methods on [NVGRenderer](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/ui/utils/nvg/NVGRenderer.java).
+If you are drawing inside a NanoVG context via `NVGPIPRenderer`, use the static draw methods on [NVGRenderer](../../src/main/java/silence/simsool/lucent/ui/utils/nvg/NVGRenderer.java).
 
 ```java
 // Regular Text
@@ -46,7 +46,7 @@ float width = NVGRenderer.textWidth("Measure Me", Fonts.PRETENDARD, 14f);
 ---
 
 ### Path B: Minecraft Blit Rendering (Vanilla GuiGraphics Integration)
-If you want to render custom typography directly inside standard Minecraft GUI overlays or screen elements without NanoVG, use [CFontRenderer](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/ui/font/CFontRenderer.java). This method parses standard formatting color codes (e.g. `§a`, `§c`).
+If you want to render custom typography directly inside standard Minecraft GUI overlays or screen elements without NanoVG, use [CFontRenderer](../../src/main/java/silence/simsool/lucent/ui/font/CFontRenderer.java). This method parses standard formatting color codes (e.g. `§a`, `§c`).
 
 #### Step 1: Initialize your Font Renderer
 Create a standard Java `Font` instance and wrap it using `CFontRenderer`:

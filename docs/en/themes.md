@@ -23,7 +23,7 @@ Lucent provides the following themes out of the box:
 
 ## 2. API Usage
 
-You can find, apply, and query visual themes using [ThemeManager](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/ui/theme/ThemeManager.java).
+You can find, apply, and query visual themes using [ThemeManager](../../src/main/java/silence/simsool/lucent/ui/theme/ThemeManager.java).
 
 ### Applying a Theme Programmatically
 To force a specific theme visual style to load on screen:
@@ -45,4 +45,4 @@ LucentTheme currentTheme = ThemeManager.getCurrentTheme();
 // Get theme identification name
 String themeName = currentTheme.getName();
 ```
-All UI colors inside [UIColors](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/ui/utils/UIColors.java) are automatically mapped and updated dynamically when a new theme is selected.
+All UI colors inside [UIColors](../../src/main/java/silence/simsool/lucent/ui/utils/UIColors.java) are automatically mapped and updated dynamically when a new theme is selected.

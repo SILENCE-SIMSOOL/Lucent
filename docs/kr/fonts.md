@@ -11,14 +11,14 @@
 Lucent는 모던하고 시인성이 뛰어난 한글 폰트인 **Pretendard**를 사용하며, 게임 실행 시 비동기 네트워크 다운로드를 진행한 후 메모리에 탑재합니다.
 
 ### 사용 가능한 폰트 객체 (via `Fonts` 클래스)
-[Fonts](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/ui/utils/nvg/Fonts.java) 클래스에 정의된 스태틱 객체를 참조하여 폰트를 선택할 수 있습니다:
+[Fonts](../../src/main/java/silence/simsool/lucent/ui/utils/nvg/Fonts.java) 클래스에 정의된 스태틱 객체를 참조하여 폰트를 선택할 수 있습니다:
 
 - `Fonts.PRETENDARD_LIGHT` (얇은 굵기)
 - `Fonts.PRETENDARD` (보통 굵기 / 기본)
 - `Fonts.PRETENDARD_MEDIUM` (중간 굵기)
 - `Fonts.PRETENDARD_SEMIBOLD` (굵은 굵기)
 
-내부 메타데이터 정의는 [FontList](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/general/enums/FontList.java) 열거형에서 확인 가능합니다.
+내부 메타데이터 정의는 [FontList](../../src/main/java/silence/simsool/lucent/general/enums/FontList.java) 열거형에서 확인 가능합니다.
 
 ---
 
@@ -27,7 +27,7 @@ Lucent는 모던하고 시인성이 뛰어난 한글 폰트인 **Pretendard**를
 렌더링 파이프라인 구조에 맞춰 아래의 두 가지 방법 중 하나를 선택하여 드로우할 수 있습니다.
 
 ### 방법 A: NanoVG GPU 가속 렌더링 (커스텀 GUI 화면 개발 시 추천)
-`NVGPIPRenderer` 드로우 스택 내부 또는 NanoVG 프레임버퍼 렌더링을 직접 제어하는 환경에서는 [NVGRenderer](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/ui/utils/nvg/NVGRenderer.java)의 정적 메서드를 호출하여 텍스트를 그릴 수 있습니다.
+`NVGPIPRenderer` 드로우 스택 내부 또는 NanoVG 프레임버퍼 렌더링을 직접 제어하는 환경에서는 [NVGRenderer](../../src/main/java/silence/simsool/lucent/ui/utils/nvg/NVGRenderer.java)의 정적 메서드를 호출하여 텍스트를 그릴 수 있습니다.
 
 ```java
 // 일반 텍스트 렌더링
@@ -46,7 +46,7 @@ float width = NVGRenderer.textWidth("텍스트 길이 측정", Fonts.PRETENDARD,
 ---
 
 ### 방법 B: 마인크래프트 기본 Blit 렌더링 (vanilla GuiGraphics 화면 연동)
-NanoVG 컨텍스트 없이 기존 마인크래프트 GUI 오버레이 화면이나 표준 `GuiGraphics`를 받아 드로우하는 구역에서는 [CFontRenderer](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/ui/font/CFontRenderer.java) 클래스를 생성해 사용합니다. 이 렌더러는 기존 마인크래프트의 색상 코드(`§a`, `§c` 등) 포맷을 지원합니다.
+NanoVG 컨텍스트 없이 기존 마인크래프트 GUI 오버레이 화면이나 표준 `GuiGraphics`를 받아 드로우하는 구역에서는 [CFontRenderer](../../src/main/java/silence/simsool/lucent/ui/font/CFontRenderer.java) 클래스를 생성해 사용합니다. 이 렌더러는 기존 마인크래프트의 색상 코드(`§a`, `§c` 등) 포맷을 지원합니다.
 
 #### 단계 1: 폰트 렌더러 인스턴스화
 AWT `Font` 객체를 먼저 로드한 뒤 `CFontRenderer`로 감싸서 드로우 객체를 생성합니다:

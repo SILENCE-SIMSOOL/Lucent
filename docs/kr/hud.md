@@ -8,9 +8,9 @@
 
 ## 1. HUD 기본 클래스 상속받기
 
-커스텀 HUD 요소를 정의하려면 [LucentHUD](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/general/models/abstracts/LucentHUD.java) 클래스를 상속받는 클래스를 생성해야 합니다.
+커스텀 HUD 요소를 정의하려면 [LucentHUD](../../src/main/java/silence/simsool/lucent/general/models/abstracts/LucentHUD.java) 클래스를 상속받는 클래스를 생성해야 합니다.
 
-실제 내장 예제 코드인 [ExampleHUD.java](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/examplemod/huds/ExampleHUD.java) 파일의 구조를 참고하여 쉽고 완성도 높게 구현할 수 있습니다.
+실제 내장 예제 코드인 [ExampleHUD.java](../../src/main/java/silence/simsool/lucent/examplemod/huds/ExampleHUD.java) 파일의 구조를 참고하여 쉽고 완성도 높게 구현할 수 있습니다.
 
 ### HUD 작성 예시:
 

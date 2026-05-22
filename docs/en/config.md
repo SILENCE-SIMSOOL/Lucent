@@ -8,10 +8,10 @@ This guide explains how to set up, load, save, and display configuration menus f
 
 ## 1. Creating or Using a Config Manager
 
-Lucent uses [ModManager](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/config/ModManager.java) to manage all configurations. You can create a standalone config directory for your own mod, or access the default Lucent configuration.
+Lucent uses [ModManager](../../src/main/java/silence/simsool/lucent/config/ModManager.java) to manage all configurations. You can create a standalone config directory for your own mod, or access the default Lucent configuration.
 
 ### Creating a Standalone Config Manager (Recommended)
-Use [LucentAPI.createModManager](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/config/api/LucentAPI.java) to initialize a manager bound to your unique Mod ID.
+Use [LucentAPI.createModManager](../../src/main/java/silence/simsool/lucent/config/api/LucentAPI.java) to initialize a manager bound to your unique Mod ID.
 
 ```java
 import silence.simsool.lucent.config.ModManager;
@@ -27,9 +27,9 @@ This automatically sets up the directory layout inside `config/yourmodid/`.
 
 ## 2. Creating a Module Class
 
-To add settings, create a module class extending [Mod](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/general/models/abstracts/Mod.java). Annotate the configurable fields with `@ModConfig` or `@ModConfigExtra`.
+To add settings, create a module class extending [Mod](../../src/main/java/silence/simsool/lucent/general/models/abstracts/Mod.java). Annotate the configurable fields with `@ModConfig` or `@ModConfigExtra`.
 
-Refer to the built-in [ExampleMod.java](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/examplemod/mods/ExampleMod.java) for a complete template.
+Refer to the built-in [ExampleMod.java](../../src/main/java/silence/simsool/lucent/examplemod/mods/ExampleMod.java) for a complete template.
 
 ### Example Module Configuration:
 
@@ -78,7 +78,7 @@ public class MyFeatureModule extends Mod {
 
 ## 3. Registering, Loading, and Saving Configurations
 
-Register your modules to your [ModManager](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/config/ModManager.java) during your mod's client initialization block.
+Register your modules to your [ModManager](../../src/main/java/silence/simsool/lucent/config/ModManager.java) during your mod's client initialization block.
 
 ### Client Initialization Code:
 
@@ -109,7 +109,7 @@ config.saveConfigs();
 
 You can integrate Lucent's modern GUI screen into **ModMenu** or launch it directly via custom keybinds.
 
-Use [LucentAPI.createConfigScreen](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/config/api/LucentAPI.java) to instantiate the Minecraft `Screen` component.
+Use [LucentAPI.createConfigScreen](../../src/main/java/silence/simsool/lucent/config/api/LucentAPI.java) to instantiate the Minecraft `Screen` component.
 
 ```java
 import net.minecraft.client.gui.screens.Screen;
@@ -124,7 +124,7 @@ Minecraft.getInstance().setScreen(configScreen);
 
 ## 5. LucentAPI Reference
 
-The [LucentAPI](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/config/api/LucentAPI.java) provides simple shortcuts for common tasks:
+The [LucentAPI](../../src/main/java/silence/simsool/lucent/config/api/LucentAPI.java) provides simple shortcuts for common tasks:
 
 - `createModManager(String directoryName)`: Instantiates a config manager.
 - `createConfigScreen(ModManager manager)`: Generates the settings GUI.

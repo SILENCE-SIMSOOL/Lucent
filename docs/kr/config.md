@@ -8,10 +8,10 @@
 
 ## 1. 콘피그 매니저 생성 및 사용
 
-Lucent는 [ModManager](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/config/ModManager.java)를 사용하여 설정을 관리합니다. 본인의 모드를 위한 독립적인 콘피그 폴더를 생성하거나 Lucent의 기본 콘피그를 연동하여 사용할 수 있습니다.
+Lucent는 [ModManager](../../src/main/java/silence/simsool/lucent/config/ModManager.java)를 사용하여 설정을 관리합니다. 본인의 모드를 위한 독립적인 콘피그 폴더를 생성하거나 Lucent의 기본 콘피그를 연동하여 사용할 수 있습니다.
 
 ### 독립적인 콘피그 매니저 생성 (권장)
-[LucentAPI.createModManager](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/config/api/LucentAPI.java)를 사용하여 고유한 모드 ID가 적용된 매니저를 생성합니다.
+[LucentAPI.createModManager](../../src/main/java/silence/simsool/lucent/config/api/LucentAPI.java)를 사용하여 고유한 모드 ID가 적용된 매니저를 생성합니다.
 
 ```java
 import silence.simsool.lucent.config.ModManager;
@@ -27,9 +27,9 @@ public class MyModInitializer {
 
 ## 2. 모듈 클래스 만들기
 
-모드에 설정을 적용하려면 [Mod](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/general/models/abstracts/Mod.java) 클래스를 상속받는 모듈 클래스를 작성해야 합니다. 설정값 필드에 `@ModConfig` 또는 `@ModConfigExtra` 어노테이션을 선언하여 UI와 연동할 수 있습니다.
+모드에 설정을 적용하려면 [Mod](../../src/main/java/silence/simsool/lucent/general/models/abstracts/Mod.java) 클래스를 상속받는 모듈 클래스를 작성해야 합니다. 설정값 필드에 `@ModConfig` 또는 `@ModConfigExtra` 어노테이션을 선언하여 UI와 연동할 수 있습니다.
 
-실제 내장 예제 코드인 [ExampleMod.java](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/examplemod/mods/ExampleMod.java) 파일을 통해 모든 타입의 구현 템플릿을 참고할 수 있습니다.
+실제 내장 예제 코드인 [ExampleMod.java](../../src/main/java/silence/simsool/lucent/examplemod/mods/ExampleMod.java) 파일을 통해 모든 타입의 구현 템플릿을 참고할 수 있습니다.
 
 ### 모듈 작성 예시:
 
@@ -109,7 +109,7 @@ config.saveConfigs();
 
 Lucent가 제공하는 모던하고 미려한 설정 화면 GUI를 **ModMenu** 모드와 연동하거나, 별도 키바인드/명령어 호출 시 열리게 설정할 수 있습니다.
 
-[LucentAPI.createConfigScreen](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/config/api/LucentAPI.java)을 통해 마인크래프트 화면(`Screen`) 인스턴스를 가져옵니다.
+[LucentAPI.createConfigScreen](../../src/main/java/silence/simsool/lucent/config/api/LucentAPI.java)을 통해 마인크래프트 화면(`Screen`) 인스턴스를 가져옵니다.
 
 ```java
 import net.minecraft.client.gui.screens.Screen;
@@ -124,7 +124,7 @@ Minecraft.getInstance().setScreen(configScreen);
 
 ## 5. LucentAPI 정보
 
-내장 클래 [LucentAPI](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/config/api/LucentAPI.java)는 모드 연동 시 필요한 핵심 단축 기능들을 제공합니다:
+내장 클래 [LucentAPI](../../src/main/java/silence/simsool/lucent/config/api/LucentAPI.java)는 모드 연동 시 필요한 핵심 단축 기능들을 제공합니다:
 
 - `createModManager(String directoryName)`: 설정 데이터를 총괄할 매니저 인스턴스를 생성합니다.
 - `createConfigScreen(ModManager manager)`: 모던 설정화면 GUI 스크린 객체를 만듭니다.
