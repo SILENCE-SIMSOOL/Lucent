@@ -122,7 +122,7 @@ dependencies {
 ## 크레딧
 
 - 콘피그 설정 GUI 화면 디자인(Config Screen UI)은 Polyfrost의 **[OneConfig](https://github.com/Polyfrost/OneConfig)** 디자인 레이아웃에서 영감을 받아 구현되었습니다.
-- NanoVG 렌더링 구조 및 유틸리티 드로우 시스템은 `odtheking`의 **[Odin](https://github.com/odtheking/Odin)** 모드에서 영감을 받았습니다.
+- NanoVG 렌더링 구조 및 유틸리티 드로우 시스템은 odtheking의 **[Odin](https://github.com/odtheking/Odin)** 모드에서 영감을 받았습니다.
 - **[Minecraft](https://www.minecraft.net/)** 및 **[Fabric Project](https://fabricmc.net/)** 모딩 생태계를 기반으로 제작되었습니다.
 
 ---
