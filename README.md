@@ -71,8 +71,8 @@ Explore Lucent through focused documentation guides for each system and feature.
 
 | Type | Description |
 | :-: | :-- |
-| **[0] Mod** | Full standalone mod build with bundled NanoVG. Users must install Lucent separately. Reduces final mod size. |
-| **[1] Library** | Embedded library build without NanoVG. Lucent is bundled directly into your mod using JIJ, so users do not need a separate installation. |
+| **[0]&nbsp;Mod** | Full standalone mod build with bundled NanoVG. Users must install Lucent separately. Reduces final mod size. |
+| **[1]&nbsp;Library** | Embedded library build without NanoVG. Lucent is bundled directly into your mod using JIJ, so users do not need a separate installation. |
 
 ### Latest Version
 
