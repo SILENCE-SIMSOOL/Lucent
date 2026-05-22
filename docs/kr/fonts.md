@@ -1,5 +1,7 @@
 # 폰트 렌더링 사용방법 가이드
 
+[🏠 메인 README](../../README_KR.md) | [⚙️ 콘피그](config.md) | [📺 HUD](hud.md) | [🔤 폰트](fonts.md) | [🧱 위젯](widgets.md) | [👥 프로필](profiles.md) | [🎨 테마](themes.md) | [🛠️ 유틸리티](utilities.md)
+
 이 가이드는 Lucent 라이브러리 모드에 내장된 폰트 파일과 두 가지 방식(NanoVG GPU 가속 렌더링 및 마인크래프트 기본 그래픽스 렌더링)을 통해 화면에 글씨를 그리는 방법을 설명합니다.
 
 ---

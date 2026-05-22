@@ -1,5 +1,7 @@
 # 콘피그 사용방법 가이드
 
+[🏠 메인 README](../../README_KR.md) | [⚙️ 콘피그](config.md) | [📺 HUD](hud.md) | [🔤 폰트](fonts.md) | [🧱 위젯](widgets.md) | [👥 프로필](profiles.md) | [🎨 테마](themes.md) | [🛠️ 유틸리티](utilities.md)
+
 이 가이드는 Lucent를 사용하여 Fabric 모드의 설정(Config)을 구성하고, 저장/로드하며, UI 화면을 열어 설정 메뉴를 표시하는 방법을 다룹니다.
 
 ---

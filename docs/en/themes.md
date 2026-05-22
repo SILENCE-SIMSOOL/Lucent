@@ -1,5 +1,7 @@
 # Theme Configuration Guide
 
+[🏠 Main README](../../README.md) | [⚙️ Config](config.md) | [📺 HUD](hud.md) | [🔤 Fonts](fonts.md) | [🧱 Widgets](widgets.md) | [👥 Profiles](profiles.md) | [🎨 Themes](themes.md) | [🛠️ Utilities](utilities.md)
+
 Lucent's config screen supports a series of beautifully crafted visual themes. Users can switch their preferred theme directly through the Settings GUI preferences section, or developers can apply them programmatically through code.
 
 ---

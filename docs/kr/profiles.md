@@ -1,5 +1,7 @@
 # 프로필 설정방법 가이드
 
+[🏠 메인 README](../../README_KR.md) | [⚙️ 콘피그](config.md) | [📺 HUD](hud.md) | [🔤 폰트](fonts.md) | [🧱 위젯](widgets.md) | [👥 프로필](profiles.md) | [🎨 테마](themes.md) | [🛠️ 유틸리티](utilities.md)
+
 Lucent는 모드 사용자별로 설정을 다르게 저장하고 불러올 수 있는 프로필(Profiles) 기능을 제공합니다. 활성화된 모든 모듈 설정값과 HUD 위치 배치는 `config/<modid>/profiles/<profile_name>/` 디렉토리 아래에 완전히 격리되어 저장됩니다.
 
 이를 통해 플레이어는 "PVP용", "건축용", "기본" 등 게임 플레이 상황에 맞춰 전체 설정을 손쉽게 실시간으로 전환할 수 있습니다.

@@ -1,5 +1,7 @@
 # HUD Configuration Guide
 
+[🏠 Main README](../../README.md) | [⚙️ Config](config.md) | [📺 HUD](hud.md) | [🔤 Fonts](fonts.md) | [🧱 Widgets](widgets.md) | [👥 Profiles](profiles.md) | [🎨 Themes](themes.md) | [🛠️ Utilities](utilities.md)
+
 This guide explains how to create custom draggable, scalable Head-Up Display (HUD) overlay elements inside your mod using Lucent's HUD system.
 
 ---

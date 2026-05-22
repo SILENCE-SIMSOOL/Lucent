@@ -1,5 +1,7 @@
 # Font Rendering Guide
 
+[🏠 Main README](../../README.md) | [⚙️ Config](config.md) | [📺 HUD](hud.md) | [🔤 Fonts](fonts.md) | [🧱 Widgets](widgets.md) | [👥 Profiles](profiles.md) | [🎨 Themes](themes.md) | [🛠️ Utilities](utilities.md)
+
 This guide covers how to display custom typography in Lucent, detailing the pre-loaded font variants and the two distinct methods of rendering text.
 
 ---

@@ -1,5 +1,7 @@
 # UI Widgets Guide
 
+[🏠 Main README](../../README.md) | [⚙️ Config](config.md) | [📺 HUD](hud.md) | [🔤 Fonts](fonts.md) | [🧱 Widgets](widgets.md) | [👥 Profiles](profiles.md) | [🎨 Themes](themes.md) | [🛠️ Utilities](utilities.md)
+
 Lucent provides a rich collection of modular GUI controls to construct interactive interfaces. Every widget automatically manages its own drawing operations, input events, and animation interpolation frames.
 
 All components inherit from the parent class [UIWidget](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/ui/widget/UIWidget.java).

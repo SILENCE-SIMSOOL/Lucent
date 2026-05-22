@@ -1,5 +1,7 @@
 # Profile Management Guide
 
+[🏠 Main README](../../README.md) | [⚙️ Config](config.md) | [📺 HUD](hud.md) | [🔤 Fonts](fonts.md) | [🧱 Widgets](widgets.md) | [👥 Profiles](profiles.md) | [🎨 Themes](themes.md) | [🛠️ Utilities](utilities.md)
+
 Lucent supports named configuration profiles. When profiles are used, all active settings, layout properties, and HUD positions are isolated and saved under `config/<modid>/profiles/<profile_name>/`.
 
 This makes it easy for players to swap between different setup layouts (e.g. "PVP", "Build Mode", "Default").

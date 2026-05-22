@@ -1,5 +1,7 @@
 # HUD 콘피그 작성 가이드
 
+[🏠 메인 README](../../README_KR.md) | [⚙️ 콘피그](config.md) | [📺 HUD](hud.md) | [🔤 폰트](fonts.md) | [🧱 위젯](widgets.md) | [👥 프로필](profiles.md) | [🎨 테마](themes.md) | [🛠️ 유틸리티](utilities.md)
+
 이 가이드는 Lucent의 HUD 시스템을 이용하여 모드 화면에 배치 가능한 커스텀 HUD 오버레이 요소(드래그, 스케일링 지원)를 만들고 등록하는 방법을 설명합니다.
 
 ---

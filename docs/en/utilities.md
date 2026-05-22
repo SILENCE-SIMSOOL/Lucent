@@ -1,5 +1,7 @@
 # Utility Classes & NanoVG Guide
 
+[🏠 Main README](../../README.md) | [⚙️ Config](config.md) | [📺 HUD](hud.md) | [🔤 Fonts](fonts.md) | [🧱 Widgets](widgets.md) | [👥 Profiles](profiles.md) | [🎨 Themes](themes.md) | [🛠️ Utilities](utilities.md)
+
 Lucent bundles a powerful suite of graphic renderers and helper utilities that can speed up development for any Minecraft Fabric mod.
 
 ---

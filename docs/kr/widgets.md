@@ -1,5 +1,7 @@
 # UI 위젯 사용방법 가이드
 
+[🏠 메인 README](../../README_KR.md) | [⚙️ 콘피그](config.md) | [📺 HUD](hud.md) | [🔤 폰트](fonts.md) | [🧱 위젯](widgets.md) | [👥 프로필](profiles.md) | [🎨 테마](themes.md) | [🛠️ 유틸리티](utilities.md)
+
 Lucent는 모드 개발자가 GUI 화면을 자유롭게 만들 수 있도록 다양하고 현대적인 UI 컨트롤 위젯 컴포넌트를 기본 제공합니다. 모든 위젯은 자체적으로 마우스/키보드 입력 이벤트 처리, 포커스 제어, 부드러운 호버 애니메이션 기능을 완벽히 내장하고 있습니다.
 
 모든 UI 구성요소는 상위 추상 클래스인 [UIWidget](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/ui/widget/UIWidget.java)을 상속받습니다.
