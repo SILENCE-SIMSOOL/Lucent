@@ -1,8 +1,25 @@
-# Lucent
+<a id="readme-top"></a>
 
-**Lucent** is a Fabric library mod for Minecraft 1.21.11 that provides a modern, full-featured config management system, customizable HUD engine, and hardware-accelerated Vector UI toolkit for mod developers.
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+	<a href="https://github.com/SILENCE-SIMSOOL/Lucent">
+		<img src="docs/icon.png" alt="Logo" width="128" height="128">
+	</a>
 
-> 🇰🇷 [한국어 문서 보기](./README_KR.md)
+	<h1 align="center">Lucent</h1>
+
+	<p align="center">
+		A modern, full-featured config management system, customizable HUD engine, and hardware-accelerated Vector UI toolkit for Minecraft Fabric mods.
+		<br />
+		<br />
+		🇰🇷 <a href="./README_KR.md">한국어 문서 보기</a>
+		·
+		<a href="https://github.com/SILENCE-SIMSOOL/Lucent/issues">Report Bug</a>
+		·
+		<a href="https://github.com/SILENCE-SIMSOOL/Lucent/issues">Request Feature</a>
+	</p>
+</div>
 
 ---
 
@@ -10,13 +27,13 @@
 
 To help you get started with specific features, the documentation has been split into dedicated guides:
 
-- ⚙️ **[Config Integration Guide](./docs/config.md)** — Setting up annotation-driven configuration managers, modules, loading, saving, and launching the settings GUI screen.
-- 📺 **[HUD Configuration Guide](./docs/hud.md)** — Creating custom draggable, scalable gameplay HUD elements and widgets.
-- 🔤 **[Font Rendering Guide](./docs/fonts.md)** — Using the bundled Pretendard typography and printing fonts inside GPU pipelines or Minecraft draw contexts.
-- 🧱 **[UI Widgets Guide](./docs/widgets.md)** — Catalog of ready-to-use widgets (Toggles, Sliders, Dropdowns, TextBoxes, Color Pickers) with code mapping.
-- 👥 **[Profile Management Guide](./docs/profiles.md)** — Managing settings profiles and layout configurations per-profile.
-- 🎨 **[Theme Configuration Guide](./docs/themes.md)** — Styling screens with custom aesthetics (Midnight Cyan, Glass Morphic, Crimson Aurora, etc.).
-- 🛠️ **[Utility Classes & NanoVG Guide](./docs/utilities.md)** — Hardware-accelerated drawing commands (shapes, drop shadows, gradients) and rich collection of Minecraft helper utilities.
+- ⚙️ **[Config Integration Guide](./docs/en/config.md)** (Example: [ExampleMod.java](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/examplemod/mods/ExampleMod.java)) — Setting up annotation-driven configuration managers, modules, loading, saving, and launching the settings GUI screen.
+- 📺 **[HUD Configuration Guide](./docs/en/hud.md)** (Example: [ExampleHUD.java](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/examplemod/huds/ExampleHUD.java)) — Creating custom draggable, scalable gameplay HUD elements and widgets.
+- 🔤 **[Font Rendering Guide](./docs/en/fonts.md)** — Using the bundled Pretendard typography and printing fonts inside GPU pipelines or Minecraft draw contexts.
+- 🧱 **[UI Widgets Guide](./docs/en/widgets.md)** — Catalog of ready-to-use widgets (Toggles, Sliders, Dropdowns, TextBoxes, Color Pickers) with code mapping.
+- 👥 **[Profile Management Guide](./docs/en/profiles.md)** — Managing settings profiles and layout configurations per-profile.
+- 🎨 **[Theme Configuration Guide](./docs/en/themes.md)** — Styling screens with custom aesthetics (Midnight Cyan, Glass Morphic, Crimson Aurora, etc.).
+- 🛠️ **[Utility Classes & NanoVG Guide](./docs/en/utilities.md)** — Hardware-accelerated drawing commands (shapes, drop shadows, gradients) and rich collection of Minecraft helper utilities.
 
 ---
 

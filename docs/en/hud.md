@@ -6,9 +6,9 @@ This guide explains how to create custom draggable, scalable Head-Up Display (HU
 
 ## 1. Extending the HUD Base Class
 
-To define a custom HUD element, create a class that extends [LucentHUD](file:///d:/FROZEN/Dev%20Mod/Mod-Build/%21Fabric/Projects/Lucent/src/main/java/silence/simsool/lucent/general/models/abstracts/LucentHUD.java).
+To define a custom HUD element, create a class that extends [LucentHUD](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/general/models/abstracts/LucentHUD.java).
 
-Refer to the built-in [ExampleHUD.java](file:///d:/FROZEN/Dev%20Mod/Mod-Build/%21Fabric/Projects/Lucent/src/main/java/silence/simsool/lucent/examplemod/huds/ExampleHUD.java) for a clean reference design.
+Refer to the built-in [ExampleHUD.java](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/examplemod/huds/ExampleHUD.java) for a clean reference design.
 
 ### Example HUD Code:
 
@@ -90,7 +90,7 @@ public class MyStatusHUD extends LucentHUD {
 
 ## 2. Registering and Loading HUD elements
 
-Use the [HUDManager](file:///d:/FROZEN/Dev%20Mod/Mod-Build/%21Fabric/Projects/Lucent/src/main/java/silence/simsool/lucent/hud/HUDManager.java) inside your client initialization block to register your layout element and load stored user adjustments.
+Use the [HUDManager](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/hud/HUDManager.java) inside your client initialization block to register your layout element and load stored user adjustments.
 
 ```java
 import silence.simsool.lucent.hud.HUDManager;

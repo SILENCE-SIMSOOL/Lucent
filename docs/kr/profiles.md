@@ -25,7 +25,7 @@ config/
 
 ## 2. 프로필 API 활용 코드
 
-콘피그 매니저([ModManager](file:///d:/FROZEN/Dev%20Mod/Mod-Build/%21Fabric/Projects/Lucent/src/main/java/silence/simsool/lucent/config/ModManager.java)) 인스턴스를 사용하여 프로필 정보를 확인하고, 변경하거나 신규 생성할 수 있습니다.
+콘피그 매니저([ModManager](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/config/ModManager.java)) 인스턴스를 사용하여 프로필 정보를 확인하고, 변경하거나 신규 생성할 수 있습니다.
 
 ### 기존 프로필 목록 불러오기
 모든 콘피그 데이터는 기본적으로 항상 `"default"` 프로필을 가지고 작동합니다.

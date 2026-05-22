@@ -21,7 +21,7 @@ Lucent는 다음 6가지의 테마 팔레트를 가지고 있습니다:
 
 ## 2. API 사용방법
 
-[ThemeManager](file:///d:/FROZEN/Dev%20Mod/Mod-Build/%21Fabric/Projects/Lucent/src/main/java/silence/simsool/lucent/ui/theme/ThemeManager.java) 클래스를 활용하여 테마를 검색하고 설정 화면에 적용할 수 있습니다.
+[ThemeManager](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/ui/theme/ThemeManager.java) 클래스를 활용하여 테마를 검색하고 설정 화면에 적용할 수 있습니다.
 
 ### 코드에서 테마 지정하기
 원하는 특정 테마 스타일을 강제로 스크린에 로딩시키려면 다음과 같이 작성합니다:
@@ -43,4 +43,4 @@ LucentTheme activeTheme = ThemeManager.getCurrentTheme();
 // 테마명 문자열 반환
 String themeName = activeTheme.getName();
 ```
-테마가 변경되면 [UIColors](file:///d:/FROZEN/Dev%20Mod/Mod-Build/%21Fabric/Projects/Lucent/src/main/java/silence/simsool/lucent/ui/utils/UIColors.java)에 설정된 다이내믹 컬러 변수값들이 연동되어 실시간으로 자동 갱신됩니다.
+테마가 변경되면 [UIColors](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/ui/utils/UIColors.java)에 설정된 다이내믹 컬러 변수값들이 연동되어 실시간으로 자동 갱신됩니다.

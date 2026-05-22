@@ -25,7 +25,7 @@ config/
 
 ## 2. Profile API Usage
 
-You can programmatically list, create, switch, delete, or rename profiles using your [ModManager](file:///d:/FROZEN/Dev%20Mod/Mod-Build/%21Fabric/Projects/Lucent/src/main/java/silence/simsool/lucent/config/ModManager.java) instance.
+You can programmatically list, create, switch, delete, or rename profiles using your [ModManager](https://github.com/SILENCE-SIMSOOL/Lucent/src/main/java/silence/simsool/lucent/config/ModManager.java) instance.
 
 ### Listing Available Profiles
 Every config directory contains at least the `"default"` profile.
