@@ -1,25 +1,24 @@
-<a id="readme-top"></a>
+<h3 align="center">
+	<img src="https://raw.githubusercontent.com/SILENCE-SIMSOOL/Lucent/main/docs/icon.png" alt="Lucent Icon" width="128" height="128" />
+</h3>
 
-<!-- PROJECT LOGO -->
-<br />
-<div align="center">
-	<a href="https://github.com/SILENCE-SIMSOOL/Lucent">
-		<img src="docs/icon.png" alt="Logo" width="128" height="128">
-	</a>
+<h1 align="center"루센트</h1>
 
-	<h1 align="center">Lucent (루센트)</h1>
+<p align="center">
+	마인크래프트 패브릭 모드 개발을 위한 라이브러리로, 고급 설정 시스템, 커스터마이징 가능한 HUD 엔진, 그리고 하드웨어 가속 기반 Vector UI 툴킷을 제공합니다.
+</p>
 
-	<p align="center">
-		Minecraft 1.21.11 Fabric 환경을 위한 라이브러리 모드로, 모드 개발자들에게 어노테이션 기반 설정 관리 시스템, 커스터마이징 가능한 HUD 오버레이 엔진, 하드웨어 가속(GPU) Vector UI 툴킷을 제공합니다.
-		<br />
-		<br />
-		🌐 <a href="./README.md">English Documentation</a>
-		·
-		<a href="https://github.com/SILENCE-SIMSOOL/Lucent/issues">버그 제보</a>
-		·
-		<a href="https://github.com/SILENCE-SIMSOOL/Lucent/issues">기능 제안</a>
-	</p>
-</div>
+<p align="center">
+	<a href="https://github.com/SILENCE-SIMSOOL/Lucent/docs">문서</a>
+	·
+	<a href="https://github.com/SILENCE-SIMSOOL/Lucent/issues">버그 제보</a>
+	·
+	<a href="https://github.com/SILENCE-SIMSOOL/Lucent/issues">기능 제안</a>
+</p>
+
+<p align="center">
+	<a href="https://github.com/SILENCE-SIMSOOL/Lucent">영어 문서</a>
+</p>
 
 ---
 
