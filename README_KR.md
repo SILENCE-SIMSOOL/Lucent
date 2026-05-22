@@ -88,6 +88,7 @@ dependencies {
 
 ## 참고 및 오픈소스 크레딧
 
+- 콘피그 설정 GUI 화면 디자인(Config Screen UI)은 Polyfrost의 **[OneConfig](https://github.com/Polyfrost/OneConfig)** 디자인 레이아웃에서 영감을 받아 구현되었습니다.
 - 본 라이브러리는 **[Odin](https://github.com/odtheking/Odin)** 모드(Hypixel Skyblock 모딩용 모드, 개발자: `odtheking`)의 NanoVG GPU 렌더링 설계 방식과 렌더링 유틸리티 드로우 메서드 구성을 참고하여 제작되었습니다.
 - **[Minecraft](https://www.minecraft.net/)** 및 **[Fabric Project](https://fabricmc.net/)** 개발 에코시스템 환경 하에서 제작되었습니다.
 
