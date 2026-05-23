@@ -9,6 +9,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
+import silence.simsool.lucent.general.utils.useful.UChat;
 
 public final class GUIEvent {
 
@@ -33,9 +34,11 @@ public final class GUIEvent {
 
 	public static class OPEN {
 		public final Screen screen;
+		public final String title;
 
 		public OPEN(Screen screen) {
 			this.screen = screen;
+			this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
 		}
 
 		public static final Event<Handler> EVENT = createArrayBacked(
@@ -52,11 +55,13 @@ public final class GUIEvent {
 
 	public static class CLOSE {
 		public final Screen screen;
+		public final String title;
 		public final AbstractContainerMenu handler;
 		private boolean canceled = false;
 
 		public CLOSE(Screen screen, AbstractContainerMenu handler) {
 			this.screen = screen;
+			this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
 			this.handler = handler;
 		}
 
@@ -89,6 +94,7 @@ public final class GUIEvent {
 		public final int button;
 		public final boolean state;
 		public final Screen screen;
+		public final String title;
 		private boolean canceled = false;
 
 		public CLICK(double mouseX, double mouseY, int button, boolean state, Screen screen) {
@@ -97,6 +103,7 @@ public final class GUIEvent {
 			this.button = button;
 			this.state = state;
 			this.screen = screen;
+			this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
 		}
 
 		public void cancel() {
@@ -128,6 +135,7 @@ public final class GUIEvent {
 		public final char character;
 		public final int scanCode;
 		public final Screen screen;
+		public final String title;
 		private boolean canceled = false;
 
 		public KEY(String keyName, int key, char character, int scanCode, Screen screen) {
@@ -136,6 +144,7 @@ public final class GUIEvent {
 			this.character = character;
 			this.scanCode = scanCode;
 			this.screen = screen;
+			this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
 		}
 
 		public void cancel() {
@@ -170,6 +179,7 @@ public final class GUIEvent {
 			public final ClickType actionType;
 			public final AbstractContainerMenu handler;
 			public final AbstractContainerScreen<?> screen;
+			public final String title;
 			private boolean canceled = false;
 
 			public Click(Slot slot, int slotId, int button, ClickType actionType, AbstractContainerMenu handler, AbstractContainerScreen<?> screen) {
@@ -179,6 +189,7 @@ public final class GUIEvent {
 				this.actionType = actionType;
 				this.handler = handler;
 				this.screen = screen;
+				this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
 			}
 
 			public void cancel() {
@@ -208,11 +219,13 @@ public final class GUIEvent {
 			public final GuiGraphics graphics;
 			public final Slot slot;
 			public final AbstractContainerScreen<AbstractContainerMenu> screen;
+			public final String title;
 
 			public Render(GuiGraphics graphics, Slot slot, AbstractContainerScreen<AbstractContainerMenu> screen) {
 				this.graphics = graphics;
 				this.slot = slot;
 				this.screen = screen;
+				this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
 			}
 
 			public static final Event<Handler> EVENT = createArrayBacked(
@@ -234,6 +247,7 @@ public final class GUIEvent {
 		public static class All {
 			public final GuiGraphics graphics;
 			public final Screen screen;
+			public final String title;
 			public final int mouseX;
 			public final int mouseY;
 			public final int x;
@@ -244,6 +258,7 @@ public final class GUIEvent {
 			public All(GuiGraphics graphics, Screen screen, int mouseX, int mouseY, int x, int y, int width, int height) {
 				this.graphics = graphics;
 				this.screen = screen;
+				this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
 				this.mouseX = mouseX;
 				this.mouseY = mouseY;
 				this.x = x;
@@ -267,6 +282,7 @@ public final class GUIEvent {
 		public static class Inventory {
 			public final GuiGraphics graphics;
 			public final Screen screen;
+			public final String title;
 			public final int mouseX;
 			public final int mouseY;
 			public final int x;
@@ -277,6 +293,7 @@ public final class GUIEvent {
 			public Inventory(GuiGraphics graphics, Screen screen, int mouseX, int mouseY, int x, int y, int width, int height) {
 				this.graphics = graphics;
 				this.screen = screen;
+				this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
 				this.mouseX = mouseX;
 				this.mouseY = mouseY;
 				this.x = x;
@@ -300,6 +317,7 @@ public final class GUIEvent {
 		public static class Chest {
 			public final GuiGraphics graphics;
 			public final Screen screen;
+			public final String title;
 			public final int mouseX;
 			public final int mouseY;
 			public final int x;
@@ -310,6 +328,7 @@ public final class GUIEvent {
 			public Chest(GuiGraphics graphics, Screen screen, int mouseX, int mouseY, int x, int y, int width, int height) {
 				this.graphics = graphics;
 				this.screen = screen;
+				this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
 				this.mouseX = mouseX;
 				this.mouseY = mouseY;
 				this.x = x;
