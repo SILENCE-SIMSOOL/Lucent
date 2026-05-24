@@ -19,6 +19,11 @@ import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 
 import silence.simsool.lucent.config.api.LucentAPI;
+import silence.simsool.lucent.events.impl.DropItemEvent;
+import silence.simsool.lucent.events.impl.GUIEvent;
+import silence.simsool.lucent.events.impl.LucentEvent;
+import silence.simsool.lucent.events.impl.MouseEvent;
+import silence.simsool.lucent.events.impl.PacketEvent;
 import silence.simsool.lucent.examplemod.mods.ExampleMod;
 import silence.simsool.lucent.general.models.abstracts.Mod;
 import silence.simsool.lucent.general.models.data.KeyBind;
@@ -180,6 +185,222 @@ public class ModManager {
 
 	public void register(Mod module) {
 		modules.add(module);
+
+		// LucentEvent 자동 가입
+		LucentEvent.INIT_FINISHED_EVENT.register(() -> {
+			if (module.isEnabled) {
+				module.onInitFinished();
+			}
+		});
+
+		LucentEvent.RESOURCES_READY_EVENT.register(() -> {
+			if (module.isEnabled) {
+				module.onResourcesReady();
+			}
+		});
+
+		LucentEvent.TICK_EVENT.LOW.register(() -> {
+			if (module.isEnabled) {
+				module.onTick();
+			}
+		});
+
+		LucentEvent.TICK_EVENT.MEDIUM.register(() -> {
+			if (module.isEnabled) {
+				module.onMediumTick();
+			}
+		});
+
+		LucentEvent.TICK_EVENT.HIGH.register(() -> {
+			if (module.isEnabled) {
+				module.onHighTick();
+			}
+		});
+
+		LucentEvent.EVERY_SECOND_EVENT.register(() -> {
+			if (module.isEnabled) {
+				module.onEverySecond();
+			}
+		});
+
+		LucentEvent.SERVER_TICK_EVENT.register(() -> {
+			if (module.isEnabled) {
+				module.onServerTick();
+			}
+		});
+
+		LucentEvent.CHAT_EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onChat(event);
+			}
+		});
+
+		LucentEvent.ACTIONBAR_EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onActionBar(event);
+			}
+		});
+
+		LucentEvent.SERVER_JOIN_EVENT.register(() -> {
+			if (module.isEnabled) {
+				module.onServerJoin();
+			}
+		});
+
+		LucentEvent.SERVER_DISCONNECT_EVENT.register(() -> {
+			if (module.isEnabled) {
+				module.onServerDisconnect();
+			}
+		});
+
+		LucentEvent.WORLD_LOAD_EVENT.register(() -> {
+			if (module.isEnabled) {
+				module.onWorldLoad();
+			}
+		});
+
+		LucentEvent.BLOCK_UPDATE_EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onBlockUpdate(event);
+			}
+		});
+
+		LucentEvent.RENDER_EXTRACT_EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onExtract(event);
+			}
+		});
+
+		LucentEvent.RENDER_LAST_EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onRenderLast(event);
+			}
+		});
+
+		LucentEvent.BLOCK_INTERACT_EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onBlockInteract(event);
+			}
+		});
+
+		LucentEvent.KEY_INPUT_EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onKeyInput(event);
+			}
+		});
+
+		LucentEvent.MESSAGE_SENT_EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onMessageSent(event);
+			}
+		});
+
+		LucentEvent.TAB_COMPLETION_EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onTabComplete(event);
+			}
+		});
+
+		LucentEvent.BOSS_BAR_RENDER_EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onBossBarRender(event);
+			}
+		});
+
+		LucentEvent.RENDER_LIVING_PRE_EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onRenderLivingPre(event);
+			}
+		});
+
+		// GUIEvent 자동 가입
+		GUIEvent.RenderHUD.EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onRenderHUD(event);
+			}
+		});
+
+		GUIEvent.OPEN.EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onGUIOpen(event);
+			}
+		});
+
+		GUIEvent.CLOSE.EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onGUIClose(event);
+			}
+		});
+
+		GUIEvent.CLICK.EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onGUIClick(event);
+			}
+		});
+
+		GUIEvent.KEY.EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onGUIKey(event);
+			}
+		});
+
+		GUIEvent.SLOT.Click.EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onSlotClick(event);
+			}
+		});
+
+		GUIEvent.SLOT.Render.EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onSlotRender(event);
+			}
+		});
+
+		GUIEvent.CONTAINER.All.EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onRenderContainer(event);
+			}
+		});
+
+		GUIEvent.CONTAINER.Inventory.EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onRenderInventory(event);
+			}
+		});
+
+		GUIEvent.CONTAINER.Chest.EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onRenderChest(event);
+			}
+		});
+
+		// DropItemEvent 자동 가입
+		DropItemEvent.EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onDropItem(event);
+			}
+		});
+
+		// MouseEvent 자동 가입
+		MouseEvent.CLICK.register(event -> {
+			if (module.isEnabled) {
+				module.onMouseClick(event);
+			}
+		});
+
+		// PacketEvent 자동 가입
+		PacketEvent.RECEIVE.register(event -> {
+			if (module.isEnabled) {
+				module.onPacketReceive(event);
+			}
+		});
+
+		// PacketEvent 자동 가입
+		PacketEvent.SEND.register(event -> {
+			if (module.isEnabled) {
+				module.onPacketSend(event);
+			}
+		});
 	}
 
 	public void registerExampleMods() {
