@@ -198,7 +198,7 @@ public class RenderUtils {
 		queuedWireBoxes.add(new BoxData(aabb, color, thickness, depth));
 	}
 
-	public void drawTracer(Vec3 to, int color, boolean depth, float thickness) {
+	public static void drawTracer(Vec3 to, int color, boolean depth, float thickness) {
 		if (mc.player == null) return;
 		Vec3 from = URender.getRenderPos(mc.player).add(mc.player.getForward().add(0.0, mc.player.getEyeHeight(), 0.0));
 		drawLine(from, to, color, depth, thickness);
