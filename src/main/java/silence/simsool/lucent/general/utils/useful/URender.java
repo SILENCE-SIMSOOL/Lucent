@@ -1,5 +1,7 @@
 package silence.simsool.lucent.general.utils.useful;
 
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UIColors;
 import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
@@ -33,6 +35,10 @@ public class URender {
 		// 원에 그림자를 줘서 입체감 추가
 		NVGRenderer.dropShadow(circleX - currentCircleRadius, circleY - currentCircleRadius, currentCircleRadius * 2, currentCircleRadius * 2, 3f, 0f, currentCircleRadius);
 		NVGRenderer.circle(circleX, circleY, currentCircleRadius, UIColors.PURE_WHITE);
+	}
+
+	public static Vec3 getRenderPos(Entity entity) {
+		return new Vec3(entity.getX(), entity.getY(), entity.getZ());
 	}
 
 }

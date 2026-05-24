@@ -23,6 +23,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import silence.simsool.lucent.general.utils.useful.URender;
 import silence.simsool.lucent.ui.utils.UColor;
 
 public class RenderUtils {
@@ -195,6 +196,12 @@ public class RenderUtils {
 
 	public static void drawWireFrameBox(AABB aabb, int color, float thickness, boolean depth) {
 		queuedWireBoxes.add(new BoxData(aabb, color, thickness, depth));
+	}
+
+	public void drawTracer(Vec3 to, int color, boolean depth, float thickness) {
+		if (mc.player == null) return;
+		Vec3 from = URender.getRenderPos(mc.player).add(mc.player.getForward().add(0.0, mc.player.getEyeHeight(), 0.0));
+		drawLine(from, to, color, depth, thickness);
 	}
 
 	/**
