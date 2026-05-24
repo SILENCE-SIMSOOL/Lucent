@@ -12,6 +12,7 @@ import net.minecraft.world.BossEvent;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
+import silence.simsool.lucent.general.models.data.KeyBind;
 
 public class LucentEvent {
 
@@ -485,6 +486,39 @@ public class LucentEvent {
 	@FunctionalInterface
 	public interface RenderLivingPreEvent {
 		void onRenderLivingPre(RenderLivingPreEventData event);
+	}
+
+	public static class KeybindEventData {
+		public final KeyBind keybind;
+		private final boolean pressed;
+		private final boolean keyDown;
+
+		public KeybindEventData(KeyBind keybind, boolean pressed, boolean keyDown) {
+			this.keybind = keybind;
+			this.pressed = pressed;
+			this.keyDown = keyDown;
+		}
+
+		public boolean isPressed() {
+			return pressed;
+		}
+
+		public boolean isKeyDown() {
+			return keyDown;
+		}
+	}
+
+	public static final Event<KeybindEvent> KEYBIND_EVENT = createArrayBacked(
+		KeybindEvent.class, listeners -> event -> {
+			for (KeybindEvent listener : listeners) {
+				listener.onKeybind(event);
+			}
+		}
+	);
+
+	@FunctionalInterface
+	public interface KeybindEvent {
+		void onKeybind(KeybindEventData event);
 	}
 
 

@@ -34,6 +34,25 @@ import silence.simsool.lucent.ui.theme.ThemeManager;
 
 public class ModManager {
 
+	private static final List<ModManager> INSTANCES = new ArrayList<>();
+	private final List<KeyBindFieldInfo> keyBindFields = new ArrayList<>();
+
+	private static class KeyBindFieldInfo {
+		final Mod module;
+		final Field field;
+		KeyBindFieldInfo(Mod module, Field field) {
+			this.module = module;
+			this.field = field;
+		}
+		KeyBind getKeyBind() {
+			try {
+				return (KeyBind) field.get(module);
+			} catch (Exception e) {
+				return null;
+			}
+		}
+	}
+
 	public final List<Mod> modules = new ArrayList<>();
 	private final File configDirectory;
 	private static String currentProfile = "default";
@@ -172,6 +191,7 @@ public class ModManager {
 		.setPrettyPrinting().create();
 
 	public ModManager(File configDirectory) {
+		INSTANCES.add(this);
 		this.configDirectory = configDirectory;
 
 		// Ensure local profiles directory exists
@@ -185,6 +205,13 @@ public class ModManager {
 
 	public void register(Mod module) {
 		modules.add(module);
+
+		for (Field field : module.getClass().getDeclaredFields()) {
+			if (field.getType() == KeyBind.class) {
+				field.setAccessible(true);
+				keyBindFields.add(new KeyBindFieldInfo(module, field));
+			}
+		}
 
 		// LucentEvent 자동 가입
 		LucentEvent.INIT_FINISHED_EVENT.register(() -> {
@@ -310,6 +337,12 @@ public class ModManager {
 		LucentEvent.RENDER_LIVING_PRE_EVENT.register(event -> {
 			if (module.isEnabled) {
 				module.onRenderLivingPre(event);
+			}
+		});
+
+		LucentEvent.KEYBIND_EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onKeybind(event);
 			}
 		});
 
@@ -583,6 +616,36 @@ public class ModManager {
 		try (FileWriter writer = new FileWriter(file)) {
 			GSON.toJson(json, writer);
 		} catch (Exception e) {}
+	}
+
+	public static void handleKeyInput(int key, int action) {
+		boolean pressed = (action == 1);
+		boolean keyDown = (action != 0);
+
+		for (ModManager manager : INSTANCES) {
+			for (KeyBindFieldInfo info : manager.keyBindFields) {
+				if (!info.module.isEnabled) continue;
+				KeyBind keybind = info.getKeyBind();
+				if (keybind != null && keybind.isBound() && keybind.isKey() && keybind.keyCode == key) {
+					LucentEvent.KEYBIND_EVENT.invoker().onKeybind(new LucentEvent.KeybindEventData(keybind, pressed, keyDown));
+				}
+			}
+		}
+	}
+
+	public static void handleMouseInput(int button, int action) {
+		boolean pressed = (action == 1);
+		boolean keyDown = (action != 0);
+
+		for (ModManager manager : INSTANCES) {
+			for (KeyBindFieldInfo info : manager.keyBindFields) {
+				if (!info.module.isEnabled) continue;
+				KeyBind keybind = info.getKeyBind();
+				if (keybind != null && keybind.isBound() && keybind.isMouse() && keybind.mouseButton == button) {
+					LucentEvent.KEYBIND_EVENT.invoker().onKeybind(new LucentEvent.KeybindEventData(keybind, pressed, keyDown));
+				}
+			}
+		}
 	}
 
 }

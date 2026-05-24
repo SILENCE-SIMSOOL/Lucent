@@ -43,6 +43,7 @@ public abstract class Mod {
 	public void onTabComplete(LucentEvent.TabCompletionEvent event) {}
 	public void onBossBarRender(LucentEvent.BossBarRenderEventData event) {}
 	public void onRenderLivingPre(LucentEvent.RenderLivingPreEventData event) {}
+	public void onKeybind(LucentEvent.KeybindEventData event) {}
 
 	public void onRenderHUD(GUIEvent.RenderHUD event) {}
 	public void onGUIOpen(GUIEvent.OPEN event) {}
