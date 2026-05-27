@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import org.lwjgl.glfw.GLFW;
 
 import net.minecraft.client.gui.GuiGraphics;
+import silence.simsool.lucent.general.enums.KeyMode;
 import silence.simsool.lucent.general.models.data.KeyBind;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UColor;
@@ -17,6 +18,7 @@ public class KeyBindButton extends UIWidget {
 	private KeyBind value;
 	private boolean waiting = false; // 키 입력 대기 중
 	private Consumer<KeyBind> onChange;
+	private KeyMode keymode = KeyMode.ALL;
 
 	private float hoverAnim = 0f;
 	private float waitAnim = 0f; // waiting 상태 펄스 (0→1 루프)
@@ -24,8 +26,13 @@ public class KeyBindButton extends UIWidget {
 	private static final float ANIM_SPEED = 8f;
 
 	public KeyBindButton(int x, int y, int width, int height, KeyBind initialValue) {
+		this(x, y, width, height, initialValue, KeyMode.ALL);
+	}
+
+	public KeyBindButton(int x, int y, int width, int height, KeyBind initialValue, KeyMode keymode) {
 		super(x, y, width, height);
 		this.value = (initialValue != null) ? initialValue : KeyBind.none();
+		this.keymode = (keymode != null) ? keymode : KeyMode.ALL;
 	}
 
 	@Override
@@ -168,10 +175,32 @@ public class KeyBindButton extends UIWidget {
 	}
 
 	private void setBind(KeyBind bind) {
-		this.value = bind;
-		this.waiting = false;
-		if (onChange != null)
-			onChange.accept(bind);
+		if (!bind.isBound()) {
+			this.value = bind;
+			this.waiting = false;
+			if (onChange != null) onChange.accept(bind);
+			return;
+		}
+
+		boolean valid = false;
+		switch (keymode) {
+			case ALL -> valid = true;
+			case Mouse -> valid = bind.isMouse();
+			case Keyboard -> valid = bind.isKey();
+			case Hybrid -> {
+				if (bind.isKey()) {
+					valid = true;
+				} else if (bind.isMouse()) {
+					valid = bind.mouseButton != GLFW.GLFW_MOUSE_BUTTON_LEFT && bind.mouseButton != GLFW.GLFW_MOUSE_BUTTON_RIGHT;
+				}
+			}
+		}
+
+		if (valid) {
+			this.value = bind;
+			this.waiting = false;
+			if (onChange != null) onChange.accept(bind);
+		}
 	}
 
 	private static boolean isModifierOnly(int keyCode) {

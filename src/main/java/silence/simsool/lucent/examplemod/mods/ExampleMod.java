@@ -5,7 +5,7 @@ import java.awt.Color;
 import org.lwjgl.glfw.GLFW;
 
 import silence.simsool.lucent.Lucent;
-import silence.simsool.lucent.events.impl.LucentEvent.MessageEvent;
+import silence.simsool.lucent.general.models.data.events.lucentevent.MessageEvent;
 import silence.simsool.lucent.general.enums.Align;
 import silence.simsool.lucent.general.enums.ConfigType;
 import silence.simsool.lucent.general.models.abstracts.Mod;

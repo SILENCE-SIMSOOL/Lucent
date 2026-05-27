@@ -9,13 +9,14 @@ import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.KeyMapping;
 import silence.simsool.lucent.events.impl.LucentEvent;
+import silence.simsool.lucent.general.models.data.events.lucentevent.KeyInputEvent;
 
 @Mixin(KeyMapping.class)
 public class MixinKeyMapping_KEY_INPUT_EVENT {
 
 	@Inject(method = "click", at = @At("HEAD"), cancellable = true)
 	private static void onKeyClick(InputConstants.Key key, CallbackInfo ci) {
-		LucentEvent.KeyInputEventData event = new LucentEvent.KeyInputEventData(key);
+		KeyInputEvent event = new KeyInputEvent(key);
 		LucentEvent.KEY_INPUT_EVENT.invoker().onKeyInput(event);
 		if (event.isCanceled()) ci.cancel();
 	}

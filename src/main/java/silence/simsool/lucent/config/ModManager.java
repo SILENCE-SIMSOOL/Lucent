@@ -19,11 +19,12 @@ import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 
 import silence.simsool.lucent.config.api.LucentAPI;
-import silence.simsool.lucent.events.impl.DropItemEvent;
 import silence.simsool.lucent.events.impl.GUIEvent;
 import silence.simsool.lucent.events.impl.LucentEvent;
 import silence.simsool.lucent.events.impl.MouseEvent;
 import silence.simsool.lucent.events.impl.PacketEvent;
+import silence.simsool.lucent.events.impl.EntityEvent;
+import silence.simsool.lucent.general.models.data.events.lucentevent.KeybindEvent;
 import silence.simsool.lucent.examplemod.mods.ExampleMod;
 import silence.simsool.lucent.general.models.abstracts.Mod;
 import silence.simsool.lucent.general.models.data.KeyBind;
@@ -292,15 +293,15 @@ public class ModManager {
 			}
 		});
 
-		LucentEvent.RENDER_EXTRACT_EVENT.register(event -> {
+		LucentEvent.WORLD_RENDER.register(event -> {
 			if (module.isEnabled) {
-				module.onExtract(event);
+				module.onWorldRender(event);
 			}
 		});
 
-		LucentEvent.RENDER_LAST_EVENT.register(event -> {
+		LucentEvent.WORLD_RENDER_LAST.register(event -> {
 			if (module.isEnabled) {
-				module.onRenderLast(event);
+				module.onWorldRenderLast(event);
 			}
 		});
 
@@ -334,9 +335,15 @@ public class ModManager {
 			}
 		});
 
-		LucentEvent.RENDER_LIVING_PRE_EVENT.register(event -> {
+		EntityEvent.RENDER_LIVING_PRE_EVENT.register(event -> {
 			if (module.isEnabled) {
 				module.onRenderLivingPre(event);
+			}
+		});
+
+		EntityEvent.RENDER_ENTITY_EVENT.register(event -> {
+			if (module.isEnabled) {
+				module.onRenderEntity(event);
 			}
 		});
 
@@ -408,7 +415,7 @@ public class ModManager {
 		});
 
 		// DropItemEvent 자동 가입
-		DropItemEvent.EVENT.register(event -> {
+		LucentEvent.DROP_ITEM_EVENT.register(event -> {
 			if (module.isEnabled) {
 				module.onDropItem(event);
 			}
@@ -627,7 +634,7 @@ public class ModManager {
 				if (!info.module.isEnabled) continue;
 				KeyBind keybind = info.getKeyBind();
 				if (keybind != null && keybind.isBound() && keybind.isKey() && keybind.keyCode == key) {
-					LucentEvent.KEYBIND_EVENT.invoker().onKeybind(new LucentEvent.KeybindEventData(keybind, pressed, keyDown));
+					LucentEvent.KEYBIND_EVENT.invoker().onKeybind(new KeybindEvent(keybind, pressed, keyDown));
 				}
 			}
 		}
@@ -642,7 +649,7 @@ public class ModManager {
 				if (!info.module.isEnabled) continue;
 				KeyBind keybind = info.getKeyBind();
 				if (keybind != null && keybind.isBound() && keybind.isMouse() && keybind.mouseButton == button) {
-					LucentEvent.KEYBIND_EVENT.invoker().onKeybind(new LucentEvent.KeybindEventData(keybind, pressed, keyDown));
+					LucentEvent.KEYBIND_EVENT.invoker().onKeybind(new KeybindEvent(keybind, pressed, keyDown));
 				}
 			}
 		}

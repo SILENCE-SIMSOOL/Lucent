@@ -17,11 +17,12 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.ClickType;
 import silence.simsool.lucent.Lucent;
-import silence.simsool.lucent.events.impl.DropItemEvent;
 import silence.simsool.lucent.events.impl.GUIEvent;
 import silence.simsool.lucent.events.impl.LucentEvent;
 import silence.simsool.lucent.general.enums.DropType;
 import silence.simsool.lucent.general.utils.useful.UChat;
+import silence.simsool.lucent.general.models.data.events.guievent.*;
+import silence.simsool.lucent.general.models.data.events.lucentevent.*;
 
 public class LucentEventRegister {
 
@@ -34,7 +35,7 @@ public class LucentEventRegister {
 		ClientReceiveMessageEvents.ALLOW_GAME.register((component, isActionBar) -> {
 			String message = component.getString();
 			String chat = UChat.cleanColor(message);
-			LucentEvent.MessageEvent event = new LucentEvent.MessageEvent(message, chat);
+			MessageEvent event = new MessageEvent(message, chat);
 			if (isActionBar) LucentEvent.ACTIONBAR_EVENT.invoker().onActionBar(event);
 			else LucentEvent.CHAT_EVENT.invoker().onChat(event);
 			return !event.isCanceled();
@@ -67,40 +68,38 @@ public class LucentEventRegister {
 			}
 		});
 
-		// ──────────────────────────── World Render ────────────────────────────
-
 		WorldRenderEvents.END_EXTRACTION.register(context -> {
 			if (mc.level == null || mc.player == null) return;
-			float partialTick = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
-			LucentEvent.RENDER_EXTRACT_EVENT.invoker().onExtract(new LucentEvent.RenderExtractEventData(partialTick));
+			float partialTick = context.tickCounter().getGameTimeDeltaPartialTick(false);
+			LucentEvent.WORLD_RENDER.invoker().onWorldRender(new WorldRenderEvent(context, context.worldRenderer(), partialTick));
 		});
 
 		WorldRenderEvents.END_MAIN.register(context -> {
 			if (mc.level == null || mc.player == null) return;
-			float partialTick = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
-			LucentEvent.RENDER_LAST_EVENT.invoker().onRenderLast(new LucentEvent.RenderLastEventData(partialTick));
+			float partialTick = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+			LucentEvent.WORLD_RENDER_LAST.invoker().onWorldRenderLast(new WorldRenderLastEvent(context, context.worldRenderer(), partialTick));
 		});
 
 		// ───────────────────────────── GUI Screen ─────────────────────────────
 
 		HudElementRegistry.attachElementBefore(VanillaHudElements.SLEEP, Identifier.fromNamespaceAndPath(Lucent.ID, "hud_element"), (graphics, tickDelta) -> {
 			if (mc.options.hideGui || mc.level == null || mc.player == null) return;
-			GUIEvent.RenderHUD.EVENT.invoker().onRenderHUD(new GUIEvent.RenderHUD(graphics));
+			GUIEvent.RenderHUD.EVENT.invoker().onRenderHUD(new RenderHUD(graphics));
 		});
 
 		ScreenEvents.BEFORE_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
 			if (mc.level == null || mc.player == null) return;
 
-			if (screen != null) GUIEvent.OPEN.EVENT.invoker().onOpen(new GUIEvent.OPEN(screen));
+			if (screen != null) GUIEvent.OPEN.EVENT.invoker().onOpen(new GUIOpenEvent(screen));
 
 			ScreenMouseEvents.allowMouseClick(screen).register((s, click) -> {
-				GUIEvent.CLICK event = new GUIEvent.CLICK(click.x(), click.y(), click.button(), true, s);
+				GUIClickEvent event = new GUIClickEvent(click.x(), click.y(), click.button(), true, s);
 				GUIEvent.CLICK.EVENT.invoker().onClick(event);
 				return !event.isCanceled();
 			});
 
 			ScreenMouseEvents.allowMouseRelease(screen).register((s, click) -> {
-				GUIEvent.CLICK event = new GUIEvent.CLICK(click.x(), click.y(), click.button(), false, s);
+				GUIClickEvent event = new GUIClickEvent(click.x(), click.y(), click.button(), false, s);
 				GUIEvent.CLICK.EVENT.invoker().onClick(event);
 				return !event.isCanceled();
 			});
@@ -108,7 +107,7 @@ public class LucentEventRegister {
 			ScreenKeyboardEvents.allowKeyPress(screen).register((s, keyInput) -> {
 				String keyName = GLFW.glfwGetKeyName(keyInput.key(), keyInput.scancode());
 				char charTyped = (keyName != null && !keyName.isEmpty()) ? keyName.charAt(0) : '\u0000';
-				GUIEvent.KEY event = new GUIEvent.KEY(keyName, keyInput.key(), charTyped, keyInput.scancode(), s);
+				GUIKeyEvent event = new GUIKeyEvent(keyName, keyInput.key(), charTyped, keyInput.scancode(), s);
 				GUIEvent.KEY.EVENT.invoker().onKey(event);
 				return !event.isCanceled();
 			});
@@ -118,8 +117,8 @@ public class LucentEventRegister {
 
 		GUIEvent.SLOT.Click.EVENT.register((event) -> {
 			if (event.actionType == ClickType.THROW && event.slot.hasItem()) {
-				DropItemEvent.DropItem dropEvent = new DropItemEvent.DropItem(event.slot.getItem(), DropType.INVENTORY_KEY_DROP, event.button == 1);
-				DropItemEvent.EVENT.invoker().onDropItem(dropEvent);
+				DropItemEvent dropEvent = new DropItemEvent(event.slot.getItem(), DropType.INVENTORY_KEY_DROP, event.button == 1);
+				LucentEvent.DROP_ITEM_EVENT.invoker().onDropItem(dropEvent);
 				if (dropEvent.isCanceled()) event.cancel();
 			}
 		});

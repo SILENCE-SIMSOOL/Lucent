@@ -26,6 +26,7 @@ import silence.simsool.lucent.general.managers.LucentManagerRegister;
 import silence.simsool.lucent.general.utils.ClientHandler;
 import silence.simsool.lucent.general.utils.LucentUtils;
 import silence.simsool.lucent.general.utils.render.ItemRenderer;
+import silence.simsool.lucent.general.utils.render.RenderUtils;
 import silence.simsool.lucent.general.utils.render.RoundRectPIPRenderer;
 import silence.simsool.lucent.general.utils.useful.ULog;
 import silence.simsool.lucent.hud.HUDManager;
@@ -37,7 +38,7 @@ public class Lucent implements ClientModInitializer {
 
 	public static final String ID = "lucent";
 	public static final String NAME = "Lucent";
-	public static final String VERSION = "1.1.7";
+	public static final String VERSION = "1.2.0";
 	public static String LATEST_VERSION = "Fetching...";
 
 	public static Minecraft mc = Minecraft.getInstance();
@@ -66,6 +67,7 @@ public class Lucent implements ClientModInitializer {
 		LucentEventRegister.initialize();
 		LucentManagerRegister.registerAll();
 		ClientHandler.init();
+		RenderUtils.init();
 
 		if (devMode) {
 			config.registerExampleMods();

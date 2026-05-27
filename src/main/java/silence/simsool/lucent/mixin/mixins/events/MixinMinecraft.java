@@ -12,6 +12,7 @@ import net.minecraft.client.main.GameConfig;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import silence.simsool.lucent.events.impl.LucentEvent;
+import silence.simsool.lucent.general.models.data.events.lucentevent.BlockInteractEvent;
 
 @Mixin(Minecraft.class)
 public class MixinMinecraft {
@@ -33,7 +34,7 @@ public class MixinMinecraft {
 	@Inject(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;useItemOn(Lnet/minecraft/client/player/LocalPlayer;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;"), cancellable = true)
 	private void onStartUseItemBlock(CallbackInfo ci) {
 		if (!(this.hitResult instanceof BlockHitResult blockHit)) return;
-		LucentEvent.BlockInteractEventData event = new LucentEvent.BlockInteractEventData(blockHit.getBlockPos());
+		BlockInteractEvent event = new BlockInteractEvent(blockHit.getBlockPos());
 		LucentEvent.BLOCK_INTERACT_EVENT.invoker().onBlockInteract(event);
 		if (event.isCanceled()) ci.cancel();
 	}

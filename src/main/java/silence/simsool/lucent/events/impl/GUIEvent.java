@@ -3,350 +3,106 @@ package silence.simsool.lucent.events.impl;
 import static net.fabricmc.fabric.api.event.EventFactory.createArrayBacked;
 
 import net.fabricmc.fabric.api.event.Event;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ClickType;
-import net.minecraft.world.inventory.Slot;
-import silence.simsool.lucent.general.utils.useful.UChat;
+import silence.simsool.lucent.general.models.interfaces.events.guievent.*;
 
 public final class GUIEvent {
 
-	public static class RenderHUD {
-		public final GuiGraphics graphics;
-
-		public RenderHUD(GuiGraphics graphics) {
-			this.graphics = graphics;
-		}
-
-		public static final Event<Handler> EVENT = createArrayBacked(
-			Handler.class, listeners -> event -> {
-				for (Handler l : listeners) l.onRenderHUD(event);
+	public static final class RenderHUD {
+		public static final Event<IRenderHUD> EVENT = createArrayBacked(
+			IRenderHUD.class, listeners -> event -> {
+				for (IRenderHUD l : listeners) l.onRenderHUD(event);
 			}
 		);
-
-		@FunctionalInterface
-		public interface Handler {
-			void onRenderHUD(RenderHUD event);
-		}
 	}
 
-	public static class OPEN {
-		public final Screen screen;
-		public final String title;
-
-		public OPEN(Screen screen) {
-			this.screen = screen;
-			this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
-		}
-
-		public static final Event<Handler> EVENT = createArrayBacked(
-			Handler.class, listeners -> event -> {
-				for (Handler l : listeners) l.onOpen(event);
+	public static final class OPEN {
+		public static final Event<IGUIOpenEvent> EVENT = createArrayBacked(
+			IGUIOpenEvent.class, listeners -> event -> {
+				for (IGUIOpenEvent l : listeners) l.onOpen(event);
 			}
 		);
-
-		@FunctionalInterface
-		public interface Handler {
-			void onOpen(OPEN event);
-		}
 	}
 
-	public static class CLOSE {
-		public final Screen screen;
-		public final String title;
-		public final AbstractContainerMenu handler;
-		private boolean canceled = false;
-
-		public CLOSE(Screen screen, AbstractContainerMenu handler) {
-			this.screen = screen;
-			this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
-			this.handler = handler;
-		}
-
-		public void cancel() {
-			this.canceled = true;
-		}
-
-		public boolean isCanceled() {
-			return canceled;
-		}
-
-		public static final Event<Handler> EVENT = createArrayBacked(
-			Handler.class, listeners -> event -> {
-				for (Handler l : listeners) {
+	public static final class CLOSE {
+		public static final Event<IGUICloseEvent> EVENT = createArrayBacked(
+			IGUICloseEvent.class, listeners -> event -> {
+				for (IGUICloseEvent l : listeners) {
 					l.onClose(event);
 					if (event.isCanceled()) break;
 				}
 			}
 		);
-
-		@FunctionalInterface
-		public interface Handler {
-			void onClose(CLOSE event);
-		}
 	}
 
-	public static class CLICK {
-		public final double mouseX;
-		public final double mouseY;
-		public final int button;
-		public final boolean state;
-		public final Screen screen;
-		public final String title;
-		private boolean canceled = false;
-
-		public CLICK(double mouseX, double mouseY, int button, boolean state, Screen screen) {
-			this.mouseX = mouseX;
-			this.mouseY = mouseY;
-			this.button = button;
-			this.state = state;
-			this.screen = screen;
-			this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
-		}
-
-		public void cancel() {
-			this.canceled = true;
-		}
-
-		public boolean isCanceled() {
-			return canceled;
-		}
-
-		public static final Event<Handler> EVENT = createArrayBacked(
-			Handler.class, listeners -> event -> {
-				for (Handler l : listeners) {
+	public static final class CLICK {
+		public static final Event<IGUIClickEvent> EVENT = createArrayBacked(
+			IGUIClickEvent.class, listeners -> event -> {
+				for (IGUIClickEvent l : listeners) {
 					l.onClick(event);
 					if (event.isCanceled()) break;
 				}
 			}
 		);
-
-		@FunctionalInterface
-		public interface Handler {
-			void onClick(CLICK  event);
-		}
 	}
 
-	public static class KEY {
-		public final String keyName;
-		public final int key;
-		public final char character;
-		public final int scanCode;
-		public final Screen screen;
-		public final String title;
-		private boolean canceled = false;
-
-		public KEY(String keyName, int key, char character, int scanCode, Screen screen) {
-			this.keyName = keyName;
-			this.key = key;
-			this.character = character;
-			this.scanCode = scanCode;
-			this.screen = screen;
-			this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
-		}
-
-		public void cancel() {
-			this.canceled = true;
-		}
-
-		public boolean isCanceled() {
-			return canceled;
-		}
-
-		public static final Event<Handler> EVENT = createArrayBacked(
-			Handler.class, listeners -> event -> {
-				for (Handler l : listeners) {
+	public static final class KEY {
+		public static final Event<IGUIKeyEvent> EVENT = createArrayBacked(
+			IGUIKeyEvent.class, listeners -> event -> {
+				for (IGUIKeyEvent l : listeners) {
 					l.onKey(event);
 					if (event.isCanceled()) break;
 				}
 			}
 		);
-
-		@FunctionalInterface
-		public interface Handler {
-			void onKey(KEY event);
-		}
 	}
 
 	public static final class SLOT {
 
-		public static class Click {
-			public final Slot slot;
-			public final int slotId;
-			public final int button;
-			public final ClickType actionType;
-			public final AbstractContainerMenu handler;
-			public final AbstractContainerScreen<?> screen;
-			public final String title;
-			private boolean canceled = false;
-
-			public Click(Slot slot, int slotId, int button, ClickType actionType, AbstractContainerMenu handler, AbstractContainerScreen<?> screen) {
-				this.slot = slot;
-				this.slotId = slotId;
-				this.button = button;
-				this.actionType = actionType;
-				this.handler = handler;
-				this.screen = screen;
-				this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
-			}
-
-			public void cancel() {
-				this.canceled = true;
-			}
-
-			public boolean isCanceled() {
-				return canceled;
-			}
-
-			public static final Event<Handler> EVENT = createArrayBacked(
-				Handler.class, listeners -> event -> {
-					for (Handler l : listeners) {
+		public static final class Click {
+			public static final Event<IGUISlotClickEvent> EVENT = createArrayBacked(
+				IGUISlotClickEvent.class, listeners -> event -> {
+					for (IGUISlotClickEvent l : listeners) {
 						l.onSlotClick(event);
 						if (event.isCanceled()) break;
 					}
 				}
 			);
-
-			@FunctionalInterface
-			public interface Handler {
-				void onSlotClick(Click event);
-			}
 		}
 
-		public static class Render {
-			public final GuiGraphics graphics;
-			public final Slot slot;
-			public final AbstractContainerScreen<AbstractContainerMenu> screen;
-			public final String title;
-
-			public Render(GuiGraphics graphics, Slot slot, AbstractContainerScreen<AbstractContainerMenu> screen) {
-				this.graphics = graphics;
-				this.slot = slot;
-				this.screen = screen;
-				this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
-			}
-
-			public static final Event<Handler> EVENT = createArrayBacked(
-				Handler.class, listeners -> event -> {
-					for (Handler l : listeners) l.onSlotRender(event);
+		public static final class Render {
+			public static final Event<IGUISlotRenderEvent> EVENT = createArrayBacked(
+				IGUISlotRenderEvent.class, listeners -> event -> {
+					for (IGUISlotRenderEvent l : listeners) l.onSlotRender(event);
 				}
 			);
-
-			@FunctionalInterface
-			public interface Handler {
-				void onSlotRender(Render event);
-			}
 		}
 
 	}
 
 	public static final class CONTAINER {
 
-		public static class All {
-			public final GuiGraphics graphics;
-			public final Screen screen;
-			public final String title;
-			public final int mouseX;
-			public final int mouseY;
-			public final int x;
-			public final int y;
-			public final int width;
-			public final int height;
-
-			public All(GuiGraphics graphics, Screen screen, int mouseX, int mouseY, int x, int y, int width, int height) {
-				this.graphics = graphics;
-				this.screen = screen;
-				this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
-				this.mouseX = mouseX;
-				this.mouseY = mouseY;
-				this.x = x;
-				this.y = y;
-				this.width = width;
-				this.height = height;
-			}
-
-			public static final Event<Handler> EVENT = createArrayBacked(
-				Handler.class, listeners -> event -> {
-					for (Handler l : listeners) l.onContainer(event);
+		public static final class All {
+			public static final Event<IGUIContainerAllEvent> EVENT = createArrayBacked(
+				IGUIContainerAllEvent.class, listeners -> event -> {
+					for (IGUIContainerAllEvent l : listeners) l.onContainer(event);
 				}
 			);
-
-			@FunctionalInterface
-			public interface Handler {
-				void onContainer(All event);
-			}
 		}
 
-		public static class Inventory {
-			public final GuiGraphics graphics;
-			public final Screen screen;
-			public final String title;
-			public final int mouseX;
-			public final int mouseY;
-			public final int x;
-			public final int y;
-			public final int width;
-			public final int height;
-
-			public Inventory(GuiGraphics graphics, Screen screen, int mouseX, int mouseY, int x, int y, int width, int height) {
-				this.graphics = graphics;
-				this.screen = screen;
-				this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
-				this.mouseX = mouseX;
-				this.mouseY = mouseY;
-				this.x = x;
-				this.y = y;
-				this.width = width;
-				this.height = height;
-			}
-
-			public static final Event<Handler> EVENT = createArrayBacked(
-				Handler.class, listeners -> event -> {
-					for (Handler l : listeners) l.onInventory(event);
+		public static final class Inventory {
+			public static final Event<IGUIContainerInventoryEvent> EVENT = createArrayBacked(
+				IGUIContainerInventoryEvent.class, listeners -> event -> {
+					for (IGUIContainerInventoryEvent l : listeners) l.onInventory(event);
 				}
 			);
-
-			@FunctionalInterface
-			public interface Handler {
-				void onInventory(Inventory event);
-			}
 		}
 
-		public static class Chest {
-			public final GuiGraphics graphics;
-			public final Screen screen;
-			public final String title;
-			public final int mouseX;
-			public final int mouseY;
-			public final int x;
-			public final int y;
-			public final int width;
-			public final int height;
-
-			public Chest(GuiGraphics graphics, Screen screen, int mouseX, int mouseY, int x, int y, int width, int height) {
-				this.graphics = graphics;
-				this.screen = screen;
-				this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
-				this.mouseX = mouseX;
-				this.mouseY = mouseY;
-				this.x = x;
-				this.y = y;
-				this.width = width;
-				this.height = height;
-			}
-
-			public static final Event<Handler> EVENT = createArrayBacked(
-				Handler.class, listeners -> event -> {
-					for (Handler l : listeners) l.onChest(event);
+		public static final class Chest {
+			public static final Event<IGUIContainerChestEvent> EVENT = createArrayBacked(
+				IGUIContainerChestEvent.class, listeners -> event -> {
+					for (IGUIContainerChestEvent l : listeners) l.onChest(event);
 				}
 			);
-
-			@FunctionalInterface
-			public interface Handler {
-				void onChest(Chest event);
-			}
 		}
 
 	}

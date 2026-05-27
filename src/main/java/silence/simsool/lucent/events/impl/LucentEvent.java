@@ -2,74 +2,48 @@ package silence.simsool.lucent.events.impl;
 
 import static net.fabricmc.fabric.api.event.EventFactory.createArrayBacked;
 
-import com.mojang.blaze3d.platform.InputConstants;
-
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.fabric.api.event.Event;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.BossEvent;
-import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.ArrayList;
-import silence.simsool.lucent.general.models.data.KeyBind;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.*;
 
 public class LucentEvent {
 
-	/**
-	 * Event fired when initialization is finished.
-	 */
-	public static final Event<InitFinishedEvent> INIT_FINISHED_EVENT = createArrayBacked(
-		InitFinishedEvent.class, listeners -> () -> {
-			for (InitFinishedEvent listener : listeners) listener.onInitFinished();
+	public static final Event<IInitFinishedEvent> INIT_FINISHED_EVENT = createArrayBacked(
+		IInitFinishedEvent.class, listeners -> () -> {
+			for (IInitFinishedEvent listener : listeners) listener.onInitFinished();
 		}
 	);
 
-	/**
-	 * Event fired when resources are ready for use.
-	 */
-	public static final Event<ResourcesReadyEvent> RESOURCES_READY_EVENT = createArrayBacked(
-		ResourcesReadyEvent.class, listeners -> () -> {
-			for (ResourcesReadyEvent listener : listeners) listener.onResourcesReady();
+	public static final Event<IResourcesReadyEvent> RESOURCES_READY_EVENT = createArrayBacked(
+		IResourcesReadyEvent.class, listeners -> () -> {
+			for (IResourcesReadyEvent listener : listeners) listener.onResourcesReady();
 		}
 	);
 
-	/**
-	 * Container for tick events with different priority levels.
-	 */
 	public static class TickEvents {
 
-		public final Event<TickEvent> LOW = createArrayBacked(
-			TickEvent.class, listeners -> () -> {
-				for (TickEvent listener : listeners) listener.onTick();
+		public final Event<ITickEvent> LOW = createArrayBacked(
+			ITickEvent.class, listeners -> () -> {
+				for (ITickEvent listener : listeners) listener.onTick();
 			}
 		);
 
-		public final Event<TickEvent> MEDIUM = createArrayBacked(
-			TickEvent.class, listeners -> () -> {
-				for (TickEvent listener : listeners) listener.onTick();
+		public final Event<ITickEvent> MEDIUM = createArrayBacked(
+			ITickEvent.class, listeners -> () -> {
+				for (ITickEvent listener : listeners) listener.onTick();
 			}
 		);
 
-		public final Event<TickEvent> HIGH = createArrayBacked(
-			TickEvent.class, listeners -> () -> {
-				for (TickEvent listener : listeners) listener.onTick();
+		public final Event<ITickEvent> HIGH = createArrayBacked(
+			ITickEvent.class, listeners -> () -> {
+				for (ITickEvent listener : listeners) listener.onTick();
 			}
 		);
 
-		/**
-		 * Registers a listener to the LOW priority tick event.
-		 * * @param listener The tick listener to register
-		 */
-		public void register(TickEvent listener) {
+		public void register(ITickEvent listener) {
 			LOW.register(listener);
 		}
 
-		/**
-		 * Returns the invoker for the LOW priority tick event.
-		 * * @return The invoker instance
-		 */
-		public TickEvent invoker() {
+		public ITickEvent invoker() {
 			return LOW.invoker();
 		}
 
@@ -77,451 +51,131 @@ public class LucentEvent {
 
 	public static final TickEvents TICK_EVENT = new TickEvents();
 
-	/**
-	 * Event fired every second (typically every 20 ticks).
-	 */
-	public static final Event<EverySecondEvent> EVERY_SECOND_EVENT = createArrayBacked(
-		EverySecondEvent.class, listeners -> () -> {
-			for (EverySecondEvent listener : listeners) listener.onEverySecond();
+	public static final Event<IEverySecondEvent> EVERY_SECOND_EVENT = createArrayBacked(
+		IEverySecondEvent.class, listeners -> () -> {
+			for (IEverySecondEvent listener : listeners) listener.onEverySecond();
 		}
 	);
 
-	/**
-	 * Event fired on each server-side tick.
-	 */
-	public static final Event<TickEvent> SERVER_TICK_EVENT = createArrayBacked(
-		TickEvent.class, listeners -> () -> {
-			for (TickEvent listener : listeners) listener.onTick();
+	public static final Event<ITickEvent> SERVER_TICK_EVENT = createArrayBacked(
+		ITickEvent.class, listeners -> () -> {
+			for (ITickEvent listener : listeners) listener.onTick();
 		}
 	);
 
-	/**
-	 * Data container for message-related events.
-	 */
-	public static class MessageEvent {
-		public String message;
-		public String chat;
-		private boolean canceled = false;
-
-		public MessageEvent(String message, String chat) {
-			this.message = message;
-			this.chat = chat;
-		}
-
-		/**
-		 * Cancels the current event.
-		 */
-		public void cancel() {
-			this.canceled = true;
-		}
-
-		/**
-		 * Checks if the event has been canceled.
-		 * * @return true if canceled; false otherwise
-		 */
-		public boolean isCanceled() {
-			return canceled;
-		}
-	}
-
-	public static class TabCompletionEvent {
-		private final String fullInput;
-		private final String beforeCursor;
-		private final ArrayList<String> existing;
-		private String[] additional;
-
-		public TabCompletionEvent(String fullInput, String beforeCursor, ArrayList<String> existing) {
-			this.fullInput = fullInput;
-			this.beforeCursor = beforeCursor;
-			this.existing = existing;
-		}
-
-		public void post() {
-			TAB_COMPLETION_EVENT.invoker().onTabComplete(this);
-		}
-
-		public String[] intoSuggestionArray() {
-			return additional;
-		}
-
-		public void setAdditional(String[] additional) {
-			this.additional = additional;
-		}
-
-		public String getFullInput() {
-			return fullInput;
-		}
-
-		public String getBeforeCursor() {
-			return beforeCursor;
-		}
-
-		public ArrayList<String> getExisting() {
-			return existing;
-		}
-	}
-
-	/**
-	 * Event fired when a chat message is received.
-	 */
-	public static final Event<ChatEvent> CHAT_EVENT = createArrayBacked(
-		ChatEvent.class, listeners -> event -> {
-			for (ChatEvent listener : listeners) {
+	public static final Event<IChatEvent> CHAT_EVENT = createArrayBacked(
+		IChatEvent.class, listeners -> event -> {
+			for (IChatEvent listener : listeners) {
 				listener.onChat(event);
 				if (event.isCanceled()) break;
 			}
 		}
 	);
 
-	/**
-	 * Event fired when an action bar message is received.
-	 */
-	public static final Event<ActionBarEvent> ACTIONBAR_EVENT = createArrayBacked(
-		ActionBarEvent.class, listeners -> event -> {
-			for (ActionBarEvent listener : listeners) {
+	public static final Event<IActionBarEvent> ACTIONBAR_EVENT = createArrayBacked(
+		IActionBarEvent.class, listeners -> event -> {
+			for (IActionBarEvent listener : listeners) {
 				listener.onActionBar(event);
 				if (event.isCanceled()) break;
 			}
 		}
 	);
 
-	/**
-	 * Event fired when joining a server.
-	 */
-	public static final Event<ServerJoinEvent> SERVER_JOIN_EVENT = createArrayBacked(
-		ServerJoinEvent.class, listeners -> () -> {
-			for (ServerJoinEvent listener : listeners) listener.onServerJoin();
+	public static final Event<IServerJoinEvent> SERVER_JOIN_EVENT = createArrayBacked(
+		IServerJoinEvent.class, listeners -> () -> {
+			for (IServerJoinEvent listener : listeners) listener.onServerJoin();
 		}
 	);
 
-	/**
-	 * Event fired when disconnecting from a server.
-	 */
-	public static final Event<ServerDisconnectEvent> SERVER_DISCONNECT_EVENT = createArrayBacked(
-		ServerDisconnectEvent.class, listeners -> () -> {
-			for (ServerDisconnectEvent listener : listeners) listener.onServerDisconnect();
+	public static final Event<IServerDisconnectEvent> SERVER_DISCONNECT_EVENT = createArrayBacked(
+		IServerDisconnectEvent.class, listeners -> () -> {
+			for (IServerDisconnectEvent listener : listeners) listener.onServerDisconnect();
 		}
 	);
 
-	/**
-	 * Event fired when a world is loaded.
-	 */
-	public static final Event<WorldLoadEvent> WORLD_LOAD_EVENT = createArrayBacked(
-		WorldLoadEvent.class, listeners -> () -> {
-			for (WorldLoadEvent listener : listeners) listener.onWorldLoad();
+	public static final Event<IWorldLoadEvent> WORLD_LOAD_EVENT = createArrayBacked(
+		IWorldLoadEvent.class, listeners -> () -> {
+			for (IWorldLoadEvent listener : listeners) listener.onWorldLoad();
 		}
 	);
 
-	public static class BlockUpdateEventData {
-		public BlockPos pos;
-		public BlockState oldState;
-		public BlockState newState;
-		public BlockUpdateEventData(BlockPos pos, BlockState oldState, BlockState newState) {
-			this.pos = pos;
-			this.oldState = oldState;
-			this.newState = newState;
-		}
-	}
-
-	public static class RenderExtractEventData {
-		public float partialTick;
-		public RenderExtractEventData(float partialTick) {
-			this.partialTick = partialTick;
-		}
-	}
-
-	public static class RenderLastEventData {
-		public float partialTick;
-		public RenderLastEventData(float partialTick) {
-			this.partialTick = partialTick;
-		}
-	}
-
-	public static class BlockInteractEventData {
-		public BlockPos pos;
-		private boolean canceled = false;
-		public BlockInteractEventData(BlockPos pos) {
-			this.pos = pos;
-		}
-		public void cancel() { this.canceled = true; }
-		public boolean isCanceled() { return canceled; }
-	}
-
-	public static class KeyInputEventData {
-		public InputConstants.Key key;
-		private boolean canceled = false;
-		public KeyInputEventData(InputConstants.Key key) {
-			this.key = key;
-		}
-		public void cancel() { this.canceled = true; }
-		public boolean isCanceled() { return canceled; }
-	}
-
-	public static class MessageSentEventData {
-		public String message;
-		private boolean canceled = false;
-		public MessageSentEventData(String message) {
-			this.message = message;
-		}
-		public void cancel() { this.canceled = true; }
-		public boolean isCanceled() { return canceled; }
-	}
-
-	/**
-	 * Event fired when a block state is updated.
-	 */
-	public static final Event<BlockUpdateEvent> BLOCK_UPDATE_EVENT = createArrayBacked(
-		BlockUpdateEvent.class, listeners -> event -> {
-			for (BlockUpdateEvent listener : listeners) listener.onBlockUpdate(event);
+	public static final Event<IBlockUpdateEvent> BLOCK_UPDATE_EVENT = createArrayBacked(
+		IBlockUpdateEvent.class, listeners -> event -> {
+			for (IBlockUpdateEvent listener : listeners) listener.onBlockUpdate(event);
 		}
 	);
 
-	/**
-	 * Event fired during the render data extraction phase.
-	 */
-	public static final Event<RenderExtractEvent> RENDER_EXTRACT_EVENT = createArrayBacked(
-		RenderExtractEvent.class, listeners -> event -> {
-			for (RenderExtractEvent listener : listeners) listener.onExtract(event);
+	public static final Event<IWorldRenderEvent> WORLD_RENDER = createArrayBacked(
+		IWorldRenderEvent.class, listeners -> event -> {
+			for (IWorldRenderEvent listener : listeners) listener.onWorldRender(event);
 		}
 	);
 
-	/**
-	 * Event fired after all rendering is completed.
-	 */
-	public static final Event<RenderLastEvent> RENDER_LAST_EVENT = createArrayBacked(
-		RenderLastEvent.class, listeners -> event -> {
-			for (RenderLastEvent listener : listeners) listener.onRenderLast(event);
+	public static final Event<IWorldRenderLastEvent> WORLD_RENDER_LAST = createArrayBacked(
+		IWorldRenderLastEvent.class, listeners -> event -> {
+			for (IWorldRenderLastEvent listener : listeners) listener.onWorldRenderLast(event);
 		}
 	);
 
-	/**
-	 * Event fired when interacting with a block.
-	 */
-	public static final Event<BlockInteractEvent> BLOCK_INTERACT_EVENT = createArrayBacked(
-		BlockInteractEvent.class, listeners -> event -> {
-			for (BlockInteractEvent listener : listeners) {
+	public static final Event<IBlockInteractEvent> BLOCK_INTERACT_EVENT = createArrayBacked(
+		IBlockInteractEvent.class, listeners -> event -> {
+			for (IBlockInteractEvent listener : listeners) {
 				listener.onBlockInteract(event);
-				if (event.isCanceled()) break; }
+				if (event.isCanceled()) break;
+			}
 		}
 	);
 
-	/**
-	 * Event fired upon keyboard input.
-	 */
-	public static final Event<KeyInputEvent> KEY_INPUT_EVENT = createArrayBacked(
-		KeyInputEvent.class, listeners -> event -> {
-			for (KeyInputEvent listener : listeners) {
+	public static final Event<IKeyInputEvent> KEY_INPUT_EVENT = createArrayBacked(
+		IKeyInputEvent.class, listeners -> event -> {
+			for (IKeyInputEvent listener : listeners) {
 				listener.onKeyInput(event);
-				if (event.isCanceled()) break; }
+				if (event.isCanceled()) break;
+			}
 		}
 	);
 
-	/**
-	 * Event fired when a message is being sent.
-	 */
-	public static final Event<MessageSentEvent> MESSAGE_SENT_EVENT = createArrayBacked(
-		MessageSentEvent.class, listeners -> event -> {
-			for (MessageSentEvent listener : listeners) {
+	public static final Event<IMessageSentEvent> MESSAGE_SENT_EVENT = createArrayBacked(
+		IMessageSentEvent.class, listeners -> event -> {
+			for (IMessageSentEvent listener : listeners) {
 				listener.onMessageSent(event);
-				if (event.isCanceled()) break; }
+				if (event.isCanceled()) break;
+			}
 		}
 	);
 
-	/**
-	 * Event fired for tab completion suggestions.
-	 */
-	public static final Event<TabCompleteEvent> TAB_COMPLETION_EVENT = createArrayBacked(
-		TabCompleteEvent.class, listeners -> event -> {
-			for (TabCompleteEvent listener : listeners) {
+	public static final Event<ITabCompleteEvent> TAB_COMPLETION_EVENT = createArrayBacked(
+		ITabCompleteEvent.class, listeners -> event -> {
+			for (ITabCompleteEvent listener : listeners) {
 				listener.onTabComplete(event);
 			}
 		}
 	);
 
-	@FunctionalInterface
-	public interface InitFinishedEvent {
-		/** Called when initialization is complete. */
-		void onInitFinished();
-	}
-
-	@FunctionalInterface
-	public interface ResourcesReadyEvent {
-		/** Called when resources are fully loaded and ready. */
-		void onResourcesReady();
-	}
-
-	@FunctionalInterface
-	public interface TickEvent {
-		/** Called on every tick. */
-		void onTick();
-	}
-
-	@FunctionalInterface
-	public interface EverySecondEvent {
-		/** Called every second (every 20 ticks). */
-		void onEverySecond();
-	}
-
-	@FunctionalInterface
-	public interface ChatEvent {
-		/** * Called when a chat message is received.
-		 * * @param event Object containing message data and cancellation control
-		 */
-		void onChat(MessageEvent event);
-	}
-
-	@FunctionalInterface
-	public interface ActionBarEvent {
-		/** * Called when an action bar message is received.
-		 * * @param event Object containing message data and cancellation control
-		 */
-		void onActionBar(MessageEvent event);
-	}
-
-	@FunctionalInterface
-	public interface ServerJoinEvent {
-		/** Called when the client connects to a server. */
-		void onServerJoin();
-	}
-
-	@FunctionalInterface
-	public interface ServerDisconnectEvent {
-		/** Called when the client disconnects from a server. */
-		void onServerDisconnect();
-	}
-
-	@FunctionalInterface
-	public interface WorldLoadEvent {
-		/** Called when a world instance is loaded. */
-		void onWorldLoad();
-	}
-
-	@FunctionalInterface 
-	public interface BlockUpdateEvent {
-		void onBlockUpdate(BlockUpdateEventData event);
-	}
-
-	@FunctionalInterface
-	public interface RenderExtractEvent {
-		void onExtract(RenderExtractEventData event);
-	}
-
-	@FunctionalInterface
-	public interface RenderLastEvent {
-		void onRenderLast(RenderLastEventData event);
-	}
-
-	@FunctionalInterface 
-	public interface BlockInteractEvent {
-		void onBlockInteract(BlockInteractEventData event);
-	}
-
-	@FunctionalInterface 
-	public interface KeyInputEvent {
-		void onKeyInput(KeyInputEventData event);
-	}
-
-	@FunctionalInterface 
-	public interface MessageSentEvent {
-		void onMessageSent(MessageSentEventData event);
-	}
-
-	@FunctionalInterface
-	public interface TabCompleteEvent {
-		/** * Called to provide tab completion suggestions.
-		 * * @param event Object containing tab completion data
-		 */
-		void onTabComplete(TabCompletionEvent event);
-	}
-
-	// ─────────────────────────── BossBar ──────────────────────────────────────
-
-	public static class BossBarRenderEventData {
-		public final BossEvent bossBar;
-		private boolean canceled = false;
-		public BossBarRenderEventData(BossEvent bossBar) { this.bossBar = bossBar; }
-		public void cancel() { this.canceled = true; }
-		public boolean isCanceled() { return canceled; }
-	}
-
-	public static final Event<BossBarRenderEvent> BOSS_BAR_RENDER_EVENT = createArrayBacked(
-		BossBarRenderEvent.class, listeners -> event -> {
-			for (BossBarRenderEvent l : listeners) {
+	public static final Event<IBossBarRenderEvent> BOSS_BAR_RENDER_EVENT = createArrayBacked(
+		IBossBarRenderEvent.class, listeners -> event -> {
+			for (IBossBarRenderEvent l : listeners) {
 				l.onBossBarRender(event);
 				if (event.isCanceled()) break;
 			}
 		}
 	);
 
-	@FunctionalInterface
-	public interface BossBarRenderEvent {
-		void onBossBarRender(BossBarRenderEventData event);
-	}
-
-	public static class RenderLivingPreEventData {
-		public final LivingEntityRenderState state;
-		public final PoseStack poseStack;
-		private boolean canceled = false;
-
-		public RenderLivingPreEventData(LivingEntityRenderState state, PoseStack poseStack) {
-			this.state = state;
-			this.poseStack = poseStack;
-		}
-
-		public void cancel() { this.canceled = true; }
-
-		public boolean isCanceled() { return canceled; }
-	}
-
-	public static final Event<RenderLivingPreEvent> RENDER_LIVING_PRE_EVENT = createArrayBacked(
-			RenderLivingPreEvent.class, listeners -> event -> {
-				for (RenderLivingPreEvent listener : listeners) {
-					listener.onRenderLivingPre(event);
-
-					if (event.isCanceled()) break;
-				}
-			}
-	);
-
-	@FunctionalInterface
-	public interface RenderLivingPreEvent {
-		void onRenderLivingPre(RenderLivingPreEventData event);
-	}
-
-	public static class KeybindEventData {
-		public final KeyBind keybind;
-		private final boolean pressed;
-		private final boolean keyDown;
-
-		public KeybindEventData(KeyBind keybind, boolean pressed, boolean keyDown) {
-			this.keybind = keybind;
-			this.pressed = pressed;
-			this.keyDown = keyDown;
-		}
-
-		public boolean isPressed() {
-			return pressed;
-		}
-
-		public boolean isKeyDown() {
-			return keyDown;
-		}
-	}
-
-	public static final Event<KeybindEvent> KEYBIND_EVENT = createArrayBacked(
-		KeybindEvent.class, listeners -> event -> {
-			for (KeybindEvent listener : listeners) {
+	public static final Event<IKeybindEvent> KEYBIND_EVENT = createArrayBacked(
+		IKeybindEvent.class, listeners -> event -> {
+			for (IKeybindEvent listener : listeners) {
 				listener.onKeybind(event);
 			}
 		}
 	);
 
-	@FunctionalInterface
-	public interface KeybindEvent {
-		void onKeybind(KeybindEventData event);
-	}
-
-
-
+	public static final Event<IDropItemEvent> DROP_ITEM_EVENT = createArrayBacked(
+		IDropItemEvent.class, listeners -> event -> {
+			for (IDropItemEvent listener : listeners) {
+				listener.onDropItem(event);
+				if (event.isCanceled()) break;
+			}
+		}
+	);
 
 }

@@ -2,112 +2,59 @@ package silence.simsool.lucent.general.utils.render;
 
 import static silence.simsool.lucent.Lucent.mc;
 
+import java.awt.Color;
 import java.util.List;
 
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import silence.simsool.lucent.events.impl.LucentEvent;
+import silence.simsool.lucent.general.models.data.render.BeaconBeamData;
+import silence.simsool.lucent.general.models.data.render.BoxData;
+import silence.simsool.lucent.general.models.data.render.LineData;
+import silence.simsool.lucent.general.models.data.render.TextData;
 import silence.simsool.lucent.general.utils.useful.URender;
+import silence.simsool.lucent.mixin.accessors.BeaconBeamAccessor;
 import silence.simsool.lucent.ui.utils.UColor;
 
 public class RenderUtils {
+
 	private static final List<LineData> queuedLines = new ObjectArrayList<>();
 	private static final List<BoxData> queuedFilledBoxes = new ObjectArrayList<>();
 	private static final List<BoxData> queuedWireBoxes = new ObjectArrayList<>();
 	private static final List<TextData> queuedTexts = new ObjectArrayList<>();
+	private static final List<BeaconBeamData> queuedBeaconBeams = new ObjectArrayList<>();
 
-	private static class LineData {
-		final Vec3 from, to;
-		final int color1, color2;
-		final float thickness;
-		final boolean depth;
+	private static final Identifier BEAM_TEXTURE = Identifier.fromNamespaceAndPath("minecraft", "textures/entity/beacon_beam.png");
 
-		LineData(Vec3 from, Vec3 to, int color1, int color2, float thickness, boolean depth) {
-			this.from = from;
-			this.to = to;
-			this.color1 = color1;
-			this.color2 = color2;
-			this.thickness = thickness;
-			this.depth = depth;
-		}
+	private static float lastTickDelta = 1.0f;
 
-		RenderType renderType() {
-			boolean fullyOpaque = isFullyOpaque(color1) && isFullyOpaque(color2);
-			return resolveLineRenderType(depth, fullyOpaque);
-		}
-	}
-
-	private static class BoxData {
-		final AABB aabb;
-		final float r, g, b, a;
-		final float thickness;
-		final boolean depth;
-
-		BoxData(AABB aabb, int color, float thickness, boolean depth) {
-			this.aabb = aabb;
-			this.r = UColor.getRedF(color);
-			this.g = UColor.getGreenF(color);
-			this.b = UColor.getBlueF(color);
-			this.a = UColor.getAlphaF(color);
-			this.thickness = thickness;
-			this.depth = depth;
-		}
-
-		RenderType lineRenderType() {
-			boolean fullyOpaque = a >= 0.999f;
-			return resolveLineRenderType(depth, fullyOpaque);
-		}
-
-		RenderType filledRenderType() {
-			return depth ? RenderTypes.debugFilledBox() : LucentRenderType.QUADS_ESP;
-		}
-	}
-
-	private static class TextData {
-		final String text;
-		final Vec3 pos;
-		final float scale;
-		final boolean depth;
-		final Quaternionf cameraRotation;
-		final Font font;
-		final float textWidth;
-
-		TextData(String text, Vec3 pos, float scale, boolean depth, Quaternionf rotation, Font font, float width) {
-			this.text = text;
-			this.pos = pos;
-			this.scale = scale;
-			this.depth = depth;
-			this.cameraRotation = rotation;
-			this.font = font;
-			this.textWidth = width;
-		}
-	}
-
-	static {
-		WorldRenderEvents.END_MAIN.register(context -> {
-			PoseStack matrix = context.matrices();
-			MultiBufferSource.BufferSource bufferSource = (MultiBufferSource.BufferSource) context.consumers();
+	public static void init() {
+		LucentEvent.WORLD_RENDER_LAST.register(event -> {
+			PoseStack matrix = event.context.matrices();
+			MultiBufferSource.BufferSource bufferSource = (MultiBufferSource.BufferSource) event.context.consumers();
 			if (bufferSource == null) {
 				clearAll();
 				RoundRectPIPRenderer.clear();
 				return;
 			}
+
+			lastTickDelta = event.partialTick;
 
 			Vec3 camera = mc.gameRenderer.getMainCamera().position();
 
@@ -119,6 +66,7 @@ public class RenderUtils {
 
 			matrix.popPose();
 
+			renderQueuedBeaconBeams(matrix, bufferSource, camera);
 			renderQueuedTexts(matrix, bufferSource, camera);
 
 			clearAll();
@@ -126,11 +74,232 @@ public class RenderUtils {
 		});
 	}
 
+	// Draw Box
+	public static void drawBox(Object target, Object color, boolean depth) {
+		queuedFilledBoxes.add(new BoxData(toAABB(target), toColorInt(color), 3f, depth));
+	}
+
+	public static void drawBox(Object target, Object color) {
+		drawBox(target, color, true);
+	}
+
+	// Draw Box Line
+	public static void drawBoxLine(Object target, Object color, float thickness, boolean depth) {
+		queuedWireBoxes.add(new BoxData(toAABB(target), toColorInt(color), thickness, depth));
+	}
+
+	public static void drawBoxLine(Object target, Object color, float thickness) {
+		drawBoxLine(target, color, thickness, true);
+	}
+
+	// Draw Line
+	public static void drawLine(Object from, Object to, Object color, boolean depth, float thickness) {
+		drawLine(from, to, color, color, depth, thickness);
+	}
+
+	public static void drawLine(Object from, Object to, Object color, float thickness) {
+		drawLine(from, to, color, color, true, thickness);
+	}
+
+	public static void drawLine(Object from, Object to, Object color1, Object color2, boolean depth, float thickness) {
+		queuedLines.add(new LineData(toVec3(from), toVec3(to), toColorInt(color1), toColorInt(color2), thickness, depth));
+	}
+
+	public static void drawLine(Object from, Object to, Object color1, Object color2, float thickness) {
+		drawLine(from, to, color1, color2, true, thickness);
+	}
+
+	// Draw Tracer
+	public static void drawTracer(Object to, Object color, boolean depth, float thickness) {
+		Vec3 from = URender.getRenderPos(mc.player).add(mc.player.getForward().add(0.0, mc.player.getEyeHeight(), 0.0));
+		drawLine(from, to, color, depth, thickness);
+	}
+
+	public static void drawTracer(Object to, Object color, float thickness) {
+		drawTracer(to, color, true, thickness);
+	}
+
+	// Draw Selected Box
+	public static void drawSelectedBox(Object target, Object color, float expandX, float expandY, float expandZ, boolean depth) {
+		int c = toColorInt(color);
+		if (target instanceof AABB aabb) {
+			drawBox(aabb.inflate(expandX, expandY, expandZ), c, depth);
+		} else {
+			BlockPos pos = toBlockPos(target);
+			BlockState state = mc.level.getBlockState(pos);
+			VoxelShape shape = state.getShape(mc.level, pos);
+			if (shape.isEmpty()) {
+				drawBox(new AABB(pos).inflate(expandX, expandY, expandZ), c, depth);
+				return;
+			}
+			AABB aabb = shape.bounds().move(pos).inflate(expandX, expandY, expandZ);
+			drawBox(aabb, c, depth);
+		}
+	}
+
+	public static void drawSelectedBox(Object target, Object color, float expandX, float expandY, float expandZ) {
+		drawSelectedBox(target, color, expandX, expandY, expandZ, true);
+	}
+
+	public static void drawSelectedBox(Object target, Object color, boolean depth) {
+		drawSelectedBox(target, color, 0f, 0f, 0f, depth);
+	}
+
+	public static void drawSelectedBox(Object target, Object color) {
+		drawSelectedBox(target, color, 0f, 0f, 0f, true);
+	}
+
+	public static void drawSelectedBox(Object target, Object color, float expandXYZ, boolean depth) {
+		drawSelectedBox(target, color, expandXYZ, expandXYZ, expandXYZ, depth);
+	}
+
+	public static void drawSelectedBox(Object target, Object color, float expandXYZ) {
+		drawSelectedBox(target, color, expandXYZ, expandXYZ, expandXYZ, true);
+	}
+
+	// Draw Selected Box Line
+	public static void drawSelectedBoxLine(Object target, Object color, float thickness, float expandX, float expandY, float expandZ, boolean depth) {
+		int c = toColorInt(color);
+		if (target instanceof AABB aabb) {
+			drawBoxLine(aabb.inflate(expandX, expandY, expandZ), c, thickness, depth);
+		} else {
+			BlockPos pos = toBlockPos(target);
+			BlockState state = mc.level.getBlockState(pos);
+			VoxelShape shape = state.getShape(mc.level, pos);
+			if (shape.isEmpty()) {
+				drawBoxLine(new AABB(pos).inflate(expandX, expandY, expandZ), c, thickness, depth);
+				return;
+			}
+			AABB aabb = shape.bounds().move(pos).inflate(expandX, expandY, expandZ);
+			drawBoxLine(aabb, c, thickness, depth);
+		}
+	}
+
+	public static void drawSelectedBoxLine(Object target, Object color, float thickness, float expandX, float expandY, float expandZ) {
+		drawSelectedBoxLine(target, color, thickness, expandX, expandY, expandZ, true);
+	}
+
+	public static void drawSelectedBoxLine(Object target, Object color, float thickness, boolean depth) {
+		drawSelectedBoxLine(target, color, thickness, 0f, 0f, 0f, depth);
+	}
+
+	public static void drawSelectedBoxLine(Object target, Object color, float thickness) {
+		drawSelectedBoxLine(target, color, thickness, 0f, 0f, 0f, true);
+	}
+
+	public static void drawSelectedBoxLine(Object target, Object color, float thickness, float expandXYZ, boolean depth) {
+		drawSelectedBoxLine(target, color, thickness, expandXYZ, expandXYZ, expandXYZ, depth);
+	}
+
+	public static void drawSelectedBoxLine(Object target, Object color, float thickness, float expandXYZ) {
+		drawSelectedBoxLine(target, color, thickness, expandXYZ, expandXYZ, expandXYZ, true);
+	}
+
+	// Draw Text
+	public static void drawText(String text, Object pos, float scale, boolean depth) {
+		Font font = mc.font;
+		queuedTexts.add(new TextData(text, toVec3(pos), scale, depth, mc.gameRenderer.getMainCamera().rotation(), font, font.width(text)));
+	}
+
+	public static void drawText(String text, Object pos, float scale) {
+		drawText(text, pos, scale, true);
+	}
+
+	// Draw Styled Box
+	public static void drawStyledBox(Object target, Object color, int style, boolean depth) {
+		int c = toColorInt(color);
+		AABB aabb = toAABB(target);
+		switch (style) {
+			case 0 -> drawBox(aabb, c, depth);
+			case 1 -> drawBoxLine(aabb, c, 3f, depth);
+			case 2 -> {
+				drawBox(aabb, UColor.withAlpha(c, UColor.getAlpha(c) / 2), depth);
+				drawBoxLine(aabb, c, 3f, depth);
+			}
+		}
+	}
+
+	public static void drawStyledBox(Object target, Object color, int style) {
+		drawStyledBox(target, color, style, true);
+	}
+
+	// Draw Cylinder
+	public static void drawCylinder(Object center, float radius, float height, Object color, int segments, float thickness, boolean depth) {
+		Vec3 cVec = toVec3(center);
+		int c = toColorInt(color);
+		double angleStep = 2.0 * Math.PI / segments;
+
+		for (int i = 0; i < segments; i++) {
+			double angle1 = i * angleStep;
+			double angle2 = (i + 1) * angleStep;
+
+			float x1 = (float) (radius * Math.cos(angle1));
+			float z1 = (float) (radius * Math.sin(angle1));
+			float x2 = (float) (radius * Math.cos(angle2));
+			float z2 = (float) (radius * Math.sin(angle2));
+
+			Vec3 p1Top = cVec.add(x1, height, z1);
+			Vec3 p2Top = cVec.add(x2, height, z2);
+			Vec3 p1Bottom = cVec.add(x1, 0, z1);
+			Vec3 p2Bottom = cVec.add(x2, 0, z2);
+
+			queuedLines.add(new LineData(p1Top, p2Top, c, c, thickness, depth));
+			queuedLines.add(new LineData(p1Bottom, p2Bottom, c, c, thickness, depth));
+			queuedLines.add(new LineData(p1Bottom, p1Top, c, c, thickness, depth));
+		}
+	}
+
+	public static void drawCylinder(Object center, float radius, float height, Object color, int segments, float thickness) {
+		drawCylinder(center, radius, height, color, segments, thickness, true);
+	}
+
+	// Draw Beacon Beam
+	public static void drawBeaconBeam(Object pos, Object color, float partialTicks, long gameTime, boolean isScoping) {
+		queuedBeaconBeams.add(new BeaconBeamData(toVec3(pos), toColorInt(color), partialTicks, gameTime, isScoping));
+	}
+
+	public static void drawBeaconBeam(Object pos, Object color, boolean isScoping) {
+		long gameTime = mc.level != null ? mc.level.getGameTime() : 0L;
+		drawBeaconBeam(pos, color, lastTickDelta, gameTime, isScoping);
+	}
+
+	public static void drawBeaconBeam(Object pos, Object color) {
+		drawBeaconBeam(pos, color, false);
+	}
+
 	private static void clearAll() {
 		queuedLines.clear();
 		queuedFilledBoxes.clear();
 		queuedWireBoxes.clear();
 		queuedTexts.clear();
+		queuedBeaconBeams.clear();
+	}
+
+	private static Vec3 toVec3(Object obj) {
+		if (obj instanceof Vec3 vec) return vec;
+		if (obj instanceof BlockPos pos) return new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+		if (obj instanceof AABB aabb) return aabb.getCenter();
+		throw new IllegalArgumentException("Unsupported type for Vec3 conversion: " + (obj == null ? "null" : obj.getClass()));
+	}
+
+	private static BlockPos toBlockPos(Object obj) {
+		if (obj instanceof BlockPos pos) return pos;
+		if (obj instanceof Vec3 vec) return new BlockPos((int) Math.floor(vec.x), (int) Math.floor(vec.y), (int) Math.floor(vec.z));
+		if (obj instanceof AABB aabb) return new BlockPos((int) Math.floor(aabb.minX), (int) Math.floor(aabb.minY), (int) Math.floor(aabb.minZ));
+		throw new IllegalArgumentException("Unsupported type for BlockPos conversion: " + (obj == null ? "null" : obj.getClass()));
+	}
+
+	private static AABB toAABB(Object obj) {
+		if (obj instanceof AABB aabb) return aabb;
+		if (obj instanceof BlockPos pos) return new AABB(pos);
+		if (obj instanceof Vec3 vec) return new AABB(vec.x, vec.y, vec.z, vec.x + 1.0, vec.y + 1.0, vec.z + 1.0);
+		throw new IllegalArgumentException("Unsupported type for AABB conversion: " + (obj == null ? "null" : obj.getClass()));
+	}
+
+	private static int toColorInt(Object color) {
+		if (color instanceof Integer c) return c;
+		if (color instanceof Color c) return c.getRGB();
+		throw new IllegalArgumentException("Unsupported type for Color conversion: " + (color == null ? "null" : color.getClass()));
 	}
 
 	private static void renderQueuedLinesAndWireBoxes(PoseStack matrix, MultiBufferSource.BufferSource bufferSource) {
@@ -171,114 +340,46 @@ public class RenderUtils {
 		}
 	}
 
-	private static boolean isFullyOpaque(int color) {
+	private static void renderQueuedBeaconBeams(PoseStack matrix, MultiBufferSource bufferSource, Vec3 camera) {
+		if (queuedBeaconBeams.isEmpty()) return;
+		for (BeaconBeamData beam : queuedBeaconBeams) {
+			matrix.pushPose();
+			matrix.translate(beam.pos.x - camera.x, beam.pos.y - camera.y, beam.pos.z - camera.z);
+
+			double centerX = beam.pos.x + 0.5;
+			double centerZ = beam.pos.z + 0.5;
+			double dx = camera.x - centerX;
+			double dz = camera.z - centerZ;
+			float length = (float) Math.sqrt(dx * dx + dz * dz);
+
+			float scale = beam.isScoping ? 1.0f : Math.max(1.0f, length * 0.010416667f);
+			float animationTime = (float) (beam.gameTime % 40) + beam.partialTicks;
+
+			BeaconBeamAccessor.invokeRenderBeam(
+				matrix,
+				mc.gameRenderer.getFeatureRenderDispatcher().getSubmitNodeStorage(),
+				BEAM_TEXTURE,
+				1.0f,
+				animationTime,
+				0,
+				319,
+				beam.color,
+				0.2f * scale,
+				0.25f * scale
+			);
+			matrix.popPose();
+		}
+	}
+
+	public static boolean isFullyOpaque(int color) {
 		return UColor.getAlpha(color) == 0xFF;
 	}
 
-	private static RenderType resolveLineRenderType(boolean depth, boolean fullyOpaque) {
+	public static RenderType resolveLineRenderType(boolean depth, boolean fullyOpaque) {
 		if (depth && fullyOpaque) return RenderTypes.lines();
 		if (depth) return RenderTypes.linesTranslucent();
 		if (fullyOpaque) return LucentRenderType.LINES_ESP;
 		return LucentRenderType.LINES_TRANSLUCENT_ESP;
-	}
-
-	public static void drawLine(Vec3 from, Vec3 to, int color, boolean depth, float thickness) {
-		queuedLines.add(new LineData(from, to, color, color, thickness, depth));
-	}
-
-	public static void drawLine(Vec3 from, Vec3 to, int color1, int color2, boolean depth, float thickness) {
-		queuedLines.add(new LineData(from, to, color1, color2, thickness, depth));
-	}
-
-	public static void drawFilledBox(AABB aabb, int color, boolean depth) {
-		queuedFilledBoxes.add(new BoxData(aabb, color, 3f, depth));
-	}
-
-	public static void drawWireFrameBox(AABB aabb, int color, float thickness, boolean depth) {
-		queuedWireBoxes.add(new BoxData(aabb, color, thickness, depth));
-	}
-
-	public static void drawTracer(Vec3 to, int color, boolean depth, float thickness) {
-		if (mc.player == null) return;
-		Vec3 from = URender.getRenderPos(mc.player).add(mc.player.getForward().add(0.0, mc.player.getEyeHeight(), 0.0));
-		drawLine(from, to, color, depth, thickness);
-	}
-
-	/**
-	 * Renders a wireframe box around a block's actual hitbox (VoxelShape).
-	 */
-	public static void drawSelectedBoxLine(BlockPos pos, int color, float thickness, float expandX, float expandY, float expandZ, boolean depth) {
-		if (mc.level == null) return;
-		BlockState state = mc.level.getBlockState(pos);
-		VoxelShape shape = state.getShape(mc.level, pos);
-		if (shape.isEmpty()) {
-			drawWireFrameBox(new AABB(pos).inflate(expandX, expandY, expandZ), color, thickness, depth);
-			return;
-		}
-		AABB aabb = shape.bounds().move(pos).inflate(expandX, expandY, expandZ);
-		drawWireFrameBox(aabb, color, thickness, depth);
-	}
-
-	public static void drawSelectedBoxLine(BlockPos pos, int color, float thickness, boolean depth) {
-		drawSelectedBoxLine(pos, color, thickness, 0, 0, 0, depth);
-	}
-
-	/**
-	 * Renders a filled box around a block's actual hitbox (VoxelShape).
-	 */
-	public static void drawSelectedBoxFilled(BlockPos pos, int color, float expandX, float expandY, float expandZ, boolean depth) {
-		if (mc.level == null) return;
-		BlockState state = mc.level.getBlockState(pos);
-		VoxelShape shape = state.getShape(mc.level, pos);
-		if (shape.isEmpty()) {
-			drawFilledBox(new AABB(pos).inflate(expandX, expandY, expandZ), color, depth);
-			return;
-		}
-		AABB aabb = shape.bounds().move(pos).inflate(expandX, expandY, expandZ);
-		drawFilledBox(aabb, color, depth);
-	}
-
-	public static void drawSelectedBoxFilled(BlockPos pos, int color, boolean depth) {
-		drawSelectedBoxFilled(pos, color, 0, 0, 0, depth);
-	}
-
-	public static void drawText(String text, Vec3 pos, float scale, boolean depth) {
-		Font font = mc.font;
-		queuedTexts.add(new TextData(text, pos, scale, depth, mc.gameRenderer.getMainCamera().rotation(), font, font.width(text)));
-	}
-
-	public static void drawStyledBox(AABB aabb, int color, int style, boolean depth) {
-		switch (style) {
-			case 0 -> drawFilledBox(aabb, color, depth);
-			case 1 -> drawWireFrameBox(aabb, color, 3f, depth);
-			case 2 -> {
-				drawFilledBox(aabb, UColor.withAlpha(color, UColor.getAlpha(color) / 2), depth);
-				drawWireFrameBox(aabb, color, 3f, depth);
-			}
-		}
-	}
-
-	public static void drawCylinder(Vec3 center, float radius, float height, int color, int segments, float thickness, boolean depth) {
-		double angleStep = 2.0 * Math.PI / segments;
-
-		for (int i = 0; i < segments; i++) {
-			double angle1 = i * angleStep;
-			double angle2 = (i + 1) * angleStep;
-
-			float x1 = (float) (radius * Math.cos(angle1));
-			float z1 = (float) (radius * Math.sin(angle1));
-			float x2 = (float) (radius * Math.cos(angle2));
-			float z2 = (float) (radius * Math.sin(angle2));
-
-			Vec3 p1Top = center.add(x1, height, z1);
-			Vec3 p2Top = center.add(x2, height, z2);
-			Vec3 p1Bottom = center.add(x1, 0, z1);
-			Vec3 p2Bottom = center.add(x2, 0, z2);
-
-			queuedLines.add(new LineData(p1Top, p2Top, color, color, thickness, depth));
-			queuedLines.add(new LineData(p1Bottom, p2Bottom, color, color, thickness, depth));
-			queuedLines.add(new LineData(p1Bottom, p1Top, color, color, thickness, depth));
-		}
 	}
 
 	public static class PrimitiveRenderer {
@@ -361,4 +462,5 @@ public class RenderUtils {
 			buffer.addVertex(pose, endX, endY, endZ).setColor(endColor).setNormal(pose, nx, ny, nz).setLineWidth(thickness);
 		}
 	}
+
 }

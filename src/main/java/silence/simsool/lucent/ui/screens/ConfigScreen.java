@@ -26,6 +26,7 @@ import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.config.LucentConfig;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.general.enums.Align;
+import silence.simsool.lucent.general.enums.KeyMode;
 import silence.simsool.lucent.general.models.abstracts.Mod;
 import silence.simsool.lucent.general.models.data.KeyBind;
 import silence.simsool.lucent.general.models.data.LucentTheme;
@@ -1426,7 +1427,7 @@ public class ConfigScreen extends Screen {
 				case KEYBIND -> {
 					KeyBind initialBind = null;
 					if (val instanceof KeyBind kb) initialBind = kb;
-					KeyBindButton kbb = new KeyBindButton(ux - 100, controlYBase - 6, 100, 34, initialBind);
+					KeyBindButton kbb = new KeyBindButton(ux - 100, controlYBase - 6, 100, 34, initialBind, cfg.keymode());
 					final Field field = (member instanceof Field f) ? f : null;
 					kbb.setOnChange(v -> {
 						try {
@@ -1668,7 +1669,7 @@ public class ConfigScreen extends Screen {
 				}
 				case KEYBIND -> {
 					KeyBind initialBind = (val instanceof KeyBind kb) ? kb : null;
-					KeyBindButton kbb = new KeyBindButton(widgetX, widgetY, widgetW, widgetH, initialBind);
+					KeyBindButton kbb = new KeyBindButton(widgetX, widgetY, widgetW, widgetH, initialBind, cfg.keymode());
 					kbb.setOnChange(v -> {
 						try {
 							field.set(currentModSettings, v);

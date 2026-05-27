@@ -1,10 +1,10 @@
 package silence.simsool.lucent.general.models.abstracts;
 
-import silence.simsool.lucent.events.impl.DropItemEvent;
-import silence.simsool.lucent.events.impl.GUIEvent;
-import silence.simsool.lucent.events.impl.LucentEvent;
-import silence.simsool.lucent.events.impl.MouseEvent;
-import silence.simsool.lucent.events.impl.PacketEvent;
+import silence.simsool.lucent.general.models.data.events.guievent.*;
+import silence.simsool.lucent.general.models.data.events.lucentevent.*;
+import silence.simsool.lucent.general.models.data.events.mouseevent.*;
+import silence.simsool.lucent.general.models.data.events.packetevent.*;
+import silence.simsool.lucent.general.models.data.events.entityevent.*;
 
 public abstract class Mod {
 	public final String name;
@@ -12,7 +12,7 @@ public abstract class Mod {
 	public final String category;
 	public final String searchTags;
 	public final String icon;
-	public boolean isEnabled = false; // 모드 자체의 활성화 여부
+	public boolean isEnabled = false;
 
 	public Mod(String name, String description, String category, String searchTags, String icon) {
 		this.name = name;
@@ -29,37 +29,38 @@ public abstract class Mod {
 	public void onHighTick() {}
 	public void onEverySecond() {}
 	public void onServerTick() {}
-	public void onChat(LucentEvent.MessageEvent event) {}
-	public void onActionBar(LucentEvent.MessageEvent event) {}
+	public void onChat(MessageEvent event) {}
+	public void onActionBar(MessageEvent event) {}
 	public void onServerJoin() {}
 	public void onServerDisconnect() {}
 	public void onWorldLoad() {}
-	public void onBlockUpdate(LucentEvent.BlockUpdateEventData event) {}
-	public void onExtract(LucentEvent.RenderExtractEventData event) {}
-	public void onRenderLast(LucentEvent.RenderLastEventData event) {}
-	public void onBlockInteract(LucentEvent.BlockInteractEventData event) {}
-	public void onKeyInput(LucentEvent.KeyInputEventData event) {}
-	public void onMessageSent(LucentEvent.MessageSentEventData event) {}
-	public void onTabComplete(LucentEvent.TabCompletionEvent event) {}
-	public void onBossBarRender(LucentEvent.BossBarRenderEventData event) {}
-	public void onRenderLivingPre(LucentEvent.RenderLivingPreEventData event) {}
-	public void onKeybind(LucentEvent.KeybindEventData event) {}
+	public void onBlockUpdate(BlockUpdateEvent event) {}
+	public void onWorldRender(WorldRenderEvent event) {}
+	public void onWorldRenderLast(WorldRenderLastEvent event) {}
+	public void onBlockInteract(BlockInteractEvent event) {}
+	public void onKeyInput(KeyInputEvent event) {}
+	public void onMessageSent(MessageSentEvent event) {}
+	public void onTabComplete(TabCompletionEvent event) {}
+	public void onBossBarRender(BossBarRenderEvent event) {}
+	public void onRenderLivingPre(RenderLivingPreEvent event) {}
+	public void onRenderEntity(RenderEntityEvent event) {}
+	public void onKeybind(KeybindEvent event) {}
 
-	public void onRenderHUD(GUIEvent.RenderHUD event) {}
-	public void onGUIOpen(GUIEvent.OPEN event) {}
-	public void onGUIClose(GUIEvent.CLOSE event) {}
-	public void onGUIClick(GUIEvent.CLICK event) {}
-	public void onGUIKey(GUIEvent.KEY event) {}
-	public void onSlotClick(GUIEvent.SLOT.Click event) {}
-	public void onSlotRender(GUIEvent.SLOT.Render event) {}
-	public void onRenderContainer(GUIEvent.CONTAINER.All event) {}
-	public void onRenderInventory(GUIEvent.CONTAINER.Inventory event) {}
-	public void onRenderChest(GUIEvent.CONTAINER.Chest event) {}
+	public void onRenderHUD(RenderHUD event) {}
+	public void onGUIOpen(GUIOpenEvent event) {}
+	public void onGUIClose(GUICloseEvent event) {}
+	public void onGUIClick(GUIClickEvent event) {}
+	public void onGUIKey(GUIKeyEvent event) {}
+	public void onSlotClick(GUISlotClickEvent event) {}
+	public void onSlotRender(GUISlotRenderEvent event) {}
+	public void onRenderContainer(GUIContainerAllEvent event) {}
+	public void onRenderInventory(GUIContainerInventoryEvent event) {}
+	public void onRenderChest(GUIContainerChestEvent event) {}
 
-	public void onDropItem(DropItemEvent.DropItem event) {}
+	public void onDropItem(DropItemEvent event) {}
 
-	public void onMouseClick(MouseEvent.ClickEvent event) {}
+	public void onMouseClick(ClickEvent event) {}
 
-	public void onPacketReceive(PacketEvent.PacketReceiveEvent event) {}
-	public void onPacketSend(PacketEvent.PacketSendEvent event) {}
+	public void onPacketReceive(PacketReceiveEvent event) {}
+	public void onPacketSend(PacketSendEvent event) {}
 }

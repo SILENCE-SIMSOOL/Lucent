@@ -7,6 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import silence.simsool.lucent.general.enums.ConfigType;
+import silence.simsool.lucent.general.enums.KeyMode;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD})
@@ -22,6 +23,7 @@ public @interface ModConfig {
 	String[] options() default {};
 	int priority() default 0;
 	String parent() default "";
+	KeyMode keymode() default KeyMode.ALL;
 
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.TYPE)

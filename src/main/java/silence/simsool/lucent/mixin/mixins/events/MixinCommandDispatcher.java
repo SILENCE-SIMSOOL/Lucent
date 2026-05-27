@@ -1,6 +1,6 @@
 package silence.simsool.lucent.mixin.mixins.events;
 
-import silence.simsool.lucent.events.impl.LucentEvent.TabCompletionEvent;
+import silence.simsool.lucent.general.models.data.events.lucentevent.TabCompletionEvent;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.brigadier.CommandDispatcher;
