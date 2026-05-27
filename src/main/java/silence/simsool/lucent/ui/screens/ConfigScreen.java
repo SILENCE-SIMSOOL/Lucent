@@ -26,7 +26,6 @@ import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.config.LucentConfig;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.general.enums.Align;
-import silence.simsool.lucent.general.enums.KeyMode;
 import silence.simsool.lucent.general.models.abstracts.Mod;
 import silence.simsool.lucent.general.models.data.KeyBind;
 import silence.simsool.lucent.general.models.data.LucentTheme;
