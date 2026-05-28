@@ -77,6 +77,16 @@ public final class GUIEvent {
 			);
 		}
 
+		public static final class Update {
+			public static final Event<IGUISlotUpdateEvent> EVENT = createArrayBacked(
+				IGUISlotUpdateEvent.class, listeners -> event -> {
+					for (IGUISlotUpdateEvent l : listeners) {
+						l.onSlotUpdate(event);
+					}
+				}
+			);
+		}
+
 	}
 
 	public static final class CONTAINER {

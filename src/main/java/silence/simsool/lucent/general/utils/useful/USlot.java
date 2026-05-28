@@ -31,6 +31,26 @@ public class USlot {
 		clickSlot(containerId, slotIndex, 0, ClickType.QUICK_MOVE);
 	}
 
+	public static void leftClickClose(int containerId, int slotIndex) {
+		clickSlot(containerId, slotIndex, 0, ClickType.PICKUP);
+		UScreen.close();
+	}
+
+	public static void rightClickClose(int containerId, int slotIndex) {
+		clickSlot(containerId, slotIndex, 1, ClickType.PICKUP);
+		UScreen.close();
+	}
+
+	public static void dropClickClose(int containerId, int slotIndex) {
+		clickSlot(containerId, slotIndex, 0, ClickType.THROW);
+		UScreen.close();
+	}
+
+	public static void shiftClickClose(int containerId, int slotIndex) {
+		clickSlot(containerId, slotIndex, 0, ClickType.QUICK_MOVE);
+		UScreen.close();
+	}
+
 	public static void sendClickPacket(int containerId, int slotIndex, int button, ClickType clickType) {
 		if (mc.player == null) return;
 		ServerboundContainerClickPacket packet = new ServerboundContainerClickPacket(
@@ -59,6 +79,26 @@ public class USlot {
 
 	public static void shiftClickSCP(int containerId, int slotIndex) {
 		sendClickPacket(containerId, slotIndex, 0, ClickType.QUICK_MOVE);
+	}
+
+	public static void leftClickSCPClose(int containerId, int slotIndex) {
+		sendClickPacket(containerId, slotIndex, 0, ClickType.PICKUP);
+		UScreen.close();
+	}
+
+	public static void rightClickSCPClose(int containerId, int slotIndex) {
+		sendClickPacket(containerId, slotIndex, 1, ClickType.PICKUP);
+		UScreen.close();
+	}
+
+	public static void dropClickSCPClose(int containerId, int slotIndex) {
+		sendClickPacket(containerId, slotIndex, 0, ClickType.THROW);
+		UScreen.close();
+	}
+
+	public static void shiftClickSCPClose(int containerId, int slotIndex) {
+		sendClickPacket(containerId, slotIndex, 0, ClickType.QUICK_MOVE);
+		UScreen.close();
 	}
 
 }

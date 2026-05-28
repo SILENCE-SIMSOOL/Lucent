@@ -34,6 +34,7 @@ public abstract class Mod {
 	public void onServerJoin() {}
 	public void onServerDisconnect() {}
 	public void onWorldLoad() {}
+	public void onWorldLoadOriginal() {}
 	public void onBlockUpdate(BlockUpdateEvent event) {}
 	public void onWorldRender(WorldRenderEvent event) {}
 	public void onWorldRenderLast(WorldRenderLastEvent event) {}

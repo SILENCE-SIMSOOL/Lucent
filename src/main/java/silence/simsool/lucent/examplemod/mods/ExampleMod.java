@@ -226,6 +226,7 @@ public class ExampleMod extends Mod {
 
 	@Override
 	public void onTick() {
+		System.out.println("D");
 		// You can easily use event functions through overrides.
 	}
 

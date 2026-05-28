@@ -214,232 +214,159 @@ public class ModManager {
 			}
 		}
 
-		// LucentEvent 자동 가입
+		// LucentEvent
 		LucentEvent.INIT_FINISHED_EVENT.register(() -> {
-			if (module.isEnabled) {
-				module.onInitFinished();
-			}
+			if (module.isEnabled) module.onInitFinished();
 		});
 
 		LucentEvent.RESOURCES_READY_EVENT.register(() -> {
-			if (module.isEnabled) {
-				module.onResourcesReady();
-			}
+			if (module.isEnabled) module.onResourcesReady();
 		});
 
 		LucentEvent.TICK_EVENT.LOW.register(() -> {
-			if (module.isEnabled) {
-				module.onTick();
-			}
+			if (module.isEnabled) module.onTick();
 		});
 
 		LucentEvent.TICK_EVENT.MEDIUM.register(() -> {
-			if (module.isEnabled) {
-				module.onMediumTick();
-			}
+			if (module.isEnabled) module.onMediumTick();
 		});
 
 		LucentEvent.TICK_EVENT.HIGH.register(() -> {
-			if (module.isEnabled) {
-				module.onHighTick();
-			}
+			if (module.isEnabled) module.onHighTick();
 		});
 
 		LucentEvent.EVERY_SECOND_EVENT.register(() -> {
-			if (module.isEnabled) {
-				module.onEverySecond();
-			}
+			if (module.isEnabled) module.onEverySecond();
 		});
 
 		LucentEvent.SERVER_TICK_EVENT.register(() -> {
-			if (module.isEnabled) {
-				module.onServerTick();
-			}
+			if (module.isEnabled) module.onServerTick();
 		});
 
 		LucentEvent.CHAT_EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onChat(event);
-			}
+			if (module.isEnabled) module.onChat(event);
 		});
 
 		LucentEvent.ACTIONBAR_EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onActionBar(event);
-			}
+			if (module.isEnabled) module.onActionBar(event);
 		});
 
 		LucentEvent.SERVER_JOIN_EVENT.register(() -> {
-			if (module.isEnabled) {
-				module.onServerJoin();
-			}
+			if (module.isEnabled) module.onServerJoin();
 		});
 
 		LucentEvent.SERVER_DISCONNECT_EVENT.register(() -> {
-			if (module.isEnabled) {
-				module.onServerDisconnect();
-			}
+			if (module.isEnabled) module.onServerDisconnect();
 		});
 
 		LucentEvent.WORLD_LOAD_EVENT.register(() -> {
-			if (module.isEnabled) {
-				module.onWorldLoad();
-			}
+			module.onWorldLoad();
+			if (module.isEnabled) module.onWorldLoadOriginal();
 		});
 
 		LucentEvent.BLOCK_UPDATE_EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onBlockUpdate(event);
-			}
+			if (module.isEnabled) module.onBlockUpdate(event);
 		});
 
 		LucentEvent.WORLD_RENDER.register(event -> {
-			if (module.isEnabled) {
-				module.onWorldRender(event);
-			}
+			if (module.isEnabled) module.onWorldRender(event);
 		});
 
 		LucentEvent.WORLD_RENDER_LAST.register(event -> {
-			if (module.isEnabled) {
-				module.onWorldRenderLast(event);
-			}
+			if (module.isEnabled) module.onWorldRenderLast(event);
 		});
 
 		LucentEvent.BLOCK_INTERACT_EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onBlockInteract(event);
-			}
+			if (module.isEnabled) module.onBlockInteract(event);
 		});
 
 		LucentEvent.KEY_INPUT_EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onKeyInput(event);
-			}
+			if (module.isEnabled) module.onKeyInput(event);
 		});
 
 		LucentEvent.MESSAGE_SENT_EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onMessageSent(event);
-			}
+			if (module.isEnabled) module.onMessageSent(event);
 		});
 
 		LucentEvent.TAB_COMPLETION_EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onTabComplete(event);
-			}
+			if (module.isEnabled) module.onTabComplete(event);
 		});
 
 		LucentEvent.BOSS_BAR_RENDER_EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onBossBarRender(event);
-			}
+			if (module.isEnabled) module.onBossBarRender(event);
 		});
 
 		EntityEvent.RENDER_LIVING_PRE_EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onRenderLivingPre(event);
-			}
+			if (module.isEnabled) module.onRenderLivingPre(event);
 		});
 
 		EntityEvent.RENDER_ENTITY_EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onRenderEntity(event);
-			}
+			if (module.isEnabled) module.onRenderEntity(event);
 		});
 
 		LucentEvent.KEYBIND_EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onKeybind(event);
-			}
+			if (module.isEnabled) module.onKeybind(event);
 		});
 
-		// GUIEvent 자동 가입
+		// GUIEvent
 		GUIEvent.RenderHUD.EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onRenderHUD(event);
-			}
+			if (module.isEnabled) module.onRenderHUD(event);
 		});
 
 		GUIEvent.OPEN.EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onGUIOpen(event);
-			}
+			if (module.isEnabled) module.onGUIOpen(event);
 		});
 
 		GUIEvent.CLOSE.EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onGUIClose(event);
-			}
+			if (module.isEnabled) module.onGUIClose(event);
 		});
 
 		GUIEvent.CLICK.EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onGUIClick(event);
-			}
+			if (module.isEnabled) module.onGUIClick(event);
 		});
 
 		GUIEvent.KEY.EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onGUIKey(event);
-			}
+			if (module.isEnabled) module.onGUIKey(event);
 		});
 
 		GUIEvent.SLOT.Click.EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onSlotClick(event);
-			}
+			if (module.isEnabled) module.onSlotClick(event);
 		});
 
 		GUIEvent.SLOT.Render.EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onSlotRender(event);
-			}
+			if (module.isEnabled) module.onSlotRender(event);
 		});
 
 		GUIEvent.CONTAINER.All.EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onRenderContainer(event);
-			}
+			if (module.isEnabled) module.onRenderContainer(event);
 		});
 
 		GUIEvent.CONTAINER.Inventory.EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onRenderInventory(event);
-			}
+			if (module.isEnabled) module.onRenderInventory(event);
 		});
 
 		GUIEvent.CONTAINER.Chest.EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onRenderChest(event);
-			}
+			if (module.isEnabled) module.onRenderChest(event);
 		});
 
-		// DropItemEvent 자동 가입
+		// DropItemEvent
 		LucentEvent.DROP_ITEM_EVENT.register(event -> {
-			if (module.isEnabled) {
-				module.onDropItem(event);
-			}
+			if (module.isEnabled) module.onDropItem(event);
 		});
 
-		// MouseEvent 자동 가입
+		// MouseEvent
 		MouseEvent.CLICK.register(event -> {
-			if (module.isEnabled) {
-				module.onMouseClick(event);
-			}
+			if (module.isEnabled) module.onMouseClick(event);
 		});
 
-		// PacketEvent 자동 가입
+		// PacketEvent
 		PacketEvent.RECEIVE.register(event -> {
-			if (module.isEnabled) {
-				module.onPacketReceive(event);
-			}
+			if (module.isEnabled) module.onPacketReceive(event);
 		});
 
-		// PacketEvent 자동 가입
+		// PacketEvent
 		PacketEvent.SEND.register(event -> {
-			if (module.isEnabled) {
-				module.onPacketSend(event);
-			}
+			if (module.isEnabled) module.onPacketSend(event);
 		});
 	}
 

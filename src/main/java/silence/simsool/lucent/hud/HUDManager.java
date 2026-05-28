@@ -1,7 +1,5 @@
 package silence.simsool.lucent.hud;
 
-import static silence.simsool.lucent.Lucent.mc;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -21,6 +19,7 @@ import silence.simsool.lucent.general.enums.Align;
 import silence.simsool.lucent.general.enums.RenderType;
 import silence.simsool.lucent.general.models.abstracts.LucentHUD;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
+import silence.simsool.lucent.general.utils.useful.UScreen;
 import silence.simsool.lucent.ui.screens.EditHUDScreen;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 
@@ -90,7 +89,7 @@ public class HUDManager {
 	}
 
 	public void render(GuiGraphics graphics) {
-		if (huds.isEmpty() || mc.screen instanceof EditHUDScreen) return;
+		if (huds.isEmpty() || UScreen.getScreen() instanceof EditHUDScreen) return;
 
 		// mc draw
 		for (LucentHUD hud : huds) {
