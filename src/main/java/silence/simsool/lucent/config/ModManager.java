@@ -349,6 +349,10 @@ public class ModManager {
 			if (module.isEnabled) module.onRenderChest(event);
 		});
 
+		GUIEvent.Tooltip.EVENT.register(event -> {
+			if (module.isEnabled) module.onTooltip(event);
+		});
+
 		// DropItemEvent
 		LucentEvent.DROP_ITEM_EVENT.register(event -> {
 			if (module.isEnabled) module.onDropItem(event);

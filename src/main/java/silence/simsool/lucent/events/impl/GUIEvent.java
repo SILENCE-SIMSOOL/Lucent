@@ -117,4 +117,15 @@ public final class GUIEvent {
 
 	}
 
+	public static final class Tooltip {
+		public static final Event<IItemTooltipEvent> EVENT = createArrayBacked(
+			IItemTooltipEvent.class, listeners -> event -> {
+				for (IItemTooltipEvent l : listeners) {
+					l.onTooltip(event);
+					if (event.isCanceled()) break;
+				}
+			}
+		);
+	}
+
 }

@@ -38,7 +38,7 @@ public class Lucent implements ClientModInitializer {
 
 	public static final String ID = "lucent";
 	public static final String NAME = "Lucent";
-	public static final String VERSION = "1.2.2";
+	public static final String VERSION = "1.2.3";
 	public static String LATEST_VERSION = "Fetching...";
 
 	public static Minecraft mc = Minecraft.getInstance();
@@ -53,7 +53,7 @@ public class Lucent implements ClientModInitializer {
 			KEYBINDING_CATEGORY
 	));
 
-	public static boolean devMode = true;
+	public static boolean devMode = false;
 
 	static {
 		updateLatestVersion();
@@ -141,10 +141,10 @@ public class Lucent implements ClientModInitializer {
 					String body = res.body();
 					int idx = body.indexOf("\"tag_name\":");
 					if (idx != -1) {
-						String val = body.substring(idx + 11);
-						int quoteStart = val.indexOf("\"") + 1;
-						int quoteEnd = val.indexOf("\"", quoteStart);
-						String version = val.substring(quoteStart, quoteEnd);
+						String value = body.substring(idx + 11);
+						int quoteStart = value.indexOf("\"") + 1;
+						int quoteEnd = value.indexOf("\"", quoteStart);
+						String version = value.substring(quoteStart, quoteEnd);
 						if (version.startsWith("v")) version = version.substring(1);
 						LATEST_VERSION = version;
 					} else LATEST_VERSION = "Unknown";

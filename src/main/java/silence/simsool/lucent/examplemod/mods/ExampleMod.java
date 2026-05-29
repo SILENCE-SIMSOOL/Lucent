@@ -23,7 +23,7 @@ public class ExampleMod extends Mod {
 
 	public ExampleMod() {
 		super(
-				"Chatting Mod", "Enhances your chat experience with various QOL features.", // Name, Description
+				"Example Mod", "Enhances your chat experience with various QOL features.", // Name, Description
 				"QOL", // Category
 				"minecraft, chat", // Search Tags
 				"/assets/lucent/textures/modicons/chatmod.png" // Icon Path
@@ -226,7 +226,6 @@ public class ExampleMod extends Mod {
 
 	@Override
 	public void onTick() {
-		System.out.println("D");
 		// You can easily use event functions through overrides.
 	}
 

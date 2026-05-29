@@ -2,25 +2,38 @@ package silence.simsool.lucent.general.utils;
 
 import java.io.File;
 
+import silence.simsool.lucent.general.enums.OSType;
+
 public class OSUtils {
 
-	public static File getLucentDir() {
-		String os = System.getProperty("os.name").toLowerCase();
+	public static OSType getOS() {
+		return OSType.getPlatform();
+	}
+
+	public static File getAppDir(String appName) {
 		String home = System.getProperty("user.home");
 		File baseDir;
 
-		if (os.contains("win")) {
-			String appData = System.getenv("APPDATA");
-			if (appData != null) baseDir = new File(appData, "Lucent");
-			else baseDir = new File(home, "AppData/Roaming/Lucent");
-		} else if (os.contains("mac")) {
-			baseDir = new File(home, "Library/Application Support/Lucent");
-		} else {
-			baseDir = new File(home, ".lucent");
+		switch (getOS()) {
+			case WINDOWS:
+				String appData = System.getenv("APPDATA");
+				if (appData != null) baseDir = new File(appData, appName);
+				else baseDir = new File(home, "AppData/Roaming/" + appName);
+				break;
+			case MAC:
+				baseDir = new File(home, "Library/Application Support/" + appName);
+				break;
+			default:
+				baseDir = new File(home, "." + appName.toLowerCase());
+				break;
 		}
 
 		if (!baseDir.exists()) baseDir.mkdirs();
 		return baseDir;
+	}
+
+	public static File getLucentDir() {
+		return getAppDir("Lucent");
 	}
 
 }

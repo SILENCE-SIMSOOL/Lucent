@@ -57,6 +57,7 @@ public abstract class Mod {
 	public void onRenderContainer(GUIContainerAllEvent event) {}
 	public void onRenderInventory(GUIContainerInventoryEvent event) {}
 	public void onRenderChest(GUIContainerChestEvent event) {}
+	public void onTooltip(ItemTooltipEvent event) {}
 
 	public void onDropItem(DropItemEvent event) {}
 

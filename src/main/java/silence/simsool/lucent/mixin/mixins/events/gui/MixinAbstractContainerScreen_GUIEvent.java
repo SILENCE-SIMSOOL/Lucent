@@ -1,11 +1,14 @@
 package silence.simsool.lucent.mixin.mixins.events.gui;
 
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -27,6 +30,19 @@ public abstract class MixinAbstractContainerScreen_GUIEvent {
 	@Shadow protected int topPos;
 	@Shadow protected int imageWidth;
 	@Shadow protected int imageHeight;
+	@Shadow @Nullable protected Slot hoveredSlot;
+
+	@Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
+	private void onMouseClicked(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
+		if (event.button() == 2 && this.hoveredSlot != null) {
+			AbstractContainerScreen<?> screen = (AbstractContainerScreen<?>) (Object) this;
+			GUISlotClickEvent clickEvent = new GUISlotClickEvent(this.hoveredSlot, this.hoveredSlot.index, event.button(), ClickType.CLONE, screen.getMenu(), screen);
+			GUIEvent.SLOT.Click.EVENT.invoker().onSlotClick(clickEvent);
+			if (clickEvent.isCanceled()) {
+				cir.setReturnValue(true);
+			}
+		}
+	}
 
 	@Inject(method = "removed", at = @At("HEAD"), cancellable = false)
 	public void onRemoved(CallbackInfo ci) {
