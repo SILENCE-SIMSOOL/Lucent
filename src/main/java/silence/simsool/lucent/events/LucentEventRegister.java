@@ -2,6 +2,7 @@ package silence.simsool.lucent.events;
 
 import static silence.simsool.lucent.Lucent.mc;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,16 +24,23 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
+import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
+import net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.events.impl.EntityEvent;
 import silence.simsool.lucent.events.impl.GUIEvent;
 import silence.simsool.lucent.events.impl.LucentEvent;
 import silence.simsool.lucent.events.impl.PacketEvent;
 import silence.simsool.lucent.general.enums.DropType;
+import silence.simsool.lucent.general.utils.Pair;
 import silence.simsool.lucent.general.utils.useful.UChat;
 
 public class LucentEventRegister {
@@ -141,9 +149,11 @@ public class LucentEventRegister {
 		// ──────────────────────── Entity / Name Change ────────────────────────
 
 		PacketEvent.RECEIVE.register(event -> {
+			if (mc.player == null || mc.level == null) return;
+
 			if (event.packet instanceof ClientboundAddEntityPacket packet) {
 				entityTypes.put(packet.getId(), packet.getType());
-				entityPos.put(packet.getId(), new net.minecraft.world.phys.Vec3(packet.getX(), packet.getY(), packet.getZ()));
+				entityPos.put(packet.getId(), new Vec3(packet.getX(), packet.getY(), packet.getZ()));
 				return;
 			}
 
@@ -160,21 +170,26 @@ public class LucentEventRegister {
 						new EntityEvent.NameChangeEvent(id, type, nameText, nameText.getString())
 					);
 				}
+				return;
 			}
 
-			if (event.packet instanceof net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket packet) {
+			if (event.packet instanceof ClientboundSetEquipmentPacket packet) {
 				int id = packet.getEntity();
 				EntityType<?> type = entityTypes.get(id);
 				if (type != null) {
-					net.minecraft.world.phys.Vec3 pos = entityPos.get(id);
+					Vec3 pos = entityPos.get(id);
 					if (pos != null) {
-						java.util.List<com.mojang.datafixers.util.Pair<net.minecraft.world.entity.EquipmentSlot, net.minecraft.world.item.ItemStack>> slots = packet.getSlots();
+						List<Pair<EquipmentSlot, ItemStack>> slots = new ArrayList<>();
+						for (com.mojang.datafixers.util.Pair<EquipmentSlot, ItemStack> p : packet.getSlots()) {
+							slots.add(new Pair<>(p.getFirst(), p.getSecond()));
+						}
 						EntityEvent.ENTITY_EQUIPMENT_EVENT.invoker().onEntityEquipment(new EntityEvent.EntityEquipmentEvent(id, type, pos, slots));
 					}
 				}
+				return;
 			}
 
-			if (event.packet instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket packet) {
+			if (event.packet instanceof ClientboundSoundPacket packet) {
 				String soundStr = packet.getSound().value().location().toString();
 				if (!soundStr.isEmpty()) {
 					LucentEvent.SoundEvent soundEvent = new LucentEvent.SoundEvent(
@@ -189,9 +204,10 @@ public class LucentEventRegister {
 					LucentEvent.SOUND_EVENT.invoker().onSound(soundEvent);
 					if (soundEvent.isCanceled()) event.cancel();
 				}
+				return;
 			}
 
-			if (event.packet instanceof net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket packet) {
+			if (event.packet instanceof ClientboundSetPlayerTeamPacket packet) {
 				packet.getParameters().ifPresent(parameters -> {
 					String prefix = parameters.getPlayerPrefix().getString();
 					String suffix = parameters.getPlayerSuffix().getString();
@@ -200,6 +216,7 @@ public class LucentEventRegister {
 						LucentEvent.SCOREBOARD_EVENT.invoker().onScoreboard(new LucentEvent.ScoreboardEvent(cleanMsg));
 					}
 				});
+				return;
 			}
 		});
 

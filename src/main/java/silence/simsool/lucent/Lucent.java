@@ -111,10 +111,12 @@ public class Lucent implements ClientModInitializer {
 		});
 
 		InputEvent.KEY.register(event -> {
-			if (event.state && KeyBindingHelper.getBoundKeyOf(Lucent.CONFIG_KEY).equals(event.keyEvent.key())) {
-				mc.execute(() -> {
-					mc.setScreen(LucentAPI.createEditHUDScreen(config));
-				});
+			if (event.state) {
+				if (Lucent.CONFIG_KEY.matches(event.keyEvent)) {
+					mc.execute(() -> {
+						mc.setScreen(LucentAPI.createEditHUDScreen(config));
+					});
+				}
 			}
 		});
 

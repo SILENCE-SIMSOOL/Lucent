@@ -29,9 +29,11 @@ public class MixinEntityRenderDispatcher_ExtractRenderStatePre {
 	private void preExtractRenderEntity(Entity entity, float f, CallbackInfoReturnable<EntityRenderState> cir) {
 		EntityEvent.ExtractRenderStatePre event = new EntityEvent.ExtractRenderStatePre(entity, f);
 		EntityEvent.EXTRACT_RENDER_STATE_PRE.invoker().onExtractRenderStatePre(event);
-		EntityRenderState noop = new EntityRenderState();
-		noop.entityType = EntityType.AREA_EFFECT_CLOUD;
-		cir.setReturnValue(noop);
+		if (event.isCanceled()) {
+			EntityRenderState state = new EntityRenderState();
+			state.entityType = EntityType.AREA_EFFECT_CLOUD;
+			cir.setReturnValue(state);
+		}
 	}
 
 }

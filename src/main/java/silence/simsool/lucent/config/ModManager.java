@@ -213,7 +213,6 @@ public class ModManager {
 			}
 		}
 
-		// LucentEvent
 		LucentEvent.INIT_FINISHED_EVENT.register(() -> {
 			module.onInitFinished();
 			if (module.isEnabled) module.onInitFinishedMod();
@@ -283,7 +282,6 @@ public class ModManager {
 			if (module.isEnabled) module.onBlockInteract(event);
 		});
 
-
 		LucentEvent.MESSAGE_SENT_EVENT.register(event -> {
 			if (module.isEnabled) module.onMessageSent(event);
 		});
@@ -304,6 +302,14 @@ public class ModManager {
 			if (module.isEnabled) module.onRenderEntity(event);
 		});
 
+		EntityEvent.RENDER_ENTITY_COLOR_EVENT.register(event -> {
+			if (module.isEnabled) module.onRenderEntityColor(event);
+		});
+
+		EntityEvent.EXTRACT_RENDER_STATE_PRE.register(event -> {
+			if (module.isEnabled) module.onExtractRenderStatePre(event);
+		});
+
 		EntityEvent.EXTRACT_RENDER_STATE_POST.register(event -> {
 			if (module.isEnabled) module.onExtractRenderStatePost(event);
 		});
@@ -312,7 +318,6 @@ public class ModManager {
 			if (module.isEnabled) module.onKeybind(event);
 		});
 
-		// GUIEvent
 		GUIEvent.RenderHUD.EVENT.register(event -> {
 			if (module.isEnabled) module.onRenderHUD(event);
 		});
@@ -369,12 +374,10 @@ public class ModManager {
 			if (module.isEnabled) module.onRenderTooltip(event);
 		});
 
-		// DropItemEvent
 		LucentEvent.DROP_ITEM_EVENT.register(event -> {
 			if (module.isEnabled) module.onDropItem(event);
 		});
 
-		// InputEvent
 		InputEvent.MOUSE.register(event -> {
 			if (module.isEnabled) module.onMouseInput(event);
 		});
@@ -383,12 +386,10 @@ public class ModManager {
 			if (module.isEnabled) module.onKeyInput(event);
 		});
 
-		// PacketEvent
 		PacketEvent.RECEIVE.register(event -> {
 			if (module.isEnabled) module.onReceivePacket(event);
 		});
 
-		// PacketEvent
 		PacketEvent.SEND.register(event -> {
 			if (module.isEnabled) module.onSendPacket(event);
 		});
@@ -407,6 +408,10 @@ public class ModManager {
 
 		EntityEvent.ENTITY_DATA_EVENT.register(event -> {
 			if (module.isEnabled) module.onEntityData(event);
+		});
+
+		EntityEvent.NAME_CHANGE_EVENT.register(event -> {
+			if (module.isEnabled) module.onNameChange(event);
 		});
 
 		EntityEvent.ENTITY_EQUIPMENT_EVENT.register(event -> {

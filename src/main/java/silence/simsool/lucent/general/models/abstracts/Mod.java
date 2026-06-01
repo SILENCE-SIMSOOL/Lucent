@@ -68,20 +68,20 @@ public abstract class Mod {
 	public void onRenderTooltip(GUIEvent.TooltipEvent event) {}
 
 	public void onRenderEntity(EntityEvent.RenderEntityAllowEvent event) {}
+	public void onRenderEntityColor(EntityEvent.RenderEntityColorEvent event) {}
 	public void onNameChange(EntityEvent.NameChangeEvent event) {}
 	public void onExtractRenderStatePre(EntityEvent.ExtractRenderStatePre event) {}
 	public void onExtractRenderStatePost(EntityEvent.ExtractRenderStatePost event) {}
 	public void onRenderEntityPre(EntityEvent.RenderEntityPreEvent event) {}
-
-	public void onReceivePacket(PacketEvent.ReceiveEvent event) {}
-	public void onSendPacket(PacketEvent.SendEvent event) {}
-
 	public void onEntityJoin(EntityEvent.EntityJoinEvent event) {}
 	public void onEntityLeave(EntityEvent.EntityLeaveEvent event) {}
 	public void onEntityDeath(EntityEvent.EntityDeathEvent event) {}
 	public void onEntityData(EntityEvent.EntityDataEvent event) {}
 	public void onEntityEquipment(EntityEvent.EntityEquipmentEvent event) {}
 	public void onEntityInteract(EntityEvent.EntityInteractEvent event) {}
+
+	public void onReceivePacket(PacketEvent.ReceiveEvent event) {}
+	public void onSendPacket(PacketEvent.SendEvent event) {}
 
 	public void onItemPickup(LucentEvent.ItemPickupEvent event) {}
 	public void onSound(LucentEvent.SoundEvent event) {}

@@ -13,6 +13,7 @@
 		"mixins.events.entity.MixinEntityRenderDispatcher_ExtractRenderStatePre",
 		"mixins.events.entity.MixinEntityRenderer_RenderEntityEvent",
 		"mixins.events.entity.MixinLivingEntity",
+		"mixins.events.entity.MixinLivingEntityRenderer",
 		"mixins.events.gui.MixinAbstractContainerScreen_GUIEvent",
 		"mixins.events.gui.MixinBossHealthOverlay",
 		"mixins.events.gui.MixinGui",

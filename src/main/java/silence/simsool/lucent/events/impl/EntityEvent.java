@@ -3,6 +3,8 @@ package silence.simsool.lucent.events.impl;
 import static net.fabricmc.fabric.api.event.EventFactory.createArrayBacked;
 
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
@@ -16,6 +18,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import silence.simsool.lucent.general.models.interfaces.events.entityevent.IEntityDeathEvent;
 import silence.simsool.lucent.general.models.interfaces.events.entityevent.IEntityEquipmentEvent;
 import silence.simsool.lucent.general.models.interfaces.events.entityevent.IEntityInteractEvent;
@@ -24,15 +29,15 @@ import silence.simsool.lucent.general.models.interfaces.events.entityevent.IEnti
 import silence.simsool.lucent.general.models.interfaces.events.entityevent.IExtractRenderStatePostEvent;
 import silence.simsool.lucent.general.models.interfaces.events.entityevent.IExtractRenderStatePreEvent;
 import silence.simsool.lucent.general.models.interfaces.events.entityevent.IRenderEntityAllowEvent;
+import silence.simsool.lucent.general.models.interfaces.events.entityevent.IRenderEntityColorEvent;
 import silence.simsool.lucent.general.models.interfaces.events.entityevent.IRenderEntityPreEvent;
 import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IEntityDataEvent;
 import silence.simsool.lucent.general.models.interfaces.events.lucentevent.INameChangeEvent;
-import com.mojang.datafixers.util.Pair;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
+import silence.simsool.lucent.general.utils.Pair;
 
 public final class EntityEvent {
+
+	public static final Map<EntityRenderState, Entity> RENDER_STATE_ENTITIES = new WeakHashMap<>();
 
 	public static final Event<IEntityJoinEvent> ENTITY_JOIN_EVENT = createArrayBacked(
 		IEntityJoinEvent.class, listeners -> event -> {
@@ -75,10 +80,19 @@ public final class EntityEvent {
 		}
 	);
 
+	public static final Event<IRenderEntityColorEvent> RENDER_ENTITY_COLOR_EVENT = createArrayBacked(
+		IRenderEntityColorEvent.class, listeners -> event -> {
+			for (IRenderEntityColorEvent listener : listeners) {
+				listener.onRenderEntityColor(event);
+			}
+		}
+	);
+
 	public static final Event<IExtractRenderStatePreEvent> EXTRACT_RENDER_STATE_PRE = createArrayBacked(
 		IExtractRenderStatePreEvent.class, listeners -> event -> {
 			for (IExtractRenderStatePreEvent listener : listeners) {
 				listener.onExtractRenderStatePre(event);
+				if (event.isCanceled()) break;
 			}
 		}
 	);
@@ -192,10 +206,19 @@ public final class EntityEvent {
 	public static class ExtractRenderStatePre {
 		public final Entity entity;
 		public final float partialTick;
+		private boolean canceled = false;
 
 		public ExtractRenderStatePre(Entity entity, float partialTick) {
 			this.entity = entity;
 			this.partialTick = partialTick;
+		}
+
+		public void cancel() {
+			this.canceled = true;
+		}
+
+		public boolean isCanceled() {
+			return canceled;
 		}
 	}
 
@@ -277,6 +300,29 @@ public final class EntityEvent {
 
 		public boolean isCanceled() {
 			return canceled;
+		}
+	}
+
+	public static class RenderEntityColorEvent {
+		public final Entity entity;
+		public final EntityRenderState state;
+		private int color = 0;
+
+		public RenderEntityColorEvent(Entity entity, EntityRenderState state) {
+			this.entity = entity;
+			this.state = state;
+		}
+
+		public void setColor(int color) {
+			this.color = color;
+		}
+
+		public int getColor() {
+			return color;
+		}
+
+		public boolean hasColor() {
+			return color != 0;
 		}
 	}
 
