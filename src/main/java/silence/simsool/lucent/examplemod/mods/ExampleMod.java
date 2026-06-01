@@ -5,7 +5,7 @@ import java.awt.Color;
 import org.lwjgl.glfw.GLFW;
 
 import silence.simsool.lucent.Lucent;
-import silence.simsool.lucent.general.models.data.events.lucentevent.MessageEvent;
+import silence.simsool.lucent.events.impl.LucentEvent;
 import silence.simsool.lucent.general.enums.Align;
 import silence.simsool.lucent.general.enums.ConfigType;
 import silence.simsool.lucent.general.models.abstracts.Mod;
@@ -230,7 +230,7 @@ public class ExampleMod extends Mod {
 	}
 
 	@Override
-	public void onChat(MessageEvent event) {
+	public void onChat(LucentEvent.MessageEvent event) {
 		// To check the available event functions, please check 'silence.simsool.lucent.general.models.abstracts.Mod.java'.
 	}
 

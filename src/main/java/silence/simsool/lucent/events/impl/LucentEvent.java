@@ -2,8 +2,45 @@ package silence.simsool.lucent.events.impl;
 
 import static net.fabricmc.fabric.api.event.EventFactory.createArrayBacked;
 
+import java.util.ArrayList;
+
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldExtractionContext;
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
 import net.fabricmc.fabric.api.event.Event;
-import silence.simsool.lucent.general.models.interfaces.events.lucentevent.*;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.BossEvent;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
+import silence.simsool.lucent.general.enums.DropType;
+import silence.simsool.lucent.general.models.data.KeyBind;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IActionBarEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IBlockInteractEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IBlockUpdateEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IChatEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IDropItemEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IEverySecondEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IInitFinishedEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IKeybindEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IMessageSentEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IRenderBossBarEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IRenderWorldEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IRenderWorldLastEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IResourcesReadyEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IServerDisconnectEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IServerJoinEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.ITabCompleteEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.ITickEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IWorldLoadEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IItemPickupEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.ISoundEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IScoreboardEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IUseItemOnEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IUseItemEvent;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.InteractionHand;
 
 public class LucentEvent {
 
@@ -105,15 +142,15 @@ public class LucentEvent {
 		}
 	);
 
-	public static final Event<IWorldRenderEvent> WORLD_RENDER = createArrayBacked(
-		IWorldRenderEvent.class, listeners -> event -> {
-			for (IWorldRenderEvent listener : listeners) listener.onWorldRender(event);
+	public static final Event<IRenderWorldEvent> WORLD_RENDER = createArrayBacked(
+		IRenderWorldEvent.class, listeners -> event -> {
+			for (IRenderWorldEvent listener : listeners) listener.onRenderWorld(event);
 		}
 	);
 
-	public static final Event<IWorldRenderLastEvent> WORLD_RENDER_LAST = createArrayBacked(
-		IWorldRenderLastEvent.class, listeners -> event -> {
-			for (IWorldRenderLastEvent listener : listeners) listener.onWorldRenderLast(event);
+	public static final Event<IRenderWorldLastEvent> WORLD_RENDER_LAST = createArrayBacked(
+		IRenderWorldLastEvent.class, listeners -> event -> {
+			for (IRenderWorldLastEvent listener : listeners) listener.onRenderWorldLast(event);
 		}
 	);
 
@@ -121,15 +158,6 @@ public class LucentEvent {
 		IBlockInteractEvent.class, listeners -> event -> {
 			for (IBlockInteractEvent listener : listeners) {
 				listener.onBlockInteract(event);
-				if (event.isCanceled()) break;
-			}
-		}
-	);
-
-	public static final Event<IKeyInputEvent> KEY_INPUT_EVENT = createArrayBacked(
-		IKeyInputEvent.class, listeners -> event -> {
-			for (IKeyInputEvent listener : listeners) {
-				listener.onKeyInput(event);
 				if (event.isCanceled()) break;
 			}
 		}
@@ -152,10 +180,10 @@ public class LucentEvent {
 		}
 	);
 
-	public static final Event<IBossBarRenderEvent> BOSS_BAR_RENDER_EVENT = createArrayBacked(
-		IBossBarRenderEvent.class, listeners -> event -> {
-			for (IBossBarRenderEvent l : listeners) {
-				l.onBossBarRender(event);
+	public static final Event<IRenderBossBarEvent> BOSS_BAR_RENDER_EVENT = createArrayBacked(
+		IRenderBossBarEvent.class, listeners -> event -> {
+			for (IRenderBossBarEvent l : listeners) {
+				l.onRenderBossBar(event);
 				if (event.isCanceled()) break;
 			}
 		}
@@ -177,5 +205,309 @@ public class LucentEvent {
 			}
 		}
 	);
+
+	public static final Event<IItemPickupEvent> ITEM_PICKUP_EVENT = createArrayBacked(
+		IItemPickupEvent.class, listeners -> event -> {
+			for (IItemPickupEvent listener : listeners) {
+				listener.onItemPickup(event);
+			}
+		}
+	);
+
+	public static final Event<ISoundEvent> SOUND_EVENT = createArrayBacked(
+		ISoundEvent.class, listeners -> event -> {
+			for (ISoundEvent listener : listeners) {
+				listener.onSound(event);
+				if (event.isCanceled()) break;
+			}
+		}
+	);
+
+	public static final Event<IScoreboardEvent> SCOREBOARD_EVENT = createArrayBacked(
+		IScoreboardEvent.class, listeners -> event -> {
+			for (IScoreboardEvent listener : listeners) {
+				listener.onScoreboard(event);
+			}
+		}
+	);
+
+	public static final Event<IUseItemOnEvent> USE_ITEM_ON_EVENT = createArrayBacked(
+		IUseItemOnEvent.class, listeners -> event -> {
+			for (IUseItemOnEvent listener : listeners) {
+				listener.onUseItemOn(event);
+			}
+		}
+	);
+
+	public static final Event<IUseItemEvent> USE_ITEM_EVENT = createArrayBacked(
+		IUseItemEvent.class, listeners -> event -> {
+			for (IUseItemEvent listener : listeners) {
+				listener.onUseItem(event);
+			}
+		}
+	);
+
+	public static class BlockInteractEvent {
+		public final ItemStack itemStack;
+		public final BlockPos pos;
+		private boolean canceled = false;
+
+		public BlockInteractEvent(ItemStack itemStack, BlockPos pos) {
+			this.itemStack = itemStack;
+			this.pos = pos;
+		}
+
+		public void cancel() {
+			this.canceled = true;
+		}
+
+		public boolean isCanceled() {
+			return canceled;
+		}
+	}
+
+	public static class BlockUpdateEvent {
+		public BlockPos pos;
+		public BlockState oldState;
+		public BlockState newState;
+
+		public BlockUpdateEvent(BlockPos pos, BlockState oldState, BlockState newState) {
+			this.pos = pos;
+			this.oldState = oldState;
+			this.newState = newState;
+		}
+	}
+
+	public static class RenderBossBarEvent {
+		public final BossEvent bossBar;
+		private boolean canceled = false;
+
+		public RenderBossBarEvent(BossEvent bossBar) {
+			this.bossBar = bossBar;
+		}
+
+		public void cancel() {
+			this.canceled = true;
+		}
+
+		public boolean isCanceled() {
+			return canceled;
+		}
+	}
+
+	public static class DropItemEvent {
+		public final ItemStack stack;
+		public final DropType dropType;
+		public final boolean all;
+		private boolean canceled = false;
+
+		public DropItemEvent(ItemStack stack, DropType dropType, boolean all) {
+			this.stack = stack;
+			this.dropType = dropType;
+			this.all = all;
+		}
+
+		public void cancel() {
+			this.canceled = true;
+		}
+
+		public boolean isCanceled() {
+			return canceled;
+		}
+	}
+
+	public static class KeybindEvent {
+		public final KeyBind keybind;
+		private final boolean pressed;
+		private final boolean keyDown;
+
+		public KeybindEvent(KeyBind keybind, boolean pressed, boolean keyDown) {
+			this.keybind = keybind;
+			this.pressed = pressed;
+			this.keyDown = keyDown;
+		}
+
+		public boolean isPressed() {
+			return pressed;
+		}
+
+		public boolean isKeyDown() {
+			return keyDown;
+		}
+	}
+
+	public static class MessageEvent {
+		public String message;
+		public String chat;
+		private boolean canceled = false;
+
+		public MessageEvent(String message, String chat) {
+			this.message = message;
+			this.chat = chat;
+		}
+
+		public void cancel() {
+			this.canceled = true;
+		}
+
+		public boolean isCanceled() {
+			return canceled;
+		}
+	}
+
+	public static class MessageSentEvent {
+		public String message;
+		private boolean canceled = false;
+
+		public MessageSentEvent(String message) {
+			this.message = message;
+		}
+
+		public void cancel() {
+			this.canceled = true;
+		}
+
+		public boolean isCanceled() {
+			return canceled;
+		}
+	}
+
+	public static class TabCompletionEvent {
+		private final String fullInput;
+		private final String beforeCursor;
+		private final ArrayList<String> existing;
+		private String[] additional;
+
+		public TabCompletionEvent(String fullInput, String beforeCursor, ArrayList<String> existing) {
+			this.fullInput = fullInput;
+			this.beforeCursor = beforeCursor;
+			this.existing = existing;
+		}
+
+		public void post() {
+			LucentEvent.TAB_COMPLETION_EVENT.invoker().onTabComplete(this);
+		}
+
+		public String[] intoSuggestionArray() {
+			return additional;
+		}
+
+		public void setAdditional(String[] additional) {
+			this.additional = additional;
+		}
+
+		public String getFullInput() {
+			return fullInput;
+		}
+
+		public String getBeforeCursor() {
+			return beforeCursor;
+		}
+
+		public ArrayList<String> getExisting() {
+			return existing;
+		}
+	}
+
+	public static class RenderWorldEvent {
+		public final WorldExtractionContext context;
+		public final LevelRenderer handler;
+		public final float partialTick;
+
+		public RenderWorldEvent(WorldExtractionContext context, LevelRenderer handler, float partialTick) {
+			this.context = context;
+			this.handler = handler;
+			this.partialTick = partialTick;
+		}
+
+		public float getFloat() {
+			return partialTick;
+		}
+	}
+
+	public static class RenderWorldLastEvent {
+		public final WorldRenderContext context;
+		public final LevelRenderer handler;
+		public final float partialTick;
+
+		public RenderWorldLastEvent(WorldRenderContext context, LevelRenderer handler, float partialTick) {
+			this.context = context;
+			this.handler = handler;
+			this.partialTick = partialTick;
+		}
+
+		public float getFloat() {
+			return partialTick;
+		}
+	}
+
+	public static class ItemPickupEvent {
+		public final ItemEntity entity;
+		public final int entityId;
+
+		public ItemPickupEvent(ItemEntity entity, int entityId) {
+			this.entity = entity;
+			this.entityId = entityId;
+		}
+	}
+
+	public static class SoundEvent {
+		public final String sound;
+		public final float pitch;
+		public final float volume;
+		public final SoundSource category;
+		public final double x;
+		public final double y;
+		public final double z;
+		public final long seed;
+		public final net.minecraft.sounds.SoundEvent underlyingEvent;
+		private boolean canceled = false;
+
+		public SoundEvent(String sound, float pitch, float volume, SoundSource category, double x, double y, double z, long seed, net.minecraft.sounds.SoundEvent underlyingEvent) {
+			this.sound = sound;
+			this.pitch = pitch;
+			this.volume = volume;
+			this.category = category;
+			this.x = x;
+			this.y = y;
+			this.z = z;
+			this.seed = seed;
+			this.underlyingEvent = underlyingEvent;
+		}
+
+		public void cancel() {
+			this.canceled = true;
+		}
+
+		public boolean isCanceled() {
+			return canceled;
+		}
+	}
+
+	public static class ScoreboardEvent {
+		public final String message;
+
+		public ScoreboardEvent(String message) {
+			this.message = message;
+		}
+	}
+
+	public static class UseItemOnEvent {
+		public final BlockHitResult blockHitResult;
+		public final InteractionHand hand;
+
+		public UseItemOnEvent(BlockHitResult blockHitResult, InteractionHand hand) {
+			this.blockHitResult = blockHitResult;
+			this.hand = hand;
+		}
+	}
+
+	public static class UseItemEvent {
+		public final InteractionHand hand;
+
+		public UseItemEvent(InteractionHand hand) {
+			this.hand = hand;
+		}
+	}
 
 }

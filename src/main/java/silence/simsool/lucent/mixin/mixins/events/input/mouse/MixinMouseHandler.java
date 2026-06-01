@@ -5,8 +5,7 @@ import static silence.simsool.lucent.Lucent.mc;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.input.MouseButtonInfo;
 import silence.simsool.lucent.config.ModManager;
-import silence.simsool.lucent.events.impl.MouseEvent;
-import silence.simsool.lucent.general.models.data.events.mouseevent.ClickEvent;
+import silence.simsool.lucent.events.impl.InputEvent;
 import silence.simsool.lucent.general.utils.useful.UScreen;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,8 +20,8 @@ public class MixinMouseHandler {
 	private void onButton(long handle, MouseButtonInfo rawButtonInfo, int action, CallbackInfo ci) {
 		if (mc.player == null || mc.level == null) return;
 		if (UScreen.isScreenClose()) ModManager.handleMouseInput(rawButtonInfo.button(), action);
-		ClickEvent event = new ClickEvent(rawButtonInfo.button(), action);
-		MouseEvent.CLICK.invoker().onMouseClick(event);
+		InputEvent.MouseInputEvent event = new InputEvent.MouseInputEvent(rawButtonInfo.button(), action);
+		InputEvent.MOUSE.invoker().onMouseInput(event);
 		if (event.isCanceled()) ci.cancel();
 	}
 

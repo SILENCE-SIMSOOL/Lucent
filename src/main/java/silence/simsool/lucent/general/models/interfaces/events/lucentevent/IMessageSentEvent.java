@@ -1,8 +1,8 @@
 package silence.simsool.lucent.general.models.interfaces.events.lucentevent;
 
-import silence.simsool.lucent.general.models.data.events.lucentevent.MessageSentEvent;
+import silence.simsool.lucent.events.impl.LucentEvent;
 
 @FunctionalInterface
 public interface IMessageSentEvent {
-	void onMessageSent(MessageSentEvent event);
+	void onMessageSent(LucentEvent.MessageSentEvent event);
 }

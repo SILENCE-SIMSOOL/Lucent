@@ -20,6 +20,7 @@ import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.config.api.LucentAPI;
 import silence.simsool.lucent.events.LucentEventRegister;
 import silence.simsool.lucent.events.impl.GUIEvent;
+import silence.simsool.lucent.events.impl.InputEvent;
 import silence.simsool.lucent.events.impl.LucentEvent;
 import silence.simsool.lucent.examplemod.huds.ExampleHUD;
 import silence.simsool.lucent.general.managers.LucentManagerRegister;
@@ -38,7 +39,7 @@ public class Lucent implements ClientModInitializer {
 
 	public static final String ID = "lucent";
 	public static final String NAME = "Lucent";
-	public static final String VERSION = "1.2.3";
+	public static final String VERSION = "1.2.5";
 	public static String LATEST_VERSION = "Fetching...";
 
 	public static Minecraft mc = Minecraft.getInstance();
@@ -109,8 +110,8 @@ public class Lucent implements ClientModInitializer {
 			}
 		});
 
-		LucentEvent.KEY_INPUT_EVENT.register(event -> {
-			if (KeyBindingHelper.getBoundKeyOf(Lucent.CONFIG_KEY).equals(event.key)) {
+		InputEvent.KEY.register(event -> {
+			if (event.state && KeyBindingHelper.getBoundKeyOf(Lucent.CONFIG_KEY).equals(event.keyEvent.key())) {
 				mc.execute(() -> {
 					mc.setScreen(LucentAPI.createEditHUDScreen(config));
 				});

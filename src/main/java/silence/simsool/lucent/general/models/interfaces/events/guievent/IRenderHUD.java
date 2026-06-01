@@ -1,8 +1,8 @@
 package silence.simsool.lucent.general.models.interfaces.events.guievent;
 
-import silence.simsool.lucent.general.models.data.events.guievent.RenderHUD;
+import silence.simsool.lucent.events.impl.GUIEvent;
 
 @FunctionalInterface
 public interface IRenderHUD {
-	void onRenderHUD(RenderHUD event);
+	void onRenderHUD(GUIEvent.RenderHUD event);
 }

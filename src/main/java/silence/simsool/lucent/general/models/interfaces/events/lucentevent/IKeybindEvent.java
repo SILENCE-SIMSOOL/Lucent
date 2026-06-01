@@ -1,8 +1,8 @@
 package silence.simsool.lucent.general.models.interfaces.events.lucentevent;
 
-import silence.simsool.lucent.general.models.data.events.lucentevent.KeybindEvent;
+import silence.simsool.lucent.events.impl.LucentEvent;
 
 @FunctionalInterface
 public interface IKeybindEvent {
-	void onKeybind(KeybindEvent event);
+	void onKeybind(LucentEvent.KeybindEvent event);
 }

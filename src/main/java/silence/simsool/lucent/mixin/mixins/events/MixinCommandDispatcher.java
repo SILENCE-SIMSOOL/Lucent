@@ -1,6 +1,6 @@
 package silence.simsool.lucent.mixin.mixins.events;
 
-import silence.simsool.lucent.general.models.data.events.lucentevent.TabCompletionEvent;
+import silence.simsool.lucent.events.impl.LucentEvent;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.brigadier.CommandDispatcher;
@@ -46,7 +46,7 @@ public class MixinCommandDispatcher<S> {
 
 	@Unique
 	private SuggestionsBuilder buildFromEvent(int start, String fullInput, String beforeCursor, ArrayList<String> existing) {
-		TabCompletionEvent tabCompletionEvent = new TabCompletionEvent(fullInput, beforeCursor, existing);
+		LucentEvent.TabCompletionEvent tabCompletionEvent = new LucentEvent.TabCompletionEvent(fullInput, beforeCursor, existing);
 		tabCompletionEvent.post();
 		String[] additional = tabCompletionEvent.intoSuggestionArray();
 		if (additional == null) return null;

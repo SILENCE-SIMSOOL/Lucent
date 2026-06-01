@@ -7,14 +7,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.client.gui.screens.ChatScreen;
 import silence.simsool.lucent.events.impl.LucentEvent;
-import silence.simsool.lucent.general.models.data.events.lucentevent.MessageSentEvent;
 
 @Mixin(ChatScreen.class)
 public class MixinChatScreen_MESSAGE_SENT_EVENT {
 
 	@Inject(method = "handleChatInput", at = @At("HEAD"), cancellable = true)
 	private void onHandleChatInput(String message, boolean addToHistory, CallbackInfo ci) {
-		MessageSentEvent event = new MessageSentEvent(message);
+		LucentEvent.MessageSentEvent event = new LucentEvent.MessageSentEvent(message);
 		LucentEvent.MESSAGE_SENT_EVENT.invoker().onMessageSent(event);
 		if (event.isCanceled()) ci.cancel();
 	}

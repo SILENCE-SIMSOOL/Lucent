@@ -1,8 +1,8 @@
 package silence.simsool.lucent.general.models.interfaces.events.guievent;
 
-import silence.simsool.lucent.general.models.data.events.guievent.GUICloseEvent;
+import silence.simsool.lucent.events.impl.GUIEvent;
 
 @FunctionalInterface
 public interface IGUICloseEvent {
-	void onClose(GUICloseEvent event);
+	void onClose(GUIEvent.GUICloseEvent event);
 }

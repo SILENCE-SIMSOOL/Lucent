@@ -21,10 +21,9 @@ import com.google.gson.stream.JsonWriter;
 import silence.simsool.lucent.config.api.LucentAPI;
 import silence.simsool.lucent.events.impl.GUIEvent;
 import silence.simsool.lucent.events.impl.LucentEvent;
-import silence.simsool.lucent.events.impl.MouseEvent;
+import silence.simsool.lucent.events.impl.InputEvent;
 import silence.simsool.lucent.events.impl.PacketEvent;
 import silence.simsool.lucent.events.impl.EntityEvent;
-import silence.simsool.lucent.general.models.data.events.lucentevent.KeybindEvent;
 import silence.simsool.lucent.examplemod.mods.ExampleMod;
 import silence.simsool.lucent.general.models.abstracts.Mod;
 import silence.simsool.lucent.general.models.data.KeyBind;
@@ -216,11 +215,13 @@ public class ModManager {
 
 		// LucentEvent
 		LucentEvent.INIT_FINISHED_EVENT.register(() -> {
-			if (module.isEnabled) module.onInitFinished();
+			module.onInitFinished();
+			if (module.isEnabled) module.onInitFinishedMod();
 		});
 
 		LucentEvent.RESOURCES_READY_EVENT.register(() -> {
-			if (module.isEnabled) module.onResourcesReady();
+			module.onResourcesReady();
+			if (module.isEnabled) module.onResourcesReadyMod();
 		});
 
 		LucentEvent.TICK_EVENT.LOW.register(() -> {
@@ -252,16 +253,18 @@ public class ModManager {
 		});
 
 		LucentEvent.SERVER_JOIN_EVENT.register(() -> {
-			if (module.isEnabled) module.onServerJoin();
+			module.onServerJoin();
+			if (module.isEnabled) module.onServerJoinMod();
 		});
 
 		LucentEvent.SERVER_DISCONNECT_EVENT.register(() -> {
-			if (module.isEnabled) module.onServerDisconnect();
+			module.onServerDisconnect();
+			if (module.isEnabled) module.onServerDisconnectMod();
 		});
 
 		LucentEvent.WORLD_LOAD_EVENT.register(() -> {
 			module.onWorldLoad();
-			if (module.isEnabled) module.onWorldLoadOriginal();
+			if (module.isEnabled) module.onWorldLoadMod();
 		});
 
 		LucentEvent.BLOCK_UPDATE_EVENT.register(event -> {
@@ -269,20 +272,17 @@ public class ModManager {
 		});
 
 		LucentEvent.WORLD_RENDER.register(event -> {
-			if (module.isEnabled) module.onWorldRender(event);
+			if (module.isEnabled) module.onRenderWorld(event);
 		});
 
 		LucentEvent.WORLD_RENDER_LAST.register(event -> {
-			if (module.isEnabled) module.onWorldRenderLast(event);
+			if (module.isEnabled) module.onRenderWorldLast(event);
 		});
 
 		LucentEvent.BLOCK_INTERACT_EVENT.register(event -> {
 			if (module.isEnabled) module.onBlockInteract(event);
 		});
 
-		LucentEvent.KEY_INPUT_EVENT.register(event -> {
-			if (module.isEnabled) module.onKeyInput(event);
-		});
 
 		LucentEvent.MESSAGE_SENT_EVENT.register(event -> {
 			if (module.isEnabled) module.onMessageSent(event);
@@ -293,15 +293,19 @@ public class ModManager {
 		});
 
 		LucentEvent.BOSS_BAR_RENDER_EVENT.register(event -> {
-			if (module.isEnabled) module.onBossBarRender(event);
+			if (module.isEnabled) module.onRenderBossBar(event);
 		});
 
-		EntityEvent.RENDER_LIVING_PRE_EVENT.register(event -> {
-			if (module.isEnabled) module.onRenderLivingPre(event);
+		EntityEvent.RENDER_ENTITY_PRE_EVENT.register(event -> {
+			if (module.isEnabled) module.onRenderEntityPre(event);
 		});
 
-		EntityEvent.RENDER_ENTITY_EVENT.register(event -> {
+		EntityEvent.RENDER_ENTITY_ALLOW_EVENT.register(event -> {
 			if (module.isEnabled) module.onRenderEntity(event);
+		});
+
+		EntityEvent.EXTRACT_RENDER_STATE_POST.register(event -> {
+			if (module.isEnabled) module.onExtractRenderStatePost(event);
 		});
 
 		LucentEvent.KEYBIND_EVENT.register(event -> {
@@ -333,8 +337,20 @@ public class ModManager {
 			if (module.isEnabled) module.onSlotClick(event);
 		});
 
-		GUIEvent.SLOT.Render.EVENT.register(event -> {
-			if (module.isEnabled) module.onSlotRender(event);
+		GUIEvent.SLOT.RenderPre.EVENT.register(event -> {
+			if (module.isEnabled) module.onSlotRenderPre(event);
+		});
+
+		GUIEvent.SLOT.RenderPost.EVENT.register(event -> {
+			if (module.isEnabled) module.onSlotRenderPost(event);
+		});
+
+		GUIEvent.SLOT.RenderHotbarPre.EVENT.register(event -> {
+			if (module.isEnabled) module.onHotbarRenderPre(event);
+		});
+
+		GUIEvent.SLOT.RenderHotbarPost.EVENT.register(event -> {
+			if (module.isEnabled) module.onHotbarRenderPost(event);
 		});
 
 		GUIEvent.CONTAINER.All.EVENT.register(event -> {
@@ -350,7 +366,7 @@ public class ModManager {
 		});
 
 		GUIEvent.Tooltip.EVENT.register(event -> {
-			if (module.isEnabled) module.onTooltip(event);
+			if (module.isEnabled) module.onRenderTooltip(event);
 		});
 
 		// DropItemEvent
@@ -358,19 +374,67 @@ public class ModManager {
 			if (module.isEnabled) module.onDropItem(event);
 		});
 
-		// MouseEvent
-		MouseEvent.CLICK.register(event -> {
-			if (module.isEnabled) module.onMouseClick(event);
+		// InputEvent
+		InputEvent.MOUSE.register(event -> {
+			if (module.isEnabled) module.onMouseInput(event);
+		});
+
+		InputEvent.KEY.register(event -> {
+			if (module.isEnabled) module.onKeyInput(event);
 		});
 
 		// PacketEvent
 		PacketEvent.RECEIVE.register(event -> {
-			if (module.isEnabled) module.onPacketReceive(event);
+			if (module.isEnabled) module.onReceivePacket(event);
 		});
 
 		// PacketEvent
 		PacketEvent.SEND.register(event -> {
-			if (module.isEnabled) module.onPacketSend(event);
+			if (module.isEnabled) module.onSendPacket(event);
+		});
+
+		EntityEvent.ENTITY_JOIN_EVENT.register(event -> {
+			if (module.isEnabled) module.onEntityJoin(event);
+		});
+
+		EntityEvent.ENTITY_LEAVE_EVENT.register(event -> {
+			if (module.isEnabled) module.onEntityLeave(event);
+		});
+
+		EntityEvent.ENTITY_DEATH_EVENT.register(event -> {
+			if (module.isEnabled) module.onEntityDeath(event);
+		});
+
+		EntityEvent.ENTITY_DATA_EVENT.register(event -> {
+			if (module.isEnabled) module.onEntityData(event);
+		});
+
+		EntityEvent.ENTITY_EQUIPMENT_EVENT.register(event -> {
+			if (module.isEnabled) module.onEntityEquipment(event);
+		});
+
+		EntityEvent.ENTITY_INTERACT_EVENT.register(event -> {
+			if (module.isEnabled) module.onEntityInteract(event);
+		});
+
+		LucentEvent.ITEM_PICKUP_EVENT.register(event -> {
+			if (module.isEnabled) module.onItemPickup(event);
+		});
+
+		LucentEvent.SOUND_EVENT.register(event -> {
+			if (module.isEnabled) module.onSound(event);
+		});
+
+		LucentEvent.SCOREBOARD_EVENT.register(event -> {
+			if (module.isEnabled) module.onScoreboard(event);
+		});
+
+		LucentEvent.USE_ITEM_ON_EVENT.register(event -> {
+			if (module.isEnabled) module.onUseItemOn(event);
+		});
+
+		LucentEvent.USE_ITEM_EVENT.register(event -> {
+			if (module.isEnabled) module.onUseItem(event);
 		});
 	}
 
@@ -565,7 +629,7 @@ public class ModManager {
 				if (!info.module.isEnabled) continue;
 				KeyBind keybind = info.getKeyBind();
 				if (keybind != null && keybind.isBound() && keybind.isKey() && keybind.keyCode == key) {
-					LucentEvent.KEYBIND_EVENT.invoker().onKeybind(new KeybindEvent(keybind, pressed, keyDown));
+					LucentEvent.KEYBIND_EVENT.invoker().onKeybind(new LucentEvent.KeybindEvent(keybind, pressed, keyDown));
 				}
 			}
 		}
@@ -580,7 +644,7 @@ public class ModManager {
 				if (!info.module.isEnabled) continue;
 				KeyBind keybind = info.getKeyBind();
 				if (keybind != null && keybind.isBound() && keybind.isMouse() && keybind.mouseButton == button) {
-					LucentEvent.KEYBIND_EVENT.invoker().onKeybind(new KeybindEvent(keybind, pressed, keyDown));
+					LucentEvent.KEYBIND_EVENT.invoker().onKeybind(new LucentEvent.KeybindEvent(keybind, pressed, keyDown));
 				}
 			}
 		}

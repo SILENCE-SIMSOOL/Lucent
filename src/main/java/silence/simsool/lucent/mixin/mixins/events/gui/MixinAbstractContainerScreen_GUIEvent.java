@@ -8,6 +8,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -20,8 +23,6 @@ import net.minecraft.world.item.ItemStack;
 import silence.simsool.lucent.events.impl.GUIEvent;
 import silence.simsool.lucent.events.impl.LucentEvent;
 import silence.simsool.lucent.general.enums.DropType;
-import silence.simsool.lucent.general.models.data.events.guievent.*;
-import silence.simsool.lucent.general.models.data.events.lucentevent.DropItemEvent;
 
 @Mixin(AbstractContainerScreen.class)
 public abstract class MixinAbstractContainerScreen_GUIEvent {
@@ -36,7 +37,7 @@ public abstract class MixinAbstractContainerScreen_GUIEvent {
 	private void onMouseClicked(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
 		if (event.button() == 2 && this.hoveredSlot != null) {
 			AbstractContainerScreen<?> screen = (AbstractContainerScreen<?>) (Object) this;
-			GUISlotClickEvent clickEvent = new GUISlotClickEvent(this.hoveredSlot, this.hoveredSlot.index, event.button(), ClickType.CLONE, screen.getMenu(), screen);
+			GUIEvent.SlotClickEvent clickEvent = new GUIEvent.SlotClickEvent(this.hoveredSlot, this.hoveredSlot.index, event.button(), ClickType.CLONE, screen.getMenu(), screen);
 			GUIEvent.SLOT.Click.EVENT.invoker().onSlotClick(clickEvent);
 			if (clickEvent.isCanceled()) {
 				cir.setReturnValue(true);
@@ -48,7 +49,7 @@ public abstract class MixinAbstractContainerScreen_GUIEvent {
 	public void onRemoved(CallbackInfo ci) {
 		Screen self = (Screen) (Object) this;
 		AbstractContainerMenu menu = ((AbstractContainerScreen<?>) (Object) this).getMenu();
-		GUICloseEvent event = new GUICloseEvent(self, menu);
+		GUIEvent.GUICloseEvent event = new GUIEvent.GUICloseEvent(self, menu);
 		GUIEvent.CLOSE.EVENT.invoker().onClose(event);
 		if (event.isCanceled()) ci.cancel();
 	}
@@ -58,17 +59,17 @@ public abstract class MixinAbstractContainerScreen_GUIEvent {
 		Screen self = (Screen) (Object) this;
 
 		GUIEvent.CONTAINER.All.EVENT.invoker().onContainer(
-			new GUIContainerAllEvent(guiGraphics, self, mouseX, mouseY, leftPos, topPos, imageWidth, imageHeight)
+			new GUIEvent.RenderContainer(guiGraphics, self, mouseX, mouseY, leftPos, topPos, imageWidth, imageHeight)
 		);
 
 		if (self instanceof InventoryScreen) {
 			GUIEvent.CONTAINER.Inventory.EVENT.invoker().onInventory(
-				new GUIContainerInventoryEvent(guiGraphics, self, mouseX, mouseY, leftPos, topPos, imageWidth, imageHeight)
+				new GUIEvent.RenderInventory(guiGraphics, self, mouseX, mouseY, leftPos, topPos, imageWidth, imageHeight)
 			);
 		}
 		else {
 			GUIEvent.CONTAINER.Chest.EVENT.invoker().onChest(
-				new GUIContainerChestEvent(guiGraphics, self, mouseX, mouseY, leftPos, topPos, imageWidth, imageHeight)
+				new GUIEvent.RenderChest(guiGraphics, self, mouseX, mouseY, leftPos, topPos, imageWidth, imageHeight)
 			);
 		}
 	}
@@ -82,7 +83,7 @@ public abstract class MixinAbstractContainerScreen_GUIEvent {
 				ItemStack carried = screen.getMenu().getCarried();
 				if (!carried.isEmpty()) {
 					boolean all = button == 0;
-					DropItemEvent event = new DropItemEvent(carried, DropType.INVENTORY_CLICK_OUTSIDE, all);
+					LucentEvent.DropItemEvent event = new LucentEvent.DropItemEvent(carried, DropType.INVENTORY_CLICK_OUTSIDE, all);
 					LucentEvent.DROP_ITEM_EVENT.invoker().onDropItem(event);
 					if (event.isCanceled()) ci.cancel();
 				}
@@ -90,10 +91,20 @@ public abstract class MixinAbstractContainerScreen_GUIEvent {
 		}
 
 		else {
-			GUISlotClickEvent event = new GUISlotClickEvent(slot, slotId, button, clickType, screen.getMenu(), screen);
+			GUIEvent.SlotClickEvent event = new GUIEvent.SlotClickEvent(slot, slotId, button, clickType, screen.getMenu(), screen);
 			GUIEvent.SLOT.Click.EVENT.invoker().onSlotClick(event);
 			if (event.isCanceled()) ci.cancel();
 		}
+	}
+
+	@WrapOperation(method = "renderSlots", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderSlot(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/world/inventory/Slot;II)V"))
+	private void onRenderSlot(AbstractContainerScreen<?> instance, GuiGraphics guiGraphics, Slot slot, int i, int j, Operation<Void> original) {
+		GUIEvent.RenderSlotPreEvent preEvent = new GUIEvent.RenderSlotPreEvent(slot, guiGraphics, instance);
+		GUIEvent.SLOT.RenderPre.EVENT.invoker().onSlotRenderPre(preEvent);
+		if (preEvent.isCanceled()) return;
+		original.call(instance, guiGraphics, slot, i, j);
+		GUIEvent.RenderSlotPostEvent postEvent = new GUIEvent.RenderSlotPostEvent(slot, guiGraphics, instance);
+		GUIEvent.SLOT.RenderPost.EVENT.invoker().onSlotRenderPost(postEvent);
 	}
 
 }

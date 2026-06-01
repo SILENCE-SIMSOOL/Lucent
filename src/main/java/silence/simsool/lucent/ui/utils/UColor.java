@@ -20,6 +20,14 @@ public class UColor {
 		return withAlpha(color, (int)(alpha * 255));
 	}
 
+	public static Color withAlpha(Color color, int alpha) {
+		return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
+	}
+
+	public static Color withAlphaF(Color color, float alpha) {
+		return new Color(color.getRed(), color.getGreen(), color.getBlue(), Math.round(alpha * 255));
+	}
+
 	public static int getAlpha(int color) {
 		return (color >> 24) & 0xFF;
 	}

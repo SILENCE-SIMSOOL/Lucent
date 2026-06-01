@@ -30,6 +30,8 @@ Explore Lucent through focused documentation guides for each system and feature.
 - **[Config Integration Guide](./docs/en/config.md)**  
   Annotation-driven config managers, modules, saving/loading, and settings GUI integration.  
   Example: [`ExampleMod.java`](https://github.com/SILENCE-SIMSOOL/Lucent/blob/main/src/main/java/silence/simsool/lucent/examplemod/mods/ExampleMod.java)
+- **[Event System Guide](./docs/en/events.md)**  
+  Subscribe to game events such as chat messages, ticks, rendering, network packets, and entities.
 
 ### 📺 HUD System
 - **[HUD Configuration Guide](./docs/en/hud.md)**  
@@ -123,6 +125,7 @@ dependencies {
 
 - Config screen UI design was inspired by **[OneConfig](https://github.com/Polyfrost/OneConfig)** by Polyfrost.
 - NanoVG rendering structures and utility drawing systems were inspired by **[Odin](https://github.com/odtheking/Odin)** by odtheking.
+- Some event features were inspired by **[Devonian](https://github.com/Synnerz/devonian)** by Synnerz.
 - Built for **[Minecraft](https://www.minecraft.net/)** using the **[Fabric Project](https://fabricmc.net/)** modding ecosystem.
 
 ---

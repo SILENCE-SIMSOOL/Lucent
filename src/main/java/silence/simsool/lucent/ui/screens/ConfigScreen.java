@@ -1848,11 +1848,14 @@ public class ConfigScreen extends Screen {
 
 	private boolean isParentActive(String fieldName) {
 		try {
-			Field f = currentModSettings.getClass().getDeclaredField(fieldName);
+			boolean negate = fieldName.startsWith("!");
+			String actualName = negate ? fieldName.substring(1) : fieldName;
+			Field f = currentModSettings.getClass().getDeclaredField(actualName);
 			f.setAccessible(true);
 			Object val = f.get(currentModSettings);
 			if (val instanceof Boolean b) {
-				if (!b) return false;
+				boolean active = negate ? !b : b;
+				if (!active) return false;
 
 				// Check if the parent field itself has a parent
 				ModConfig cfg = f.getAnnotation(ModConfig.class);

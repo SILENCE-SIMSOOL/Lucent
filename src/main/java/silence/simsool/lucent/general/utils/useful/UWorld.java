@@ -6,6 +6,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class UWorld {
 
@@ -31,13 +33,13 @@ public class UWorld {
 		return getBlockNumericID(new BlockPos(x, y, z));
 	}
 
-	public static BlockState getBlockStateAt(BlockPos pos) {
+	public static BlockState getBlockState(BlockPos pos) {
 		if (mc.level == null) return Blocks.AIR.defaultBlockState();
 		return mc.level.getBlockState(pos);
 	}
 
-	public static BlockState getBlockStateAt(int x, int y, int z) {
-		return getBlockStateAt(new BlockPos(x, y, z));
+	public static BlockState getBlockState(int x, int y, int z) {
+		return getBlockState(new BlockPos(x, y, z));
 	}
 
 	public static boolean isAir(BlockPos pos) {
@@ -47,6 +49,20 @@ public class UWorld {
 
 	public static boolean isAir(int x, int y, int z) {
 		return isAir(new BlockPos(x, y, z));
+	}
+
+	public static AABB getBlockBounds(BlockPos pos) {
+		if (mc.level == null) return null;
+
+		VoxelShape shape = mc.level
+			.getBlockState(pos)
+			.getShape(mc.level, pos);
+
+		VoxelShape encompassing = shape.singleEncompassing();
+
+		if (encompassing.isEmpty()) return null;
+
+		return encompassing.bounds();
 	}
 
 }

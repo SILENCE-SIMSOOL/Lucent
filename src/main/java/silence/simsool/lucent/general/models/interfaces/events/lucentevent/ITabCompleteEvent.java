@@ -1,8 +1,8 @@
 package silence.simsool.lucent.general.models.interfaces.events.lucentevent;
 
-import silence.simsool.lucent.general.models.data.events.lucentevent.TabCompletionEvent;
+import silence.simsool.lucent.events.impl.LucentEvent;
 
 @FunctionalInterface
 public interface ITabCompleteEvent {
-	void onTabComplete(TabCompletionEvent event);
+	void onTabComplete(LucentEvent.TabCompletionEvent event);
 }

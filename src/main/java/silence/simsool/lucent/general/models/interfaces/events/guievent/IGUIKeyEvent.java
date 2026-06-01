@@ -1,8 +1,8 @@
 package silence.simsool.lucent.general.models.interfaces.events.guievent;
 
-import silence.simsool.lucent.general.models.data.events.guievent.GUIKeyEvent;
+import silence.simsool.lucent.events.impl.GUIEvent;
 
 @FunctionalInterface
 public interface IGUIKeyEvent {
-	void onKey(GUIKeyEvent event);
+	void onKey(GUIEvent.GUIKeyEvent event);
 }

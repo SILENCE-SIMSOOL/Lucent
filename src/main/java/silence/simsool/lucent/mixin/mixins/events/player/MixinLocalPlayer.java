@@ -9,7 +9,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.item.ItemStack;
 import silence.simsool.lucent.events.impl.LucentEvent;
 import silence.simsool.lucent.general.enums.DropType;
-import silence.simsool.lucent.general.models.data.events.lucentevent.DropItemEvent;
 
 @Mixin(LocalPlayer.class)
 public abstract class MixinLocalPlayer {
@@ -20,7 +19,7 @@ public abstract class MixinLocalPlayer {
 		ItemStack stack = player.getInventory().getSelectedItem();
 
 		if (stack != null && !stack.isEmpty()) {
-			DropItemEvent event = new DropItemEvent(stack, DropType.DEFAULT_DROP, all);
+			LucentEvent.DropItemEvent event = new LucentEvent.DropItemEvent(stack, DropType.DEFAULT_DROP, all);
 			LucentEvent.DROP_ITEM_EVENT.invoker().onDropItem(event);
 			if (event.isCanceled()) cir.setReturnValue(false);
 		}

@@ -10,7 +10,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import silence.simsool.lucent.events.impl.LucentEvent;
-import silence.simsool.lucent.general.models.data.events.lucentevent.BlockUpdateEvent;
 
 @Mixin(LevelChunk.class)
 public abstract class MixinLevelChunk_BLOCK_UPDATE_EVENT {
@@ -21,7 +20,7 @@ public abstract class MixinLevelChunk_BLOCK_UPDATE_EVENT {
 	@Inject(method = "setBlockState", at = @At("HEAD"))
 	private void onSetBlockState(BlockPos pos, BlockState state, int flags, CallbackInfoReturnable<BlockState> cir) {
 		BlockState old = this.getBlockState(pos);
-		if (old != state) LucentEvent.BLOCK_UPDATE_EVENT.invoker().onBlockUpdate(new BlockUpdateEvent(pos, old, state));
+		if (old != state) LucentEvent.BLOCK_UPDATE_EVENT.invoker().onBlockUpdate(new LucentEvent.BlockUpdateEvent(pos, old, state));
 	}
 
 }
