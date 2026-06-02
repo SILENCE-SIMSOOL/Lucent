@@ -3,10 +3,10 @@ package silence.simsool.lucent.events;
 import static silence.simsool.lucent.Lucent.mc;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.lwjgl.glfw.GLFW;
 
@@ -46,8 +46,8 @@ import silence.simsool.lucent.general.utils.useful.UChat;
 public class LucentEventRegister {
 
 	private static int tickCounter = 0;
-	private static final Map<Integer, EntityType<?>> entityTypes = new HashMap<>();
-	private static final Map<Integer, net.minecraft.world.phys.Vec3> entityPos = new HashMap<>();
+	private static final Map<Integer, EntityType<?>> entityTypes = new ConcurrentHashMap<>();
+	private static final Map<Integer, Vec3> entityPos = new ConcurrentHashMap<>();
 
 	public static void initialize() {
 
@@ -158,34 +158,40 @@ public class LucentEventRegister {
 			}
 
 			if (event.packet instanceof ClientboundSetEntityDataPacket packet) {
-				int id = packet.id();
-				EntityType<?> type = entityTypes.get(id); if (type == null) return;
-				List<SynchedEntityData.DataValue<?>> data = packet.packedItems();
+				mc.execute(() -> {
+					if (mc.player == null || mc.level == null) return;
+					int id = packet.id();
+					EntityType<?> type = entityTypes.get(id); if (type == null) return;
+					List<SynchedEntityData.DataValue<?>> data = packet.packedItems();
 
-				EntityEvent.ENTITY_DATA_EVENT.invoker().onEntityData(new EntityEvent.EntityDataEvent(id, type, data));
+					EntityEvent.ENTITY_DATA_EVENT.invoker().onEntityData(new EntityEvent.EntityDataEvent(id, type, data));
 
-				Component nameText = getNameFromData(data);
-				if (nameText != null) {
-					EntityEvent.NAME_CHANGE_EVENT.invoker().onNameChange(
-						new EntityEvent.NameChangeEvent(id, type, nameText, nameText.getString())
-					);
-				}
+					Component nameText = getNameFromData(data);
+					if (nameText != null) {
+						EntityEvent.NAME_CHANGE_EVENT.invoker().onNameChange(
+							new EntityEvent.NameChangeEvent(id, type, nameText, nameText.getString())
+						);
+					}
+				});
 				return;
 			}
 
 			if (event.packet instanceof ClientboundSetEquipmentPacket packet) {
-				int id = packet.getEntity();
-				EntityType<?> type = entityTypes.get(id);
-				if (type != null) {
-					Vec3 pos = entityPos.get(id);
-					if (pos != null) {
-						List<Pair<EquipmentSlot, ItemStack>> slots = new ArrayList<>();
-						for (com.mojang.datafixers.util.Pair<EquipmentSlot, ItemStack> p : packet.getSlots()) {
-							slots.add(new Pair<>(p.getFirst(), p.getSecond()));
+				mc.execute(() -> {
+					if (mc.player == null || mc.level == null) return;
+					int id = packet.getEntity();
+					EntityType<?> type = entityTypes.get(id);
+					if (type != null) {
+						Vec3 pos = entityPos.get(id);
+						if (pos != null) {
+							List<Pair<EquipmentSlot, ItemStack>> slots = new ArrayList<>();
+							for (com.mojang.datafixers.util.Pair<EquipmentSlot, ItemStack> p : packet.getSlots()) {
+								slots.add(new Pair<>(p.getFirst(), p.getSecond()));
+							}
+							EntityEvent.ENTITY_EQUIPMENT_EVENT.invoker().onEntityEquipment(new EntityEvent.EntityEquipmentEvent(id, type, pos, slots));
 						}
-						EntityEvent.ENTITY_EQUIPMENT_EVENT.invoker().onEntityEquipment(new EntityEvent.EntityEquipmentEvent(id, type, pos, slots));
 					}
-				}
+				});
 				return;
 			}
 
@@ -208,13 +214,16 @@ public class LucentEventRegister {
 			}
 
 			if (event.packet instanceof ClientboundSetPlayerTeamPacket packet) {
-				packet.getParameters().ifPresent(parameters -> {
-					String prefix = parameters.getPlayerPrefix().getString();
-					String suffix = parameters.getPlayerSuffix().getString();
-					if (!prefix.isEmpty()) {
-						String cleanMsg = UChat.cleanColor(prefix + suffix.trim());
-						LucentEvent.SCOREBOARD_EVENT.invoker().onScoreboard(new LucentEvent.ScoreboardEvent(cleanMsg));
-					}
+				mc.execute(() -> {
+					if (mc.player == null || mc.level == null) return;
+					packet.getParameters().ifPresent(parameters -> {
+						String prefix = parameters.getPlayerPrefix().getString();
+						String suffix = parameters.getPlayerSuffix().getString();
+						if (!prefix.isEmpty()) {
+							String cleanMsg = UChat.cleanColor(prefix + suffix.trim());
+							LucentEvent.SCOREBOARD_EVENT.invoker().onScoreboard(new LucentEvent.ScoreboardEvent(cleanMsg));
+						}
+					});
 				});
 				return;
 			}
