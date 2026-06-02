@@ -1,7 +1,5 @@
 package silence.simsool.lucent.general.managers.impl;
 
-import static silence.simsool.lucent.Lucent.mc;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +8,7 @@ import silence.simsool.lucent.events.impl.LucentEvent;
 public class TaskManager {
 
 	private static final List<Task> tasks = new ArrayList<>();
+	private static final List<Task> serverTasks = new ArrayList<>();
 
 	public static void register() {
 		LucentEvent.TICK_EVENT.register(() -> {
@@ -18,7 +17,22 @@ public class TaskManager {
 
 				tasks.removeIf(task -> {
 					if (task.delay <= 0) {
-						mc.execute(task.callback);
+						task.callback.run();
+						return true;
+					}
+					task.delay--;
+					return false;
+				});
+			}
+		});
+
+		LucentEvent.SERVER_TICK_EVENT.register(() -> {
+			synchronized (serverTasks) {
+				if (serverTasks.isEmpty()) return;
+
+				serverTasks.removeIf(task -> {
+					if (task.delay <= 0) {
+						task.callback.run();
 						return true;
 					}
 					task.delay--;
@@ -35,6 +49,16 @@ public class TaskManager {
 	public static void scheduleTask(int delay, Runnable callback) {
 		synchronized (tasks) {
 			tasks.add(new Task(delay, callback));
+		}
+	}
+
+	public static void scheduleServerTask(Runnable callback) {
+		scheduleServerTask(0, callback);
+	}
+
+	public static void scheduleServerTask(int delay, Runnable callback) {
+		synchronized (serverTasks) {
+			serverTasks.add(new Task(delay, callback));
 		}
 	}
 
