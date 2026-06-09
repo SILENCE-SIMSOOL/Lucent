@@ -33,7 +33,7 @@ import silence.simsool.lucent.general.utils.useful.URender;
 import silence.simsool.lucent.mixin.accessors.BeaconBeamAccessor;
 import silence.simsool.lucent.ui.utils.UColor;
 
-public class RenderUtils {
+public class Render3D {
 
 	private static final List<LineData> queuedLines = new ObjectArrayList<>();
 	private static final List<BoxData> queuedFilledBoxes = new ObjectArrayList<>();

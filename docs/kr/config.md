@@ -74,6 +74,18 @@ public class MyFeatureModule extends Mod {
 }
 ```
 
+### 어노테이션 옵션 설명
+`@ModConfig`와 `@ModConfigExtra`에서 제공하는 주요 옵션 목록입니다.
+
+- `type`: 설정의 타입 (예: `ConfigType.SWITCH`, `ConfigType.SLIDER`, `ConfigType.SELECTOR` 등)
+- `name`: UI 화면에 표시할 이름
+- `description`: 해당 설정 마우스 호버 시 노출될 상세 설명 문구
+- `category`: 설정이 소속될 카테고리 (기본값: `"General"`)
+- `parent`: 의존성을 가질 부모 설정 필드의 이름을 작성합니다. 부모 설정이 활성화되었을 때만 화면에 표시됩니다. (부모 이름 앞에 `!`를 붙이면 반대 조건으로 작동합니다)
+- `hidden`: 설정이 코드 상에서만 동작하고 ConfigScreen UI에는 보이지 않도록 숨깁니다. (기본값: `false`)
+- `selector`: 부모 설정이 셀렉터(`ConfigType.SELECTOR`)일 때 사용할 수 있는 옵션입니다. 부모 셀렉터에서 지정한 옵션 값이 `selector`에 입력한 값과 일치할 때만 본 설정이 활성화됩니다.
+- `priority`: UI 렌더링 우선순위 (높은 값일수록 카테고리 내에서 상단에 표시됩니다)
+
 ---
 
 ## 3. 모드 클래스 등록 및 로드/저장

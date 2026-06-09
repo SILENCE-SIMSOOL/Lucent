@@ -2,7 +2,7 @@ package silence.simsool.lucent.general.models.data.render;
 
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.world.phys.Vec3;
-import silence.simsool.lucent.general.utils.render.RenderUtils;
+import silence.simsool.lucent.general.utils.render.Render3D;
 
 public class LineData {
 	public final Vec3 from, to;
@@ -20,7 +20,7 @@ public class LineData {
 	}
 
 	public RenderType renderType() {
-		boolean fullyOpaque = RenderUtils.isFullyOpaque(color1) && RenderUtils.isFullyOpaque(color2);
-		return RenderUtils.resolveLineRenderType(depth, fullyOpaque);
+		boolean fullyOpaque = Render3D.isFullyOpaque(color1) && Render3D.isFullyOpaque(color2);
+		return Render3D.resolveLineRenderType(depth, fullyOpaque);
 	}
 }

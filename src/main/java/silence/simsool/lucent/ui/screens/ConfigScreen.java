@@ -1385,6 +1385,7 @@ public class ConfigScreen extends Screen {
 					selector.setOnChange(v -> {
 						try {
 							if (field != null) field.set(currentModSettings, v);
+							refreshUI(true);
 						} catch (Exception e) {}
 					});
 					overlayWidgets.add(selector);
@@ -1472,13 +1473,14 @@ public class ConfigScreen extends Screen {
 		Map<String, List<Field>> map = new LinkedHashMap<>();
 		for (Field f : allFields) {
 			ModConfigExtra cfg = f.getAnnotation(ModConfigExtra.class);
+			if (cfg.hidden()) continue;
 			if (!query.isEmpty()) {
 				boolean match = L10n.translate(cfg.name()).toLowerCase().contains(query)
 						|| L10n.translate(cfg.description()).toLowerCase().contains(query)
 						|| L10n.translate(cfg.category()).toLowerCase().contains(query);
 				if (!match) continue;
 			}
-			if (!cfg.parent().isEmpty() && !isParentActive(cfg.parent())) continue;
+			if (!cfg.parent().isEmpty() && !isParentActive(cfg.parent(), cfg.selector())) continue;
 			map.computeIfAbsent(cfg.category(), k -> new ArrayList<>()).add(f);
 		}
 
@@ -1643,6 +1645,7 @@ public class ConfigScreen extends Screen {
 					sel.setOnChange(v -> {
 						try {
 							field.set(currentModSettings, v);
+							refreshUI(true);
 						} catch (Exception e) {}
 					});
 					overlayWidgets.add(sel);
@@ -1809,12 +1812,14 @@ public class ConfigScreen extends Screen {
 		for (Object member : allMembers) {
 			ModConfig cfg = (member instanceof Field f) ? f.getAnnotation(ModConfig.class) : ((Method)member).getAnnotation(ModConfig.class);
 			
+			if (cfg.hidden()) continue;
+
 			// Handle Search
 			if (!matchesSearch(cfg, query)) continue;
 
 			// Handle Parent Dependency
 			if (!cfg.parent().isEmpty()) {
-				if (!isParentActive(cfg.parent())) continue;
+				if (!isParentActive(cfg.parent(), cfg.selector())) continue;
 			}
 
 			map.computeIfAbsent(cfg.category(), k -> new ArrayList<>()).add(member);
@@ -1846,24 +1851,38 @@ public class ConfigScreen extends Screen {
 		return max == Integer.MIN_VALUE ? 0 : max;
 	}
 
-	private boolean isParentActive(String fieldName) {
+	private boolean isParentActive(String fieldName, String selectorValue) {
 		try {
 			boolean negate = fieldName.startsWith("!");
 			String actualName = negate ? fieldName.substring(1) : fieldName;
 			Field f = currentModSettings.getClass().getDeclaredField(actualName);
 			f.setAccessible(true);
 			Object val = f.get(currentModSettings);
-			if (val instanceof Boolean b) {
-				boolean active = negate ? !b : b;
-				if (!active) return false;
 
-				// Check if the parent field itself has a parent
-				ModConfig cfg = f.getAnnotation(ModConfig.class);
-				if (cfg != null && !cfg.parent().isEmpty()) {
-					return isParentActive(cfg.parent());
+			boolean active = false;
+			if (selectorValue != null && !selectorValue.isEmpty()) {
+				if (val != null) {
+					String strVal = String.valueOf(val);
+					active = negate ? !strVal.equals(selectorValue) : strVal.equals(selectorValue);
 				}
-				return true;
+			} else {
+				if (val instanceof Boolean b) {
+					active = negate ? !b : b;
+				}
 			}
+
+			if (!active) return false;
+
+			// Check if the parent field itself has a parent
+			ModConfig cfg = f.getAnnotation(ModConfig.class);
+			if (cfg != null && !cfg.parent().isEmpty()) {
+				return isParentActive(cfg.parent(), cfg.selector());
+			}
+			ModConfigExtra extra = f.getAnnotation(ModConfigExtra.class);
+			if (extra != null && !extra.parent().isEmpty()) {
+				return isParentActive(extra.parent(), extra.selector());
+			}
+			return true;
 		} catch (Exception e) {}
 		return false;
 	}

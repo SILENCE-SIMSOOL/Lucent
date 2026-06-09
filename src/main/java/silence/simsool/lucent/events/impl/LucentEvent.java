@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
 import net.fabricmc.fabric.api.event.Event;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
@@ -337,9 +338,16 @@ public class LucentEvent {
 	}
 
 	public static class MessageEvent {
+		public Component component;
 		public String message;
 		public String chat;
 		private boolean canceled = false;
+
+		public MessageEvent(Component component, String message, String chat) {
+			this.component = component;
+			this.message = message;
+			this.chat = chat;
+		}
 
 		public MessageEvent(String message, String chat) {
 			this.message = message;

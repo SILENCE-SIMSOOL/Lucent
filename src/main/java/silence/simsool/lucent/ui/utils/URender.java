@@ -4,11 +4,14 @@ import static silence.simsool.lucent.Lucent.mc;
 
 import java.util.UUID;
 
+import org.joml.Matrix3x2fStack;
+
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
 
 public class URender {
 
@@ -38,6 +41,16 @@ public class URender {
 		PlayerInfo entry = mc.getConnection().getPlayerInfo(uuid);
 		if (entry != null) PlayerFaceRenderer.draw(graphics, entry.getSkin(), x, y, size);
 		else if (mc.player != null && mc.player.getUUID().equals(uuid)) PlayerFaceRenderer.draw(graphics, mc.player.getSkin(), x, y, size);
+	}
+
+	public void renderItem(GuiGraphics context, ItemStack item, float x, float y, float scale) {
+		Matrix3x2fStack pose = context.pose();
+		pose.pushMatrix();
+		pose.translate(x, y);
+		pose.scale(scale, scale);
+		context.renderItem(item, 0, 0);
+		context.renderItemDecorations(mc.font, item, 0, 0);
+		pose.popMatrix();
 	}
 
 }

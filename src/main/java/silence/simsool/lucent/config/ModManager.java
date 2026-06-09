@@ -358,6 +358,10 @@ public class ModManager {
 			if (module.isEnabled) module.onHotbarRenderPost(event);
 		});
 
+		GUIEvent.SLOT.Update.EVENT.register(event -> {
+			if (module.isEnabled) module.onSlotUpdate(event);
+		});
+
 		GUIEvent.CONTAINER.All.EVENT.register(event -> {
 			if (module.isEnabled) module.onRenderContainer(event);
 		});

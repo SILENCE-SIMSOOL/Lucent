@@ -74,6 +74,18 @@ public class MyFeatureModule extends Mod {
 }
 ```
 
+### Annotation Options
+List of common properties available in `@ModConfig` and `@ModConfigExtra`:
+
+- `type`: Config field input type (e.g. `ConfigType.SWITCH`, `ConfigType.SLIDER`, `ConfigType.SELECTOR`, etc.)
+- `name`: Display name shown on the GUI.
+- `description`: Detailed description shown as a hover tooltip.
+- `category`: Category grouping for this item (default: `"General"`).
+- `parent`: The field name of another configuration this option depends on. This option will only be visible when the parent is active (Prefix with `!` to invert the logic).
+- `hidden`: If `true`, the option remains functional in code but is hidden from the ConfigScreen UI (default: `false`).
+- `selector`: Applicable only when a `parent` is specified and that parent is a selector (`ConfigType.SELECTOR`). This option will only be visible when the parent selector's value matches the `selector` string.
+- `priority`: Ordering weight (higher priority options are rendered first).
+
 ---
 
 ## 3. Registering, Loading, and Saving Configurations

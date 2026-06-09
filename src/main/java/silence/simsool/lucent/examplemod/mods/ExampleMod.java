@@ -142,6 +142,15 @@ public class ExampleMod extends Mod {
 	public static boolean AdvancedConfig = false;
 
 	@ModConfig(
+		type = ConfigType.SELECTOR,
+		name = "Advanced Selector",
+		description = "",
+		category = "Advanced",
+		options = {"A", "B", "C"}
+	)
+	public static String AdvancedSelector = "A";
+
+	@ModConfig(
 		type = ConfigType.COLOR,
 		name = "Advanced Parent",
 		description = "",
@@ -149,6 +158,16 @@ public class ExampleMod extends Mod {
 		parent = "AdvancedConfig" // (Optional): Enter the variable name of the parent config; this item is displayed only when the parent is enabled.
 	)
 	public static Color AdvancedParent = new Color(85, 255, 85, 255);
+
+	@ModConfig(
+		type = ConfigType.BUTTON,
+		name = "Advanced Button",
+		description = "",
+		category = "Advanced",
+		parent = "AdvancedSelector",
+		selector = "B"
+	)
+	public void advancedButton() {}
 
 
 //───────────────────────────────── Example ─────────────────────────────────────────

@@ -60,6 +60,7 @@ public abstract class Mod {
 	public void onSlotClick(GUIEvent.SlotClickEvent event) {}
 	public void onSlotRenderPre(GUIEvent.RenderSlotPreEvent event) {}
 	public void onSlotRenderPost(GUIEvent.RenderSlotPostEvent event) {}
+	public void onSlotUpdate(GUIEvent.SlotUpdateEvent event) {}
 	public void onHotbarRenderPre(GUIEvent.RenderHotbarPreEvent event) {}
 	public void onHotbarRenderPost(GUIEvent.RenderHotbarPostEvent event) {}
 	public void onRenderContainer(GUIEvent.RenderContainer event) {}

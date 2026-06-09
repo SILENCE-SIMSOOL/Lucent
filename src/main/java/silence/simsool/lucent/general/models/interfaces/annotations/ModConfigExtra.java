@@ -23,6 +23,8 @@ public @interface ModConfigExtra {
 	String[] options() default {};
 	int priority() default 0;
 	String parent() default "";
+	boolean hidden() default false;
+	String selector() default "";
 	boolean forceline() default false;
 	boolean forcewidget() default false;
 	Align align() default Align.LEFT;

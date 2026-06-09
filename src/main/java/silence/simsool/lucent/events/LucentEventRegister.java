@@ -27,6 +27,8 @@ import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
 import net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
+import net.minecraft.network.protocol.game.ServerboundUseItemPacket;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
@@ -56,7 +58,7 @@ public class LucentEventRegister {
 		ClientReceiveMessageEvents.ALLOW_GAME.register((component, isActionBar) -> {
 			String message = component.getString();
 			String chat = UChat.cleanColor(message);
-			LucentEvent.MessageEvent event = new LucentEvent.MessageEvent(message, chat);
+			LucentEvent.MessageEvent event = new LucentEvent.MessageEvent(component, message, chat);
 			if (isActionBar) LucentEvent.ACTIONBAR_EVENT.invoker().onActionBar(event);
 			else LucentEvent.CHAT_EVENT.invoker().onChat(event);
 			return !event.isCanceled();
@@ -230,10 +232,10 @@ public class LucentEventRegister {
 		});
 
 		PacketEvent.SEND.register(event -> {
-			if (event.packet instanceof net.minecraft.network.protocol.game.ServerboundUseItemOnPacket packet) {
+			if (event.packet instanceof ServerboundUseItemOnPacket packet) {
 				LucentEvent.USE_ITEM_ON_EVENT.invoker().onUseItemOn(new LucentEvent.UseItemOnEvent(packet.getHitResult(), packet.getHand()));
 			}
-			if (event.packet instanceof net.minecraft.network.protocol.game.ServerboundUseItemPacket packet) {
+			if (event.packet instanceof ServerboundUseItemPacket packet) {
 				LucentEvent.USE_ITEM_EVENT.invoker().onUseItem(new LucentEvent.UseItemEvent(packet.getHand()));
 			}
 		});

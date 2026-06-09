@@ -4,7 +4,7 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.world.phys.AABB;
 import silence.simsool.lucent.general.utils.render.LucentRenderType;
-import silence.simsool.lucent.general.utils.render.RenderUtils;
+import silence.simsool.lucent.general.utils.render.Render3D;
 import silence.simsool.lucent.ui.utils.UColor;
 
 public class BoxData {
@@ -25,7 +25,7 @@ public class BoxData {
 
 	public RenderType lineRenderType() {
 		boolean fullyOpaque = a >= 0.999f;
-		return RenderUtils.resolveLineRenderType(depth, fullyOpaque);
+		return Render3D.resolveLineRenderType(depth, fullyOpaque);
 	}
 
 	public RenderType filledRenderType() {

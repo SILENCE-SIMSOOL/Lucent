@@ -23,6 +23,8 @@ public @interface ModConfig {
 	String[] options() default {};
 	int priority() default 0;
 	String parent() default "";
+	boolean hidden() default false;
+	String selector() default "";
 	KeyMode keymode() default KeyMode.ALL;
 
 	@Retention(RetentionPolicy.RUNTIME)
