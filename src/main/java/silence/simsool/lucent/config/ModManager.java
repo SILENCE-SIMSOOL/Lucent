@@ -445,6 +445,22 @@ public class ModManager {
 		LucentEvent.USE_ITEM_EVENT.register(event -> {
 			if (module.isEnabled) module.onUseItem(event);
 		});
+
+		LucentEvent.LEFT_CLICK_PRE_EVENT.register(event -> {
+			if (module.isEnabled) module.onLeftClickPre(event);
+		});
+
+		LucentEvent.LEFT_CLICK_POST_EVENT.register(event -> {
+			if (module.isEnabled) module.onLeftClickPost(event);
+		});
+
+		LucentEvent.RIGHT_CLICK_PRE_EVENT.register(event -> {
+			if (module.isEnabled) module.onRightClickPre(event);
+		});
+
+		LucentEvent.RIGHT_CLICK_POST_EVENT.register(event -> {
+			if (module.isEnabled) module.onRightClickPost(event);
+		});
 	}
 
 	public void registerExampleMods() {

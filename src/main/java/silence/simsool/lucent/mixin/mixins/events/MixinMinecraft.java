@@ -6,6 +6,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -63,6 +64,36 @@ public class MixinMinecraft {
 		LucentEvent.BLOCK_INTERACT_EVENT.invoker().onBlockInteract(event);
 		if (event.isCanceled()) return InteractionResult.PASS;
 		return original.call(instance, localPlayer, interactionHand, blockHitResult);
+	}
+
+	@Inject(method = "startAttack", at = @At("HEAD"), cancellable = true)
+	private void onLeftClickPre(CallbackInfoReturnable<Boolean> cir) {
+		LucentEvent.LeftClickPreEvent event = new LucentEvent.LeftClickPreEvent();
+		LucentEvent.LEFT_CLICK_PRE_EVENT.invoker().onLeftClickPre(event);
+		if (event.isCanceled()) {
+			cir.setReturnValue(false);
+		}
+	}
+
+	@Inject(method = "startAttack", at = @At("RETURN"))
+	private void onLeftClickPost(CallbackInfoReturnable<Boolean> cir) {
+		LucentEvent.LeftClickPostEvent event = new LucentEvent.LeftClickPostEvent(cir.getReturnValue());
+		LucentEvent.LEFT_CLICK_POST_EVENT.invoker().onLeftClickPost(event);
+	}
+
+	@Inject(method = "startUseItem", at = @At("HEAD"), cancellable = true)
+	private void onRightClickPre(CallbackInfo ci) {
+		LucentEvent.RightClickPreEvent event = new LucentEvent.RightClickPreEvent();
+		LucentEvent.RIGHT_CLICK_PRE_EVENT.invoker().onRightClickPre(event);
+		if (event.isCanceled()) {
+			ci.cancel();
+		}
+	}
+
+	@Inject(method = "startUseItem", at = @At("RETURN"))
+	private void onRightClickPost(CallbackInfo ci) {
+		LucentEvent.RightClickPostEvent event = new LucentEvent.RightClickPostEvent();
+		LucentEvent.RIGHT_CLICK_POST_EVENT.invoker().onRightClickPost(event);
 	}
 
 }

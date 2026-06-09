@@ -38,6 +38,10 @@ import silence.simsool.lucent.general.models.interfaces.events.lucentevent.ISoun
 import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IScoreboardEvent;
 import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IUseItemOnEvent;
 import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IUseItemEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.ILeftClickPreEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IRightClickPreEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.ILeftClickPostEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IRightClickPostEvent;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.BlockHitResult;
@@ -244,6 +248,40 @@ public class LucentEvent {
 		IUseItemEvent.class, listeners -> event -> {
 			for (IUseItemEvent listener : listeners) {
 				listener.onUseItem(event);
+			}
+		}
+	);
+
+	public static final Event<ILeftClickPreEvent> LEFT_CLICK_PRE_EVENT = createArrayBacked(
+		ILeftClickPreEvent.class, listeners -> event -> {
+			for (ILeftClickPreEvent listener : listeners) {
+				listener.onLeftClickPre(event);
+				if (event.isCanceled()) break;
+			}
+		}
+	);
+
+	public static final Event<IRightClickPreEvent> RIGHT_CLICK_PRE_EVENT = createArrayBacked(
+		IRightClickPreEvent.class, listeners -> event -> {
+			for (IRightClickPreEvent listener : listeners) {
+				listener.onRightClickPre(event);
+				if (event.isCanceled()) break;
+			}
+		}
+	);
+
+	public static final Event<ILeftClickPostEvent> LEFT_CLICK_POST_EVENT = createArrayBacked(
+		ILeftClickPostEvent.class, listeners -> event -> {
+			for (ILeftClickPostEvent listener : listeners) {
+				listener.onLeftClickPost(event);
+			}
+		}
+	);
+
+	public static final Event<IRightClickPostEvent> RIGHT_CLICK_POST_EVENT = createArrayBacked(
+		IRightClickPostEvent.class, listeners -> event -> {
+			for (IRightClickPostEvent listener : listeners) {
+				listener.onRightClickPost(event);
 			}
 		}
 	);
@@ -516,6 +554,45 @@ public class LucentEvent {
 		public UseItemEvent(InteractionHand hand) {
 			this.hand = hand;
 		}
+	}
+
+	public static class LeftClickPreEvent {
+		private boolean canceled = false;
+
+		public void cancel() {
+			this.canceled = true;
+		}
+
+		public boolean isCanceled() {
+			return canceled;
+		}
+	}
+
+	public static class RightClickPreEvent {
+		private boolean canceled = false;
+
+		public void cancel() {
+			this.canceled = true;
+		}
+
+		public boolean isCanceled() {
+			return canceled;
+		}
+	}
+
+	public static class LeftClickPostEvent {
+		private final boolean result;
+
+		public LeftClickPostEvent(boolean result) {
+			this.result = result;
+		}
+
+		public boolean getResult() {
+			return result;
+		}
+	}
+
+	public static class RightClickPostEvent {
 	}
 
 }

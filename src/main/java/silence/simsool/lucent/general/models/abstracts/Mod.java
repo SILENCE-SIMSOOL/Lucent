@@ -89,4 +89,8 @@ public abstract class Mod {
 	public void onScoreboard(LucentEvent.ScoreboardEvent event) {}
 	public void onUseItemOn(LucentEvent.UseItemOnEvent event) {}
 	public void onUseItem(LucentEvent.UseItemEvent event) {}
+	public void onLeftClickPre(LucentEvent.LeftClickPreEvent event) {}
+	public void onLeftClickPost(LucentEvent.LeftClickPostEvent event) {}
+	public void onRightClickPre(LucentEvent.RightClickPreEvent event) {}
+	public void onRightClickPost(LucentEvent.RightClickPostEvent event) {}
 }
