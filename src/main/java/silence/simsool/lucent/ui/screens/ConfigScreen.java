@@ -914,15 +914,15 @@ public class ConfigScreen extends Screen {
 			return true;
 		}
 
-		if (key == GLFW.GLFW_KEY_TAB || key == GLFW.GLFW_KEY_LEFT) {
-			if (!history.isEmpty()) goBack();
-			return true;
-		}
-
-		if (key == GLFW.GLFW_KEY_RIGHT) {
-			if (!forwardHistory.isEmpty()) goForward();
-			return true;
-		}
+//		if (key == GLFW.GLFW_KEY_TAB || key == GLFW.GLFW_KEY_LEFT) {
+//			if (!history.isEmpty()) goBack();
+//			return true;
+//		}
+//
+//		if (key == GLFW.GLFW_KEY_RIGHT) {
+//			if (!forwardHistory.isEmpty()) goForward();
+//			return true;
+//		}
 
 		for (UIWidget w : widgets) {
 			if (w.keyPressed(key, input.scancode(), input.modifiers())) return true;

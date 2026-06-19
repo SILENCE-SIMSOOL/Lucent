@@ -247,6 +247,10 @@ public class ModManager {
 			if (module.isEnabled) module.onChat(event);
 		});
 
+		LucentEvent.MOD_MESSAGE_EVENT.register(event -> {
+			if (module.isEnabled) module.onModMessage(event);
+		});
+
 		LucentEvent.ACTIONBAR_EVENT.register(event -> {
 			if (module.isEnabled) module.onActionBar(event);
 		});
@@ -294,28 +298,60 @@ public class ModManager {
 			if (module.isEnabled) module.onRenderBossBar(event);
 		});
 
-		EntityEvent.RENDER_ENTITY_PRE_EVENT.register(event -> {
-			if (module.isEnabled) module.onRenderEntityPre(event);
-		});
-
-		EntityEvent.RENDER_ENTITY_ALLOW_EVENT.register(event -> {
-			if (module.isEnabled) module.onRenderEntity(event);
-		});
-
-		EntityEvent.RENDER_ENTITY_COLOR_EVENT.register(event -> {
-			if (module.isEnabled) module.onRenderEntityColor(event);
-		});
-
-		EntityEvent.EXTRACT_RENDER_STATE_PRE.register(event -> {
-			if (module.isEnabled) module.onExtractRenderStatePre(event);
-		});
-
-		EntityEvent.EXTRACT_RENDER_STATE_POST.register(event -> {
-			if (module.isEnabled) module.onExtractRenderStatePost(event);
+		LucentEvent.PARTICLE_SPAWN_EVENT.register(event -> {
+			if (module.isEnabled) module.onParticleSpawn(event);
 		});
 
 		LucentEvent.KEYBIND_EVENT.register(event -> {
 			if (module.isEnabled) module.onKeybind(event);
+		});
+
+		LucentEvent.DROP_ITEM_EVENT.register(event -> {
+			if (module.isEnabled) module.onDropItem(event);
+		});
+
+		LucentEvent.ITEM_PICKUP_EVENT.register(event -> {
+			if (module.isEnabled) module.onItemPickup(event);
+		});
+
+		LucentEvent.SOUND_EVENT.register(event -> {
+			if (module.isEnabled) module.onSound(event);
+		});
+
+		LucentEvent.SCOREBOARD_EVENT.register(event -> {
+			if (module.isEnabled) module.onScoreboard(event);
+		});
+
+		LucentEvent.USE_ITEM_ON_EVENT.register(event -> {
+			if (module.isEnabled) module.onUseItemOn(event);
+		});
+
+		LucentEvent.USE_ITEM_EVENT.register(event -> {
+			if (module.isEnabled) module.onUseItem(event);
+		});
+
+		LucentEvent.LEFT_CLICK_PRE_EVENT.register(event -> {
+			if (module.isEnabled) module.onLeftClickPre(event);
+		});
+
+		LucentEvent.LEFT_CLICK_POST_EVENT.register(event -> {
+			if (module.isEnabled) module.onLeftClickPost(event);
+		});
+
+		LucentEvent.RIGHT_CLICK_PRE_EVENT.register(event -> {
+			if (module.isEnabled) module.onRightClickPre(event);
+		});
+
+		LucentEvent.RIGHT_CLICK_POST_EVENT.register(event -> {
+			if (module.isEnabled) module.onRightClickPost(event);
+		});
+
+		InputEvent.MOUSE.register(event -> {
+			if (module.isEnabled) module.onMouseInput(event);
+		});
+
+		InputEvent.KEY.register(event -> {
+			if (module.isEnabled) module.onKeyInput(event);
 		});
 
 		GUIEvent.RenderHUD.EVENT.register(event -> {
@@ -378,24 +414,24 @@ public class ModManager {
 			if (module.isEnabled) module.onRenderTooltip(event);
 		});
 
-		LucentEvent.DROP_ITEM_EVENT.register(event -> {
-			if (module.isEnabled) module.onDropItem(event);
+		EntityEvent.RENDER_ENTITY_PRE_EVENT.register(event -> {
+			if (module.isEnabled) module.onRenderEntityPre(event);
 		});
 
-		InputEvent.MOUSE.register(event -> {
-			if (module.isEnabled) module.onMouseInput(event);
+		EntityEvent.RENDER_ENTITY_ALLOW_EVENT.register(event -> {
+			if (module.isEnabled) module.onRenderEntity(event);
 		});
 
-		InputEvent.KEY.register(event -> {
-			if (module.isEnabled) module.onKeyInput(event);
+		EntityEvent.RENDER_ENTITY_COLOR_EVENT.register(event -> {
+			if (module.isEnabled) module.onRenderEntityColor(event);
 		});
 
-		PacketEvent.RECEIVE.register(event -> {
-			if (module.isEnabled) module.onReceivePacket(event);
+		EntityEvent.EXTRACT_RENDER_STATE_PRE.register(event -> {
+			if (module.isEnabled) module.onExtractRenderStatePre(event);
 		});
 
-		PacketEvent.SEND.register(event -> {
-			if (module.isEnabled) module.onSendPacket(event);
+		EntityEvent.EXTRACT_RENDER_STATE_POST.register(event -> {
+			if (module.isEnabled) module.onExtractRenderStatePost(event);
 		});
 
 		EntityEvent.ENTITY_JOIN_EVENT.register(event -> {
@@ -426,40 +462,12 @@ public class ModManager {
 			if (module.isEnabled) module.onEntityInteract(event);
 		});
 
-		LucentEvent.ITEM_PICKUP_EVENT.register(event -> {
-			if (module.isEnabled) module.onItemPickup(event);
+		PacketEvent.RECEIVE.register(event -> {
+			if (module.isEnabled) module.onReceivePacket(event);
 		});
 
-		LucentEvent.SOUND_EVENT.register(event -> {
-			if (module.isEnabled) module.onSound(event);
-		});
-
-		LucentEvent.SCOREBOARD_EVENT.register(event -> {
-			if (module.isEnabled) module.onScoreboard(event);
-		});
-
-		LucentEvent.USE_ITEM_ON_EVENT.register(event -> {
-			if (module.isEnabled) module.onUseItemOn(event);
-		});
-
-		LucentEvent.USE_ITEM_EVENT.register(event -> {
-			if (module.isEnabled) module.onUseItem(event);
-		});
-
-		LucentEvent.LEFT_CLICK_PRE_EVENT.register(event -> {
-			if (module.isEnabled) module.onLeftClickPre(event);
-		});
-
-		LucentEvent.LEFT_CLICK_POST_EVENT.register(event -> {
-			if (module.isEnabled) module.onLeftClickPost(event);
-		});
-
-		LucentEvent.RIGHT_CLICK_PRE_EVENT.register(event -> {
-			if (module.isEnabled) module.onRightClickPre(event);
-		});
-
-		LucentEvent.RIGHT_CLICK_POST_EVENT.register(event -> {
-			if (module.isEnabled) module.onRightClickPost(event);
+		PacketEvent.SEND.register(event -> {
+			if (module.isEnabled) module.onSendPacket(event);
 		});
 	}
 

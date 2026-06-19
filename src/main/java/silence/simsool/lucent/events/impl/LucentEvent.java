@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldExtractionContext;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
 import net.fabricmc.fabric.api.event.Event;
+import net.minecraft.client.particle.Particle;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IParticleSpawnEvent;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -19,6 +21,7 @@ import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IActi
 import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IBlockInteractEvent;
 import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IBlockUpdateEvent;
 import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IChatEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IModMessageEvent;
 import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IDropItemEvent;
 import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IEverySecondEvent;
 import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IInitFinishedEvent;
@@ -105,10 +108,25 @@ public class LucentEvent {
 		}
 	);
 
+	public static final Event<IParticleSpawnEvent> PARTICLE_SPAWN_EVENT = createArrayBacked(
+		IParticleSpawnEvent.class, listeners -> event -> {
+			for (IParticleSpawnEvent listener : listeners) listener.onParticleSpawn(event);
+		}
+	);
+
 	public static final Event<IChatEvent> CHAT_EVENT = createArrayBacked(
 		IChatEvent.class, listeners -> event -> {
 			for (IChatEvent listener : listeners) {
 				listener.onChat(event);
+				if (event.isCanceled()) break;
+			}
+		}
+	);
+
+	public static final Event<IModMessageEvent> MOD_MESSAGE_EVENT = createArrayBacked(
+		IModMessageEvent.class, listeners -> event -> {
+			for (IModMessageEvent listener : listeners) {
+				listener.onMessage(event);
 				if (event.isCanceled()) break;
 			}
 		}
@@ -375,6 +393,25 @@ public class LucentEvent {
 		}
 	}
 
+	public static class ModMessageEvent {
+		public final String chat;
+		public final String format;
+		private boolean canceled = false;
+
+		public ModMessageEvent(String chat, String format) {
+			this.chat = chat;
+			this.format = format;
+		}
+
+		public void cancel() {
+			this.canceled = true;
+		}
+
+		public boolean isCanceled() {
+			return canceled;
+		}
+	}
+
 	public static class MessageEvent {
 		public Component component;
 		public String message;
@@ -593,6 +630,23 @@ public class LucentEvent {
 	}
 
 	public static class RightClickPostEvent {
+	}
+
+	public static class ParticleSpawnEvent {
+		public final Particle particle;
+		private boolean canceled = false;
+
+		public ParticleSpawnEvent(Particle particle) {
+			this.particle = particle;
+		}
+
+		public void cancel() {
+			this.canceled = true;
+		}
+
+		public boolean isCanceled() {
+			return canceled;
+		}
 	}
 
 }

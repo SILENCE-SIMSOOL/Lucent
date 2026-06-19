@@ -37,13 +37,19 @@ public class ClientHandler {
 		});
 	}
 
-	public static void playSound(SoundEvent sound, float volume) {
+	public static void playSound(SoundEvent sound) {
 		mc.schedule(() -> {
-			USound.playSound(sound, volume);
+			USound.playSound(sound, 1.0f);
 		});
 	}
 
-	public static void playSound(SoundEvent sound, float volume, float pitch) {
+	public static void playSound(SoundEvent sound, float pitch) {
+		mc.schedule(() -> {
+			USound.playSound(sound, pitch);
+		});
+	}
+
+	public static void playSound(SoundEvent sound, float pitch, float volume) {
 		mc.schedule(() -> {
 			USound.playSound(sound, volume, pitch);
 		});

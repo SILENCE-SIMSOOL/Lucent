@@ -9,12 +9,12 @@ import net.minecraft.sounds.SoundSource;
 
 public class USound {
 
-	public static void playSound(SoundEvent sound, float volume) {
-		mc.getSoundManager().play(SimpleSoundInstance.forUI(sound, volume));
+	public static void playSound(SoundEvent sound, float pitch) {
+		mc.getSoundManager().play(SimpleSoundInstance.forUI(sound, pitch));
 	}
 
-	public static void playSound(SoundEvent sound, float volume, float pitch) {
-		mc.getSoundManager().play(SimpleSoundInstance.forUI(sound, volume, pitch));
+	public static void playSound(SoundEvent sound, float pitch, float volume) {
+		mc.getSoundManager().play(SimpleSoundInstance.forUI(sound, pitch, volume));
 	}
 
 	public static void playSoundAt(SoundEvent sound) {

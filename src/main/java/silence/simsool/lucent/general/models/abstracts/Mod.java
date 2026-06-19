@@ -38,6 +38,7 @@ public abstract class Mod {
 	public void onWorldLoad() {}
 	public void onWorldLoadMod() {}
 	public void onChat(LucentEvent.MessageEvent event) {}
+	public void onModMessage(LucentEvent.ModMessageEvent event) {}
 	public void onActionBar(LucentEvent.MessageEvent event) {}
 	public void onBlockUpdate(LucentEvent.BlockUpdateEvent event) {}
 	public void onRenderWorld(LucentEvent.RenderWorldEvent event) {}
@@ -46,8 +47,18 @@ public abstract class Mod {
 	public void onMessageSent(LucentEvent.MessageSentEvent event) {}
 	public void onTabComplete(LucentEvent.TabCompletionEvent event) {}
 	public void onRenderBossBar(LucentEvent.RenderBossBarEvent event) {}
+	public void onParticleSpawn(LucentEvent.ParticleSpawnEvent event) {}
 	public void onKeybind(LucentEvent.KeybindEvent event) {}
 	public void onDropItem(LucentEvent.DropItemEvent event) {}
+	public void onItemPickup(LucentEvent.ItemPickupEvent event) {}
+	public void onSound(LucentEvent.SoundEvent event) {}
+	public void onScoreboard(LucentEvent.ScoreboardEvent event) {}
+	public void onUseItemOn(LucentEvent.UseItemOnEvent event) {}
+	public void onUseItem(LucentEvent.UseItemEvent event) {}
+	public void onLeftClickPre(LucentEvent.LeftClickPreEvent event) {}
+	public void onLeftClickPost(LucentEvent.LeftClickPostEvent event) {}
+	public void onRightClickPre(LucentEvent.RightClickPreEvent event) {}
+	public void onRightClickPost(LucentEvent.RightClickPostEvent event) {}
 
 	public void onMouseInput(InputEvent.MouseInputEvent event) {}
 	public void onKeyInput(InputEvent.KeyInputEvent event) {}
@@ -84,13 +95,4 @@ public abstract class Mod {
 	public void onReceivePacket(PacketEvent.ReceiveEvent event) {}
 	public void onSendPacket(PacketEvent.SendEvent event) {}
 
-	public void onItemPickup(LucentEvent.ItemPickupEvent event) {}
-	public void onSound(LucentEvent.SoundEvent event) {}
-	public void onScoreboard(LucentEvent.ScoreboardEvent event) {}
-	public void onUseItemOn(LucentEvent.UseItemOnEvent event) {}
-	public void onUseItem(LucentEvent.UseItemEvent event) {}
-	public void onLeftClickPre(LucentEvent.LeftClickPreEvent event) {}
-	public void onLeftClickPost(LucentEvent.LeftClickPostEvent event) {}
-	public void onRightClickPre(LucentEvent.RightClickPreEvent event) {}
-	public void onRightClickPost(LucentEvent.RightClickPostEvent event) {}
 }
