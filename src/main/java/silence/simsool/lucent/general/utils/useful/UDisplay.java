@@ -10,6 +10,10 @@ public class UDisplay {
 		return mc.getWindow();
 	}
 
+	public static long getHandle() {
+		return getWindow().handle();
+	}
+
 	public static int getWidth() {
 		return getWindow().getWidth();
 	}
