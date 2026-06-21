@@ -3,7 +3,7 @@ plugins {
 	id 'maven-publish'
 }
 
-version = project.mod_version
+version = "${project.mod_version}-mc${project.minecraft_version}"
 group = project.maven_group
 
 base {
@@ -64,7 +64,6 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 java {
-	//withSourcesJar()
 	sourceCompatibility = JavaVersion.VERSION_21
 	targetCompatibility = JavaVersion.VERSION_21
 }
@@ -124,8 +123,8 @@ task generateCustomOutputs {
 		def pom1Name = "${baseName}-${modVer}-${mcVer}-1.pom"
 		def ver1 = "${modVer}-${mcVer}-1"
 
-		def jar0File = file("${buildDir}/libs/${baseName}-${modVer}.jar")
-		def jar1File = file("${buildDir}/libs/${baseName}-${modVer}-library.jar")
+		def jar0File = file("${buildDir}/libs/${baseName}-${modVer}-mc${mcVer}.jar")
+		def jar1File = file("${buildDir}/libs/${baseName}-${modVer}-mc${mcVer}-library.jar")
 
 		copy {
 			from jar0File

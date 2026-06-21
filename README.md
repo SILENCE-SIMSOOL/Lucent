@@ -58,12 +58,21 @@ Explore Lucent through focused documentation guides for each system and feature.
 
 ## Requirements
 
+### 🟢 Minecraft 1.21.11 Environment
 | Dependency | Version |
 | :-- | :-- |
 | Minecraft | `1.21.11` |
 | Fabric Loader | `>= 0.18.4` |
 | Fabric API | `>= 0.141.3+1.21.11` |
 | LWJGL NanoVG | `3.3.3` *(bundled)* |
+
+### 🟡 Minecraft 26.2 Environment
+| Dependency | Version |
+| :-- | :-- |
+| Minecraft | `26.2` |
+| Fabric Loader | `>= 0.19.3` |
+| Fabric API | `>= 0.152.2+26.2` |
+| LWJGL NanoVG | `3.3.4` *(bundled)* |
 
 ---
 
@@ -78,13 +87,19 @@ Explore Lucent through focused documentation guides for each system and feature.
 
 ### Latest Version
 
-`1.1.3`
+[![Latest Release](https://img.shields.io/github/v/release/SILENCE-SIMSOOL/Lucent?color=E0E0E0&style=flat-square)](https://github.com/SILENCE-SIMSOOL/Lucent/releases)
 
 ### Version Format
 
-`<lucent_version>-<mc_version>-<type>`
+> **`[Lucent Version]`**-**`[Minecraft Version]`**-**`[Build Type]`**
 
-Example: `1.1.3-1.21.11-0`
+* **`Lucent Version`**: The unique distribution version of the library (e.g., `1.0.0`)
+* **`Minecraft Version`**: The target Minecraft environment (e.g., `1.21.11` or `26.2`)
+* **`Build Type`**: `0` for Standalone Mod, `1` for Embedded Library
+
+**💡 Examples:**
+* `1.0.0-1.21.11-0` (Standalone mod build for 1.21.11)
+* `1.0.0-26.2-1` (Embedded library build for 26.2)
 
 ---
 
@@ -106,7 +121,7 @@ Then add one of the following dependency setups:
 
 ```groovy
 dependencies {
-	modImplementation "com.github.SILENCE-SIMSOOL:lucent:1.1.3-1.21.11-0"
+	modImplementation "com.github.SILENCE-SIMSOOL:lucent:1.0.0-1.21.11-0"
 }
 ```
 
@@ -114,8 +129,8 @@ dependencies {
 
 ```groovy
 dependencies {
-	modImplementation "com.github.SILENCE-SIMSOOL:lucent:1.1.3-1.21.11-1"
-	include "com.github.SILENCE-SIMSOOL:lucent:1.1.3-1.21.11-1"
+	modImplementation "com.github.SILENCE-SIMSOOL:lucent:1.0.0-1.21.11-1"
+	include "com.github.SILENCE-SIMSOOL:lucent:1.0.0-1.21.11-1"
 }
 ```
 

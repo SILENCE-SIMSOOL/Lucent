@@ -71,12 +71,12 @@ public class NVGPIPRenderer extends PictureInPictureRenderer<NVGPIPRenderer.NVGR
 		return "nvg_lucent_renderer";
 	}
 
-	public static void draw(GuiGraphics context, int x, int y, int width, int height, Runnable renderContent) {
-		ScreenRectangle scissor = context.scissorStack.peek();
-		Matrix3x2f pose = new Matrix3x2f(context.pose());
+	public static void draw(GuiGraphics graphics, int x, int y, int width, int height, Runnable renderContent) {
+		ScreenRectangle scissor = graphics.scissorStack.peek();
+		Matrix3x2f pose = new Matrix3x2f(graphics.pose());
 		ScreenRectangle bounds = createBounds(x, y, x + width, y + height, pose, scissor);
 		NVGRenderState state = new NVGRenderState(x, y, width, height, scissor, bounds, renderContent);
-		context.guiRenderState.submitPicturesInPictureState(state);
+		graphics.guiRenderState.submitPicturesInPictureState(state);
 	}
 
 	private static ScreenRectangle createBounds(int x0, int y0, int x1, int y1, Matrix3x2f pose, ScreenRectangle scissorArea) {

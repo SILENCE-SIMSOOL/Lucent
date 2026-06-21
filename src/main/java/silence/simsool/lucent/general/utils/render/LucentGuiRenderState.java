@@ -27,8 +27,8 @@ public class LucentGuiRenderState implements GuiElementRenderState {
 		this.vertexConsumerFunc = vertexConsumerFunc;
 	}
 
-	public LucentGuiRenderState(RenderPipeline pipeline, TextureSetup textureSetup, GuiGraphics context, ScreenRectangle bounds, Consumer<VertexConsumer> vertexConsumerFunc) {
-		this(pipeline, textureSetup, context.scissorStack.peek(), bounds, vertexConsumerFunc);
+	public LucentGuiRenderState(RenderPipeline pipeline, TextureSetup textureSetup, GuiGraphics graphics, ScreenRectangle bounds, Consumer<VertexConsumer> vertexConsumerFunc) {
+		this(pipeline, textureSetup, graphics.scissorStack.peek(), bounds, vertexConsumerFunc);
 	}
 
 	@Override
