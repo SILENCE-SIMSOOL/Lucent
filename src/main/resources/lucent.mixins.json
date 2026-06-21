@@ -1,0 +1,33 @@
+{
+	"required": true,
+	"package": "silence.simsool.lucent.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"mixins": [
+	],
+	"client": [
+		"accessors.BeaconBeamAccessor",
+		"accessors.KeyMappingAccessor",
+		"mixins.events.entity.MixinEntityRenderDispatcher_ExtractRenderStatePre",
+		"mixins.events.entity.MixinEntityRenderer_RenderEntityEvent",
+		"mixins.events.entity.MixinLivingEntity",
+		"mixins.events.entity.MixinLivingEntityRenderer",
+		"mixins.events.gui.MixinAbstractContainerScreen_GUIEvent",
+		"mixins.events.gui.MixinBossHealthOverlay",
+		"mixins.events.gui.MixinChatComponent",
+		"mixins.events.gui.MixinGui",
+		"mixins.events.input.keyboard.MixinKeyboardHandler",
+		"mixins.events.input.MixinChatScreen_MESSAGE_SENT_EVENT",
+		"mixins.events.input.mouse.MixinMouseHandler",
+		"mixins.events.item.MixinItemStack",
+		"mixins.events.MixinCommandDispatcher",
+		"mixins.events.MixinMinecraft",
+		"mixins.events.packet.MixinClientPacketListener",
+		"mixins.events.packet.MixinConnection",
+		"mixins.events.particle.MixinParticleEngin",
+		"mixins.events.player.MixinLocalPlayer",
+		"mixins.events.world.MixinLevelChunk_BLOCK_UPDATE_EVENT"
+	]
+}
