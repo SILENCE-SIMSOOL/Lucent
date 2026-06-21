@@ -91,8 +91,6 @@ Explore Lucent through focused documentation guides for each system and feature.
 
 ### Version Format
 
-For better readability, the version format is structured as follows:
-
 > **`[Lucent Version]`**-**`[Minecraft Version]`**-**`[Build Type]`**
 
 * **`Lucent Version`**: The unique distribution version of the library (e.g., `1.1.3`)
