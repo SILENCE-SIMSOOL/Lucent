@@ -121,7 +121,7 @@ Then add one of the following dependency setups:
 
 ```groovy
 dependencies {
-	modImplementation "com.github.SILENCE-SIMSOOL:lucent:1.1.3-1.21.11-0"
+	modImplementation "com.github.SILENCE-SIMSOOL:lucent:1.0.0-1.21.11-0"
 }
 ```
 
@@ -129,8 +129,8 @@ dependencies {
 
 ```groovy
 dependencies {
-	modImplementation "com.github.SILENCE-SIMSOOL:lucent:1.1.3-1.21.11-1"
-	include "com.github.SILENCE-SIMSOOL:lucent:1.1.3-1.21.11-1"
+	modImplementation "com.github.SILENCE-SIMSOOL:lucent:1.0.0-1.21.11-1"
+	include "com.github.SILENCE-SIMSOOL:lucent:1.0.0-1.21.11-1"
 }
 ```
 
