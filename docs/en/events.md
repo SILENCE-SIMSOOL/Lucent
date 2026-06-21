@@ -30,9 +30,11 @@ A complete list of overrideable event methods can be found in [Mod.java](../../s
 - `RenderWorldEvent` & `RenderWorldLastEvent`: Dispatched during world rendering phases.
 - `BlockInteractEvent`: Dispatched when interacting with a block.
 - `MessageSentEvent`: Dispatched when the player sends a chat message.
+- `ModMessageEvent`: Dispatched for custom mod messages.
 - `TabCompletionEvent`: Dispatched when requesting tab completion suggestions.
 - `RenderBossBarEvent`: Dispatched when rendering boss health bars.
-- `KeybindEvent`: Dispatched when registered keybinds are triggered.
+- `KeybindEvent`: Registered keybinds are triggered.
+- `ParticleSpawnEvent`: Dispatched when a particle is spawned.
 - `DropItemEvent`: Dispatched when dropping an item.
 - `ItemPickupEvent`: Dispatched when picking up an item entity.
 - `SoundEvent`: Dispatched when sound events are played.

@@ -56,6 +56,28 @@ Explore Lucent through focused documentation guides for each system and feature.
 - **[Profile Management Guide](./docs/en/profiles.md)**  
   Manage configuration profiles and per-profile HUD layouts.
 
+## Why Use Lucent?
+
+**Recommended for:** Client-side mod development, Hypixel SkyBlock mod development.
+
+### 👨‍💻 For Developers
+
+- **Reduces mod size and redundant computation.** When multiple mods share Lucent, duplicated code and repeated calculations are eliminated across all of them.
+- **Smart built-in events.** Lucent's events pre-handle null checks and common calculations so you don't repeat expensive logic on every use — improving performance and keeping your code clean and readable.
+- **Rich utility toolset.** Packed with developer-friendly utilities that speed up development and reduce boilerplate.
+- **Version-resilient APIs.** Lucent's utils and events are designed to stay compatible across Minecraft versions, so you rarely need to update your mod code when Minecraft updates.
+- **Effortless config management.** A simple, annotation-driven config system handles saving, loading, and GUI — no config headaches.
+- **Suitable for all levels.** From simple features to fine-grained advanced functionality, Lucent fits mods and developers of any scale.
+
+### 🎮 For Users
+
+- **Lightweight with no performance impact.** Lucent is optimized to have minimal overhead.
+- **Clean, modern UI/UX.** Unlike typical config libraries, Lucent provides a polished and intuitive settings interface that enhances the user experience.
+- **Unified management.** Multiple mods and their HUD elements can all be managed from a single, convenient interface.
+- **Independent config storage.** Lucent stores config in an independent local file, so your settings carry over across Minecraft version changes and launcher profile switches on the same PC. Whether you use multiple profiles in Prism Launcher or switch between different Minecraft Launchers, a single config works everywhere. You can also create multiple profiles within Lucent itself and switch between them in-game with a single click.
+
+---
+
 ## Requirements
 
 ### 🟢 Minecraft 1.21.11 Environment

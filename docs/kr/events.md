@@ -30,9 +30,11 @@ Lucent는 Fabric의 콜백 시스템 위에 설계된 강력한 이벤트 시스
 - `RenderWorldEvent` & `RenderWorldLastEvent`: 월드 렌더링 단계에서 발생합니다.
 - `BlockInteractEvent`: 블록과 상호작용 시 발생합니다.
 - `MessageSentEvent`: 플레이어가 메시지를 전송할 때 발생합니다.
+- `ModMessageEvent`: 커스텀 모드 메시지 이벤트입니다.
 - `TabCompletionEvent`: 탭 완성을 요청할 때 발생합니다.
 - `RenderBossBarEvent`: 보스 바를 렌더링할 때 발생합니다.
 - `KeybindEvent`: 등록한 키바인드가 동작할 때 발생합니다.
+- `ParticleSpawnEvent`: 파티클이 스폰될 때 발생합니다.
 - `DropItemEvent`: 아이템을 떨어뜨릴 때 발생합니다.
 - `ItemPickupEvent`: 아이템 엔티티를 획득할 때 발생합니다.
 - `SoundEvent`: 사운드가 재생될 때 발생합니다.
