@@ -58,12 +58,21 @@ Explore Lucent through focused documentation guides for each system and feature.
 
 ## Requirements
 
+### 🟢 Minecraft 1.21.11 Environment
 | Dependency | Version |
 | :-- | :-- |
 | Minecraft | `1.21.11` |
 | Fabric Loader | `>= 0.18.4` |
 | Fabric API | `>= 0.141.3+1.21.11` |
 | LWJGL NanoVG | `3.3.3` *(bundled)* |
+
+### 🟡 Minecraft 26.2 Environment
+| Dependency | Version |
+| :-- | :-- |
+| Minecraft | `26.2` |
+| Fabric Loader | `>= 0.19.3` |
+| Fabric API | `>= 0.152.2+26.2` |
+| LWJGL NanoVG | `3.3.4` *(bundled)* |
 
 ---
 
@@ -78,7 +87,7 @@ Explore Lucent through focused documentation guides for each system and feature.
 
 ### Latest Version
 
-`1.1.3`
+[![Latest Release](https://img.shields.io/github/v/release/SILENCE-SIMSOOL/Lucent?color=E0E0E0&style=flat-square)](https://github.com/SILENCE-SIMSOOL/Lucent/releases)
 
 ### Version Format
 
