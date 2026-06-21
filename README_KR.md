@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-	<a href="./README.md"영어 문서 보러가기</a>
+	<a href="./README.md">영어 문서 보러가기</a>
 </p>
 
 ---
