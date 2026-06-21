@@ -7,6 +7,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class UWorld {
@@ -63,6 +64,14 @@ public class UWorld {
 		if (encompassing.isEmpty()) return null;
 
 		return encompassing.bounds();
+	}
+
+	public static Vec3 getCenter(BlockPos pos) {
+		return Vec3.atCenterOf(pos);
+	}
+
+	public static Vec3 getBottomCenter(BlockPos pos) {
+		return Vec3.atBottomCenterOf(pos);
 	}
 
 }

@@ -12,6 +12,16 @@ public class UScreen {
 		return mc.gui.screen();
 	}
 
+	public static void setScreen(Screen screen) {
+		mc.gui.setScreen(screen);
+	}
+
+	public static void setScreenMC(Screen screen) {
+		mc.schedule(() -> {
+			mc.gui.setScreen(screen);
+		});
+	}
+
 	public static boolean isScreenOpen() {
 		return getScreen() != null;
 	}
