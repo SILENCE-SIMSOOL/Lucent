@@ -2,12 +2,14 @@ package silence.simsool.lucent.general.utils;
 
 import static silence.simsool.lucent.Lucent.mc;
 
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import silence.simsool.lucent.events.impl.LucentEvent;
 import silence.simsool.lucent.general.utils.useful.UPacket;
+import silence.simsool.lucent.general.utils.useful.UScreen;
 import silence.simsool.lucent.general.utils.useful.USound;
 import silence.simsool.lucent.general.utils.useful.UTitle;
 
@@ -77,6 +79,10 @@ public class ClientHandler {
 		mc.schedule(() -> {
 			USound.playSoundAt(sound, category, pos, volume, pitch, false);
 		});
+	}
+
+	public static void setScreen(Screen screen) {
+		UScreen.setScreenMC(screen);
 	}
 
 }
