@@ -93,14 +93,13 @@ Explore Lucent through focused documentation guides for each system and feature.
 
 > **`[Lucent Version]`**-**`[Minecraft Version]`**-**`[Build Type]`**
 
-* **`Lucent Version`**: The unique distribution version of the library (e.g., `1.1.3`)
+* **`Lucent Version`**: The unique distribution version of the library (e.g., `1.0.0`)
 * **`Minecraft Version`**: The target Minecraft environment (e.g., `1.21.11` or `26.2`)
 * **`Build Type`**: `0` for Standalone Mod, `1` for Embedded Library
 
----
 **💡 Examples:**
-* `1.1.3-1.21.11-0` (Standalone mod build for 1.21.11)
-* `1.2.12-26.2-1` (Embedded library build for 26.2)
+* `1.0.0-1.21.11-0` (Standalone mod build for 1.21.11)
+* `1.0.0-26.2-1` (Embedded library build for 26.2)
 
 ---
 
