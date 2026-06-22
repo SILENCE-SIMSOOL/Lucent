@@ -22,6 +22,8 @@
 
 ---
 
+https://github.com/user-attachments/assets/9ebc8fb0-e609-423b-866f-94de7b5b71bd
+
 ## 문서
 
 Lucent의 시스템과 기능들을 카테고리별 가이드 문서로 확인할 수 있습니다.
