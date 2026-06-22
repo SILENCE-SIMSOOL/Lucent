@@ -22,6 +22,8 @@
 
 ---
 
+https://github.com/user-attachments/assets/9ebc8fb0-e609-423b-866f-94de7b5b71bd
+
 ## Documentation
 
 Explore Lucent through focused documentation guides for each system and feature.
