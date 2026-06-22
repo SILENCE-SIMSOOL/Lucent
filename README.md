@@ -23,7 +23,7 @@
 ---
 
 <p align="center">
-	<video src="https://github.com/SILENCE-SIMSOOL/Lucent/blob/main/docs/video/lucent-preview1.mp4" width="100%" controls></video>
+	<video src="https://raw.githubusercontent.com/SILENCE-SIMSOOL/Lucent/refs/heads/main/docs/video/lucent-preview1.mp4" width="100%" controls></video>
 </p>
 
 ## Documentation
