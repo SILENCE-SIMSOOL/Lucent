@@ -22,7 +22,7 @@
 
 ---
 
-https://github.com/SILENCE-SIMSOOL/Lucent/blob/main/docs/video/lucent-preview1.mp4
+https://github.com/SILENCE-SIMSOOL/Lucent/raw/main/docs/video/lucent-preview1.mp4
 
 ## Documentation
 
