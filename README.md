@@ -22,6 +22,10 @@
 
 ---
 
+<p align="center">
+	<video src="./docs/video/lucent-preview1.mp4" width="100%" controls></video>
+</p>
+
 ## Documentation
 
 Explore Lucent through focused documentation guides for each system and feature.
