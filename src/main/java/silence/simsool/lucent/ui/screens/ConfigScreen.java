@@ -98,6 +98,8 @@ public class ConfigScreen extends Screen {
 	private boolean closing = false;
 
 	private Mod initialMod = null;
+	private int lastScreenWidth = 0;
+	private int lastScreenHeight = 0;
 
 	public ConfigScreen(ModManager moduleManager) {
 		super(Component.literal(L10n.translate("lucent.config.title")));
@@ -564,6 +566,9 @@ public class ConfigScreen extends Screen {
 	protected void init() {
 		super.init();
 
+		lastScreenWidth = UDisplay.getScreenWidth();
+		lastScreenHeight = UDisplay.getScreenHeight();
+
 		LucentResourceManager.loadLucentIcons();
 
 		float standardScale = NVGRenderer.getStandardGuiScale();
@@ -620,6 +625,12 @@ public class ConfigScreen extends Screen {
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor graphics, int mx, int my, float delta) {
 		if (startTime == -1L) startTime = System.currentTimeMillis();
+
+		int currentW = UDisplay.getScreenWidth();
+		int currentH = UDisplay.getScreenHeight();
+		if (currentW > 0 && currentH > 0 && (currentW != lastScreenWidth || currentH != lastScreenHeight)) {
+			this.resize(this.minecraft.getWindow().getGuiScaledWidth(), this.minecraft.getWindow().getGuiScaledHeight());
+		}
 
 		if (LucentConfig.openAnimation) {
 			if (closing) {
