@@ -162,8 +162,9 @@ public class ConfigScreen extends Screen {
 
 			if (iconImg != null) NVGRenderer.image(iconImg, midX - 22f, y + (topH - 44f) / 2f, 44f, 44f);
 			else {
-				float initialW = NVGRenderer.textWidth(mod.name, Fonts.PRETENDARD_SEMIBOLD, 20f);
-				NVGRenderer.text(mod.name, midX - initialW/2, y + (topH - 20) / 2, Fonts.PRETENDARD_SEMIBOLD, 0xFFFFFFFF, 20);
+				String translatedName = L10n.translate(mod.name);
+				float initialW = NVGRenderer.textWidth(translatedName, Fonts.PRETENDARD_SEMIBOLD, 20f);
+				NVGRenderer.text(translatedName, midX - initialW/2, y + (topH - 20) / 2, Fonts.PRETENDARD_SEMIBOLD, 0xFFFFFFFF, 20);
 			}
 
 			float barTop  = y + height - BAR_H;
@@ -1379,9 +1380,22 @@ public class ConfigScreen extends Screen {
 					widgets.add(slider);
 				}
 				case SELECTOR -> {
-					Selector selector = new Selector(ux - 148, controlYBase - 8, 148, 38, List.of(cfg.options()));
-					selector.setValue((String) val);
+					List<String> rawOpts = List.of(cfg.options());
+					List<String> displayOpts = new ArrayList<>();
+					String moduleid = currentModSettings.getClass().getSimpleName().toLowerCase();
 					final Field field = (member instanceof Field f) ? f : null;
+					String fieldid = (field != null) ? field.getName().toLowerCase() : "";
+					for (String opt : rawOpts) {
+						String key = "lucent.config.lucentclient." + moduleid + ".property." + fieldid + ".option." + opt.toLowerCase().replace(" ", "_");
+						String translated = L10n.translate(key);
+						if (translated.equals(key)) {
+							displayOpts.add(opt);
+						} else {
+							displayOpts.add(translated);
+						}
+					}
+					Selector selector = new Selector(ux - 148, controlYBase - 8, 148, 38, rawOpts, displayOpts);
+					selector.setValue((String) val);
 					selector.setOnChange(v -> {
 						try {
 							if (field != null) field.set(currentModSettings, v);
@@ -1481,7 +1495,7 @@ public class ConfigScreen extends Screen {
 				if (!match) continue;
 			}
 			if (!cfg.parent().isEmpty() && !isParentActive(cfg.parent(), cfg.selector())) continue;
-			map.computeIfAbsent(cfg.category(), k -> new ArrayList<>()).add(f);
+			map.computeIfAbsent(L10n.translate(cfg.category()), k -> new ArrayList<>()).add(f);
 		}
 
 		return map;
@@ -1640,7 +1654,20 @@ public class ConfigScreen extends Screen {
 					widgets.add(slider);
 				}
 				case SELECTOR -> {
-					Selector sel = new Selector(widgetX, widgetY, widgetW, widgetH, List.of(cfg.options()));
+					List<String> rawOpts = List.of(cfg.options());
+					List<String> displayOpts = new ArrayList<>();
+					String moduleid = currentModSettings.getClass().getSimpleName().toLowerCase();
+					String fieldid = field.getName().toLowerCase();
+					for (String opt : rawOpts) {
+						String key = "lucent.config.lucentclient." + moduleid + ".property." + fieldid + ".option." + opt.toLowerCase().replace(" ", "_");
+						String translated = L10n.translate(key);
+						if (translated.equals(key)) {
+							displayOpts.add(opt);
+						} else {
+							displayOpts.add(translated);
+						}
+					}
+					Selector sel = new Selector(widgetX, widgetY, widgetW, widgetH, rawOpts, displayOpts);
 					sel.setValue((String) val);
 					sel.setOnChange(v -> {
 						try {
@@ -1822,7 +1849,7 @@ public class ConfigScreen extends Screen {
 				if (!isParentActive(cfg.parent(), cfg.selector())) continue;
 			}
 
-			map.computeIfAbsent(cfg.category(), k -> new ArrayList<>()).add(member);
+			map.computeIfAbsent(L10n.translate(cfg.category()), k -> new ArrayList<>()).add(member);
 		}
 
 		return map;
@@ -1832,7 +1859,7 @@ public class ConfigScreen extends Screen {
 		Class<?> clazz = currentModSettings.getClass();
 		ModConfig.CategoryPriority[] annos = clazz.getAnnotationsByType(ModConfig.CategoryPriority.class);
 		for (ModConfig.CategoryPriority cp : annos) {
-			if (cp.name().equalsIgnoreCase(category)) return cp.priority();
+			if (L10n.translate(cp.name()).equalsIgnoreCase(category)) return cp.priority();
 		}
 		
 		int max = Integer.MIN_VALUE;

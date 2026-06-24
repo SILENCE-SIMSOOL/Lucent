@@ -28,6 +28,7 @@ public class Selector extends UIWidget {
 	private static float FONT_SIZE = 14f;
 
 	private List<String> options = new ArrayList<>();
+	private List<String> displayOptions = new ArrayList<>();
 	private int selectedIndex = 0;
 	private boolean isOpen = false;
 	private float dropdownAnim = 0f; 
@@ -44,6 +45,13 @@ public class Selector extends UIWidget {
 	public Selector(int x, int y, int width, int height, List<String> options) {
 		super(x, y, width, height);
 		this.options = new ArrayList<>(options);
+		this.displayOptions = new ArrayList<>(options);
+	}
+
+	public Selector(int x, int y, int width, int height, List<String> options, List<String> displayOptions) {
+		super(x, y, width, height);
+		this.options = new ArrayList<>(options);
+		this.displayOptions = new ArrayList<>(displayOptions);
 	}
 
 	@Override
@@ -57,7 +65,7 @@ public class Selector extends UIWidget {
 		NVGRenderer.rect(x, y, width, height, bg, 8f);
 		NVGRenderer.outlineRect(x, y, width, height, 1, border, 8f);
 
-		String currentText = options.isEmpty() ? "" : options.get(selectedIndex);
+		String currentText = displayOptions.isEmpty() ? "" : displayOptions.get(selectedIndex);
 		int textAreaW = width - PADDING * 2 - ARROW_W - 4;
 		String clipped = fitText(currentText, textAreaW, Fonts.PRETENDARD_MEDIUM);
 		
@@ -113,7 +121,7 @@ public class Selector extends UIWidget {
 				else NVGRenderer.rect(dx, iy, width, ITEM_HEIGHT, targetBg);
 			}
 
-			String optText = fitText(options.get(idx), width - PADDING * 2, Fonts.PRETENDARD_MEDIUM);
+			String optText = fitText(displayOptions.get(idx), width - PADDING * 2, Fonts.PRETENDARD_MEDIUM);
 			int iTextY = iy + (ITEM_HEIGHT - (int)FONT_SIZE) / 2;
 			NVGRenderer.text(optText, dx + PADDING, iTextY, Fonts.PRETENDARD_MEDIUM, textColor, FONT_SIZE);
 
@@ -227,12 +235,26 @@ public class Selector extends UIWidget {
 
 	public void setOptions(List<String> options) {
 		this.options = new ArrayList<>(options);
+		this.displayOptions = new ArrayList<>(options);
+		selectedIndex = 0;
+		scrollOffset = 0;
+	}
+
+	public void setOptions(List<String> options, List<String> displayOptions) {
+		this.options = new ArrayList<>(options);
+		this.displayOptions = new ArrayList<>(displayOptions);
 		selectedIndex = 0;
 		scrollOffset = 0;
 	}
 
 	public void addOption(String option) {
 		options.add(option);
+		displayOptions.add(option);
+	}
+
+	public void addOption(String option, String displayOption) {
+		options.add(option);
+		displayOptions.add(displayOption);
 	}
 
 	public void setOnChange(Consumer<String> onChange) {
