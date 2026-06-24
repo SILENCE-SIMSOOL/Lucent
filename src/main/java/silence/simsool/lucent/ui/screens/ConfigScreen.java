@@ -776,7 +776,7 @@ public class ConfigScreen extends Screen {
 			float catY = winY + TOPBAR_H;
 			
 			for (String cat : getCategories()) {
-				float tw = NVGRenderer.textWidth(cat, Fonts.PRETENDARD_MEDIUM, 13f);
+				float tw = NVGRenderer.textWidth(L10n.translate(cat), Fonts.PRETENDARD_MEDIUM, 13f);
 				int tabW = (int)(tw + 32);
 				if (mx >= catX && mx <= catX + tabW && my >= catY && my <= catY + 28f) {
 					currentCategory = cat;
