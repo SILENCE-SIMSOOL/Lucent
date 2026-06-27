@@ -68,6 +68,8 @@ public class L10n {
 			case "Chinese" -> "zh_cn";
 			case "Japanese" -> "ja_jp";
 			case "Russian" -> "ru_ru";
+			case "Spanish" -> "es_es";
+			case "Hebrew" -> "he_il";
 			default -> "en_us";
 		};
 	}
