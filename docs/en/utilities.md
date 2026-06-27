@@ -130,6 +130,7 @@ These are backend helpers for rendering, maths, structures, and minecraft overla
 - **[ClientHandler](../../src/main/java/silence/simsool/lucent/general/utils/ClientHandler.java)**: Safely schedules code blocks on the main client thread.
 - **[MinecraftColor](../../src/main/java/silence/simsool/lucent/general/utils/MinecraftColor.java)**: Maps Minecraft formatting codes (`§`) to RGB colors.
 - **[NumberUtils](../../src/main/java/silence/simsool/lucent/general/utils/NumberUtils.java)**: Provides safe parsing (`tryParseInt`, `tryParseDouble`) and math operations.
+- **[RandomUtils](../../src/main/java/silence/simsool/lucent/general/utils/RandomUtils.java)**: Generates random integers, boolean chances, and picks random elements from collections.
 - **[ScoreboardUtils](../../src/main/java/silence/simsool/lucent/general/utils/ScoreboardUtils.java)**: Queries scoreboard objectives, sidebar titles, and player scores.
 
 ### Graphics Rendering Helpers

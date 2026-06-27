@@ -33,6 +33,7 @@ import silence.simsool.lucent.general.models.data.NavState;
 import silence.simsool.lucent.general.models.interfaces.annotations.ModConfig;
 import silence.simsool.lucent.general.models.interfaces.annotations.ModConfigExtra;
 import silence.simsool.lucent.general.utils.L10n;
+import silence.simsool.lucent.general.utils.LucentCategory;
 import silence.simsool.lucent.general.utils.LucentUtils;
 import silence.simsool.lucent.general.utils.OSUtils;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
@@ -122,7 +123,7 @@ public class ConfigScreen extends Screen {
 			this.name = name;
 		}
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor ctx, int mx, int my, float delta) {
+		protected void renderWidget(GuiGraphicsExtractor graphics, int mx, int my, float delta) {
 			String catName = L10n.translate(name).toUpperCase();
 			float fontSize = 12f;
 			int color = UIColors.MUTED; 
@@ -147,7 +148,7 @@ public class ConfigScreen extends Screen {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor ctx, int mx, int my, float delta) {
+		protected void renderWidget(GuiGraphicsExtractor graphics, int mx, int my, float delta) {
 			boolean hov = mx >= x && mx <= x + width && my >= y && my <= y + height;
 			int topBg   = hov ? UIColors.CARD_HOVER : UIColors.CARD_BG;
 			int barBg   = mod.isEnabled ? UIColors.ACCENT_BLUE : UIColors.TAB_BG; 
@@ -212,9 +213,9 @@ public class ConfigScreen extends Screen {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor ctx, int mx, int my, float delta) {
-			input.render(ctx, mx, my, delta);
-			createBtn.render(ctx, mx, my, delta);
+		protected void renderWidget(GuiGraphicsExtractor graphics, int mx, int my, float delta) {
+			input.render(graphics, mx, my, delta);
+			createBtn.render(graphics, mx, my, delta);
 		}
 
 		@Override
@@ -254,7 +255,7 @@ public class ConfigScreen extends Screen {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor ctx, int mx, int my, float delta) {
+		protected void renderWidget(GuiGraphicsExtractor graphics, int mx, int my, float delta) {
 			boolean hov = isMouseOver(mx, my);
 			
 			int topBg = hov ? UIColors.CARD_HOVER : UIColors.CARD_BG;
@@ -266,7 +267,7 @@ public class ConfigScreen extends Screen {
 			NVGRenderer.rect(x, y + height - BAR_H, width, BAR_H, barBg, 0, 0, 12, 12);
 
 			if (editing) {
-				renameBox.render(ctx, mx, my, delta);
+				renameBox.render(graphics, mx, my, delta);
 			} else {
 				float fontSize = 20f;
 				float tw = NVGRenderer.textWidth(profileName, Fonts.PRETENDARD_SEMIBOLD, fontSize);
@@ -382,7 +383,7 @@ public class ConfigScreen extends Screen {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor ctx, int mx, int my, float delta) {
+		protected void renderWidget(GuiGraphicsExtractor graphics, int mx, int my, float delta) {
 			hoverAnim = UAnimation.stepProgress(hoverAnim, hovered, 12f, delta);
 			boolean current = ThemeManager.currentTheme == theme;
 
@@ -443,7 +444,7 @@ public class ConfigScreen extends Screen {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor ctx, int mx, int my, float delta) {
+		protected void renderWidget(GuiGraphicsExtractor graphics, int mx, int my, float delta) {
 			boolean hov = mx >= x && mx <= x + width && my >= y && my <= y + height;
 			NVGRenderer.rect(x, y, width, height, hov ? UIColors.CARD_HOVER : UIColors.CARD_BG, 8f);
 			NVGRenderer.outlineRect(x, y, width, height, 1, UIColors.ITEM_BORDER, 8f);
@@ -1294,6 +1295,11 @@ public class ConfigScreen extends Screen {
 		for (String cat : extraGroups.keySet()) if (!allCategories.contains(cat)) allCategories.add(cat);
 
 		allCategories.sort((cat1, cat2) -> {
+			boolean isGen1 = LucentCategory.GENERAL.equals(cat1) || "General".equals(cat1);
+			boolean isGen2 = LucentCategory.GENERAL.equals(cat2) || "General".equals(cat2);
+			if (isGen1 && !isGen2) return -1;
+			if (!isGen1 && isGen2) return 1;
+
 			int p1 = getMergedCategoryPriority(cat1, configGroups.get(cat1), extraGroups.get(cat1));
 			int p2 = getMergedCategoryPriority(cat2, configGroups.get(cat2), extraGroups.get(cat2));
 			if (p1 != p2) return Integer.compare(p2, p1);
@@ -1527,7 +1533,7 @@ public class ConfigScreen extends Screen {
 		final int bx = sx, by = curY, bw = itemW, bh = blockH;
 		widgets.add(new UIWidget(bx, by, bw, bh) {
 			@Override
-			protected void renderWidget(GuiGraphicsExtractor ctx, int mx, int my, float delta) {
+			protected void renderWidget(GuiGraphicsExtractor graphics, int mx, int my, float delta) {
 				NVGRenderer.rect(bx, by, bw, bh, UIColors.CARD_BG, 10f);
 				NVGRenderer.outlineRect(bx, by, bw, bh, 1f, UIColors.ITEM_BORDER, 10f);
 			}
@@ -1740,7 +1746,7 @@ public class ConfigScreen extends Screen {
 		final float fs = fontSize;
 		widgets.add(new UIWidget((int)fx, (int)fy, (int)fw, (int)fs + 2) {
 			@Override
-			protected void renderWidget(GuiGraphicsExtractor ctx, int mx, int my, float delta) {
+			protected void renderWidget(GuiGraphicsExtractor graphics, int mx, int my, float delta) {
 				NVGRenderer.push();
 				NanoVG.nvgIntersectScissor(NVGRenderer.getVG(), fx, fy - 2, fw, fs + 4);
 				NVGRenderer.text(text, fx, fy, Fonts.PRETENDARD_MEDIUM, fc, fs);
@@ -1765,7 +1771,7 @@ public class ConfigScreen extends Screen {
 		}
 
 		@Override
-		protected void renderWidget(GuiGraphicsExtractor ctx, int mx, int my, float delta) {
+		protected void renderWidget(GuiGraphicsExtractor graphics, int mx, int my, float delta) {
 			boolean hovering = mx >= x && mx <= x + width && my >= y && my <= y + height;
 			if (hovering) {
 				// 마우스가 조금이라도 움직이면 리셋
@@ -1933,8 +1939,6 @@ public class ConfigScreen extends Screen {
 		);
 	}
 
-
-
 	private void drawFrame() {
 		int round = 14;
 		NVGRenderer.rect(winX + SIDEBAR_W, winY, WINDOW_W - SIDEBAR_W, WINDOW_H, UIColors.WIN_BG, 0,round,round,0);
@@ -1944,10 +1948,11 @@ public class ConfigScreen extends Screen {
 	private void renderSidebar() {
 		int ix = winX + PAD;
 
-		NVGRenderer.text("LUCENT", ix, winY + 26f, Fonts.PRETENDARD_SEMIBOLD, UIColors.ACCENT_BLUE, 20f);
+		if (moduleManager.getTitleFont() == null) moduleManager.setTitleFont(Fonts.PRETENDARD_SEMIBOLD);
+		NVGRenderer.text(moduleManager.getTitle(), ix, winY + 26f, moduleManager.getTitleFont(), moduleManager.getTitleColor(), moduleManager.getTitleSize());
 
 		int sy = winY + 44;
-		
+
 		sy += 36;
 		NVGRenderer.text("MOD CONFIG", ix, sy, Fonts.PRETENDARD_SEMIBOLD, UIColors.MUTED, 10f);
 		sy += 16;
@@ -2080,7 +2085,6 @@ public class ConfigScreen extends Screen {
 		return cats;
 	}
 
-	
 	private void renderScrollbar(float smx, float smy) {
 		float trackX = contentX + contentW - SCROLLBAR_W - 4;
 		float trackY = scissorY + 4;

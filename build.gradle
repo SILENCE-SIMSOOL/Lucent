@@ -28,9 +28,9 @@ loom {
 		property "devauth.account", "main"
 	}
 
-    runConfigs.named("server") {
-        ideConfigGenerated = false
-    }
+	runConfigs.named("server") {
+		ideConfigGenerated = false
+	}
 }
 
 dependencies {
@@ -72,17 +72,80 @@ jar {
 	from("LICENSE") {
 		rename { "${it}_${inputs.properties.archivesName}"}
 	}
+
+	// fabric.mod.json pretty print
+	doLast {
+		def jarFile = archiveFile.get().asFile
+		def tempDir = file("${buildDir}/tmp/jarPrettyFmj")
+		tempDir.mkdirs()
+
+		// jar에서 fabric.mod.json 읽기
+		def fmjText = null
+		new java.util.zip.ZipFile(jarFile).withCloseable { zip ->
+			def entry = zip.getEntry('fabric.mod.json')
+			if (entry) {
+				fmjText = zip.getInputStream(entry).text
+			}
+		}
+
+		if (fmjText) {
+			// pretty print 후 임시 파일 저장
+			def pretty = new groovy.json.JsonBuilder(
+				new groovy.json.JsonSlurper().parseText(fmjText)
+			).toPrettyString()
+			def tempFmj = new File(tempDir, 'fabric.mod.json')
+			tempFmj.text = pretty
+
+			// jar 안의 fabric.mod.json 교체
+			def uri = jarFile.toURI()
+			def fs = java.nio.file.FileSystems.newFileSystem(
+				java.net.URI.create("jar:${uri}"), [:]
+			)
+			fs.withCloseable {
+				def pathInJar = fs.getPath('fabric.mod.json')
+				java.nio.file.Files.write(pathInJar, pretty.getBytes('UTF-8'))
+			}
+		}
+	}
 }
 
 // JIJ Library Version (remove nanovg)
-// MC 26.x is non-obfuscated, so we just copy the jar instead of remapping
 task remapLibraryJar(type: Jar) {
 	dependsOn jar
 	archiveClassifier = 'library'
 	manifest.from jar.manifest
+
+	def tempFmjDir = file("${buildDir}/tmp/remapLibraryJar")
+
+	// fabric.mod.json: jars 배열 제거 버전을 tempFmjDir에 미리 생성
 	from({ zipTree(jar.archiveFile) }) {
 		exclude 'META-INF/MANIFEST.MF'
 		exclude 'META-INF/jars/**'
+		exclude 'fabric.mod.json'
+	}
+
+	// 수정된 fabric.mod.json을 lazy하게 참조 (configuration time에 등록, 실제 파일은 execution time에 생성)
+	from(tempFmjDir) {
+		include 'fabric.mod.json'
+	}
+
+	doFirst {
+		tempFmjDir.mkdirs()
+		def jarFile = jar.archiveFile.get().asFile
+		def fmjText = null
+
+		new java.util.zip.ZipFile(jarFile).withCloseable { zip ->
+			def entry = zip.getEntry('fabric.mod.json')
+			if (entry) {
+				fmjText = zip.getInputStream(entry).text
+			}
+		}
+
+		if (fmjText) {
+			def json = new groovy.json.JsonSlurper().parseText(fmjText)
+			json.remove('jars')
+			new File(tempFmjDir, 'fabric.mod.json').text = new groovy.json.JsonBuilder(json).toPrettyString()
+		}
 	}
 }
 
@@ -142,10 +205,10 @@ task generateCustomOutputs {
 		}
 
 		def pomTemplate = """<project>
-\t<modelVersion>4.0.0</modelVersion>
-\t<groupId>com.github.SILENCE-SIMSOOL</groupId>
-\t<artifactId>lucent</artifactId>
-\t<version>%s</version>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.github.SILENCE-SIMSOOL</groupId>
+	<artifactId>lucent</artifactId>
+	<version>%s</version>
 </project>"""
 
 		new File(outDir0, pom0Name).text = String.format(pomTemplate, ver0)

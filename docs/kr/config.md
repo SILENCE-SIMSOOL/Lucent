@@ -23,6 +23,15 @@ public class MyModInitializer {
 ```
 이 코드를 호출하면 `config/yourmodid/` 경로에 설정 폴더가 자동으로 구조화됩니다.
 
+### 콘피그 화면 타이틀 커스터마이징
+콘피그 설정 화면에 표시될 타이틀 텍스트, 폰트, 색상, 그리고 글자 크기를 수정할 수 있습니다:
+```java
+config.setTitle("YOUR CLIENT");
+config.setTitleFont(Fonts.PRETENDARD_SEMIBOLD); // 커스텀 LucentFont
+config.setTitleColor(UIColors.ACCENT_BLUE);     // 정수 색상값
+config.setTitleSize(24.0f);
+```
+
 ---
 
 ## 2. 모듈 클래스 만들기

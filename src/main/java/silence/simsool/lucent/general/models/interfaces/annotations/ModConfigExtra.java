@@ -8,6 +8,7 @@ import java.lang.annotation.Target;
 import silence.simsool.lucent.general.enums.Align;
 import silence.simsool.lucent.general.enums.ConfigType;
 import silence.simsool.lucent.general.enums.KeyMode;
+import silence.simsool.lucent.general.utils.LucentCategory;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD})
@@ -16,7 +17,7 @@ public @interface ModConfigExtra {
 	String name();
 	String display() default "";
 	String description() default "";
-	String category() default "General";
+	String category() default LucentCategory.GENERAL;
 	double min() default 0.0;
 	double max() default 10.0;
 	double step() default 1.0;
