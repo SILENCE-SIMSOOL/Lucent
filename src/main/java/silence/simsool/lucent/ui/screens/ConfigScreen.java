@@ -33,6 +33,7 @@ import silence.simsool.lucent.general.models.data.NavState;
 import silence.simsool.lucent.general.models.interfaces.annotations.ModConfig;
 import silence.simsool.lucent.general.models.interfaces.annotations.ModConfigExtra;
 import silence.simsool.lucent.general.utils.L10n;
+import silence.simsool.lucent.general.utils.LucentCategory;
 import silence.simsool.lucent.general.utils.LucentUtils;
 import silence.simsool.lucent.general.utils.OSUtils;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
@@ -1283,6 +1284,11 @@ public class ConfigScreen extends Screen {
 		for (String cat : extraGroups.keySet()) if (!allCategories.contains(cat)) allCategories.add(cat);
 
 		allCategories.sort((cat1, cat2) -> {
+			boolean isGen1 = LucentCategory.GENERAL.equals(cat1) || "General".equals(cat1);
+			boolean isGen2 = LucentCategory.GENERAL.equals(cat2) || "General".equals(cat2);
+			if (isGen1 && !isGen2) return -1;
+			if (!isGen1 && isGen2) return 1;
+
 			int p1 = getMergedCategoryPriority(cat1, configGroups.get(cat1), extraGroups.get(cat1));
 			int p2 = getMergedCategoryPriority(cat2, configGroups.get(cat2), extraGroups.get(cat2));
 			if (p1 != p2) return Integer.compare(p2, p1);
@@ -1922,8 +1928,6 @@ public class ConfigScreen extends Screen {
 		);
 	}
 
-
-
 	private void drawFrame() {
 		int round = 14;
 		NVGRenderer.rect(winX + SIDEBAR_W, winY, WINDOW_W - SIDEBAR_W, WINDOW_H, UIColors.WIN_BG, 0,round,round,0);
@@ -1933,7 +1937,8 @@ public class ConfigScreen extends Screen {
 	private void renderSidebar() {
 		int ix = winX + PAD;
 
-		NVGRenderer.text("LUCENT", ix, winY + 26f, Fonts.PRETENDARD_SEMIBOLD, UIColors.ACCENT_BLUE, 20f);
+		if (moduleManager.getTitleFont() == null) moduleManager.setTitleFont(Fonts.PRETENDARD_SEMIBOLD);
+		NVGRenderer.text(moduleManager.getTitle(), ix, winY + 26f, moduleManager.getTitleFont(), moduleManager.getTitleColor(), moduleManager.getTitleSize());
 
 		int sy = winY + 44;
 		
@@ -2069,7 +2074,6 @@ public class ConfigScreen extends Screen {
 		return cats;
 	}
 
-	
 	private void renderScrollbar(float smx, float smy) {
 		float trackX = contentX + contentW - SCROLLBAR_W - 4;
 		float trackY = scissorY + 4;

@@ -23,6 +23,15 @@ public class MyModInitializer {
 ```
 This automatically sets up the directory layout inside `config/yourmodid/`.
 
+### Customizing the Config Screen Title
+You can customize the title text, font, color, and size displayed on the settings screen:
+```java
+config.setTitle("YOUR CLIENT");
+config.setTitleFont(Fonts.PRETENDARD_SEMIBOLD); // Custom LucentFont
+config.setTitleColor(UIColors.ACCENT_BLUE);     // Color integer value
+config.setTitleSize(24.0f);
+```
+
 ---
 
 ## 2. Creating a Module Class

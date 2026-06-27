@@ -27,35 +27,60 @@ import silence.simsool.lucent.events.impl.EntityEvent;
 import silence.simsool.lucent.examplemod.mods.ExampleMod;
 import silence.simsool.lucent.general.models.abstracts.Mod;
 import silence.simsool.lucent.general.models.data.KeyBind;
+import silence.simsool.lucent.general.models.data.KeyBindFieldInfo;
 import silence.simsool.lucent.general.models.interfaces.annotations.ModConfig;
 import silence.simsool.lucent.general.models.interfaces.annotations.ModConfigExtra;
 import silence.simsool.lucent.general.utils.OSUtils;
+import silence.simsool.lucent.ui.font.LucentFont;
 import silence.simsool.lucent.ui.theme.ThemeManager;
+import silence.simsool.lucent.ui.utils.UIColors;
+import silence.simsool.lucent.ui.utils.nvg.Fonts;
 
 public class ModManager {
 
 	private static final List<ModManager> INSTANCES = new ArrayList<>();
 	private final List<KeyBindFieldInfo> keyBindFields = new ArrayList<>();
 
-	private static class KeyBindFieldInfo {
-		final Mod module;
-		final Field field;
-		KeyBindFieldInfo(Mod module, Field field) {
-			this.module = module;
-			this.field = field;
-		}
-		KeyBind getKeyBind() {
-			try {
-				return (KeyBind) field.get(module);
-			} catch (Exception e) {
-				return null;
-			}
-		}
-	}
-
 	public final List<Mod> modules = new ArrayList<>();
 	private final File configDirectory;
 	private static String currentProfile = "default";
+
+	private String title = "LUCENT";
+	private LucentFont titleFont = Fonts.PRETENDARD_SEMIBOLD;
+	private int titleColor = UIColors.ACCENT_BLUE;
+	private float titleSize = 20.f;
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public void setTitleFont(LucentFont titleFont) {
+		this.titleFont = titleFont;
+	}
+
+	public void setTitleColor(int titleColor) {
+		this.titleColor = titleColor;
+	}
+
+	public void setTitleSize(float titleSize) {
+		this.titleSize = titleSize;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public LucentFont getTitleFont() {
+		return titleFont;
+	}
+
+	public int getTitleColor() {
+		return titleColor;
+	}
+
+	public float getTitleSize() {
+		return titleSize;
+	}
 
 	private File getGlobalLucentDir() {
 		return OSUtils.getLucentDir();
