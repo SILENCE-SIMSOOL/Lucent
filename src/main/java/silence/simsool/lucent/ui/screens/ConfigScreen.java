@@ -1163,7 +1163,7 @@ public class ConfigScreen extends Screen {
 
 		// 4. Setup Language
 		widgets.add(new SettingRowWidget(sx, sy + 252, itemW, 74, L10n.translate("lucent.preferences.language"), L10n.translate("lucent.preferences.language.desc")));
-		Selector langSel = new Selector(sx + itemW - PAD - 148, sy + 17 + 252, 148, 38, List.of("English", "Korean", "Chinese", "Japanese", "Russian"));
+		Selector langSel = new Selector(sx + itemW - PAD - 148, sy + 17 + 252, 148, 38, List.of("English", "Korean", "Chinese", "Japanese", "Russian", "Spanish", "Hebrew"));
 		langSel.setValue(LucentConfig.setupLanguage);
 		langSel.setOnChange(v -> { 
 			LucentConfig.setupLanguage = v; 
@@ -1403,7 +1403,7 @@ public class ConfigScreen extends Screen {
 					final Field field = (member instanceof Field f) ? f : null;
 					String fieldid = (field != null) ? field.getName().toLowerCase() : "";
 					for (String opt : rawOpts) {
-						String key = "lucent.config.lucentclient." + moduleid + ".property." + fieldid + ".option." + opt.toLowerCase().replace(" ", "_");
+						String key = "lucent.config.lucentclient." + moduleid + ".property." + fieldid + "." + opt.toLowerCase().replace(" ", "_");
 						String translated = L10n.translate(key);
 						if (translated.equals(key)) {
 							displayOpts.add(opt);
@@ -1676,7 +1676,7 @@ public class ConfigScreen extends Screen {
 					String moduleid = currentModSettings.getClass().getSimpleName().toLowerCase();
 					String fieldid = field.getName().toLowerCase();
 					for (String opt : rawOpts) {
-						String key = "lucent.config.lucentclient." + moduleid + ".property." + fieldid + ".option." + opt.toLowerCase().replace(" ", "_");
+						String key = "lucent.config.lucentclient." + moduleid + ".property." + fieldid + "." + opt.toLowerCase().replace(" ", "_");
 						String translated = L10n.translate(key);
 						if (translated.equals(key)) {
 							displayOpts.add(opt);
