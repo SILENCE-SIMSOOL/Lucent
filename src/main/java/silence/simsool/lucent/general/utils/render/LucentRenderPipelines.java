@@ -45,7 +45,7 @@ public class LucentRenderPipelines {
 			.withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR)
 			.withPrimitiveTopology(PrimitiveTopology.QUADS)
 			.withBindGroupLayout(BindGroupLayout.builder().withUniform("u", UniformType.UNIFORM_BUFFER).build())
-			.withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+			.withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT_PREMULTIPLIED_ALPHA))
 			.build()
 	);
 

@@ -27,6 +27,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
 import net.minecraft.client.renderer.DynamicUniformStorage;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
 
@@ -60,7 +61,7 @@ public class RoundRectPIPRenderer extends PictureInPictureRenderer<RoundRectPIPR
 	}
 
 	@Override
-	protected void renderToTexture(State state, PoseStack poseStack, net.minecraft.client.renderer.SubmitNodeCollector submitNodeCollector) {
+	protected void renderToTexture(State state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector) {
 		float w = state.width * state.scale;
 		float h = state.height * state.scale;
 

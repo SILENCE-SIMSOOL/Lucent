@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.ChatComponent.ChatMethod;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
@@ -105,6 +106,26 @@ public class UChat {
 
 		int padding = Math.round((chatWidth - textWidth) / 2.0f / spaceWidth);
 		return " ".repeat(Math.max(0, padding)) + text;
+	}
+
+	public static void clear(boolean history) {
+		mc.gui.hud.getChat().clearMessages(history);
+	}
+
+	public static void clear() {
+		clear(false);
+	}
+
+	public static void open(ChatMethod chat) {
+		mc.gui.openChatScreen(chat);
+	}
+
+	public static void open() {
+		open(ChatMethod.MESSAGE);
+	}
+
+	public static void openCommand() {
+		open(ChatMethod.COMMAND);
 	}
 
 	// --- Color Utils ---

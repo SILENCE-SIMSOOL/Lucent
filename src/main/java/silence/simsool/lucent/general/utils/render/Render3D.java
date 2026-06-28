@@ -13,12 +13,13 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.gui.Font;
-import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -29,7 +30,6 @@ import silence.simsool.lucent.general.models.data.render.BeaconBeamData;
 import silence.simsool.lucent.general.models.data.render.BoxData;
 import silence.simsool.lucent.general.models.data.render.LineData;
 import silence.simsool.lucent.general.models.data.render.TextData;
-import silence.simsool.lucent.general.utils.useful.URender;
 import silence.simsool.lucent.mixin.accessors.BeaconBeamAccessor;
 import silence.simsool.lucent.ui.utils.UColor;
 
@@ -650,7 +650,9 @@ public class Render3D {
 	}
 
 	private static Vec3 getTracerSource() {
-		return URender.getRenderPos(mc.player).add(mc.player.getForward().add(0.0, mc.player.getEyeHeight(), 0.0));
+		CameraRenderState cam = mc.gameRenderer.gameRenderState().levelRenderState.cameraRenderState;
+		Vec3 from = cam.pos.add(Vec3.directionFromRotation(cam.xRot, cam.yRot));
+		return from;
 	}
 
 	private static void renderQueuedLinesAndWireBoxes(PoseStack matrix, SubmitNodeCollector submitNodeCollector) {
