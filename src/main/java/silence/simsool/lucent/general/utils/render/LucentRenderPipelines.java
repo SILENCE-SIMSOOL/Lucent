@@ -42,7 +42,7 @@ public class LucentRenderPipelines {
 			.withVertexShader(Identifier.fromNamespaceAndPath(Lucent.ID, "core/round_rect"))
 			.withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS)
 			.withUniform("u", UniformType.UNIFORM_BUFFER)
-			.withBlend(BlendFunction.TRANSLUCENT)
+			.withBlend(BlendFunction.TRANSLUCENT_PREMULTIPLIED_ALPHA)
 			.build()
 	);
 
