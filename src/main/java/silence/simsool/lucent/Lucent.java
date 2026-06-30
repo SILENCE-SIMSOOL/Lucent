@@ -41,7 +41,7 @@ public class Lucent implements ClientModInitializer {
 
 	public static final String ID = "lucent";
 	public static final String NAME = "Lucent";
-	public static final String VERSION = "1.2.18";
+	public static final String VERSION = "1.2.19";
 	public static String LATEST_VERSION = "Fetching...";
 
 	public static Minecraft mc = Minecraft.getInstance();
@@ -77,7 +77,10 @@ public class Lucent implements ClientModInitializer {
 		if (devMode) {
 			config.registerExampleMods();
 			LucentAPI.registerHUD(config, new ExampleHUD());
-			//config.setTitle("TestTitle");
+			//config.setTitle("YOU CAN CHANGE TITLE");
+			//config.setTitleFont(Fonts.PRETENDARD_SEMIBOLD);
+			//config.setTitleSize(2.0f);
+			//config.setTitleColor(UIColors.PURE_WHITE);
 		}
 
 		PictureInPictureRendererRegistry.register(context ->

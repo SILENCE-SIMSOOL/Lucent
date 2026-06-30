@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.level.block.state.BlockState;
@@ -30,6 +31,7 @@ import silence.simsool.lucent.general.models.data.render.BeaconBeamData;
 import silence.simsool.lucent.general.models.data.render.BoxData;
 import silence.simsool.lucent.general.models.data.render.LineData;
 import silence.simsool.lucent.general.models.data.render.TextData;
+import silence.simsool.lucent.general.utils.useful.UWorld;
 import silence.simsool.lucent.mixin.accessors.BeaconBeamAccessor;
 import silence.simsool.lucent.ui.utils.UColor;
 
@@ -41,7 +43,7 @@ public class Render3D {
 	private static final List<TextData> queuedTexts = new ObjectArrayList<>();
 	private static final List<BeaconBeamData> queuedBeaconBeams = new ObjectArrayList<>();
 
-	private static final Identifier BEAM_TEXTURE = Identifier.fromNamespaceAndPath("minecraft", "textures/entity/beacon_beam.png");
+	private static final Identifier BEAM_TEXTURE = Identifier.withDefaultNamespace("textures/entity/beacon/beacon_beam.png");
 
 	private static float lastTickDelta = 1.0f;
 
@@ -57,10 +59,9 @@ public class Render3D {
 
 			lastTickDelta = event.partialTick;
 
-			Vec3 camera = mc.gameRenderer.mainCamera().position();
+			Vec3 camera = UWorld.getCameraPos();
 
 			matrix.pushPose();
-			matrix.translate(-camera.x, -camera.y, -camera.z);
 
 			renderQueuedLinesAndWireBoxes(matrix, submitNodeCollector);
 			renderQueuedFilledBoxes(matrix, submitNodeCollector);
@@ -520,21 +521,277 @@ public class Render3D {
 	// ==========================================
 	// Draw Text
 	// ==========================================
+	public static void drawText(String text, Vec3 pos, float scale, boolean depth, boolean shadow) {
+		drawText(text, pos, scale, -1, depth, shadow);
+	}
+
 	public static void drawText(String text, Vec3 pos, float scale, boolean depth) {
-		Font font = mc.font;
-		queuedTexts.add(new TextData(text, pos, scale, depth, mc.gameRenderer.mainCamera().rotation(), font, font.width(text)));
+		drawText(text, pos, scale, depth, true);
 	}
 
 	public static void drawText(String text, Vec3 pos, float scale) {
-		drawText(text, pos, scale, true);
+		drawText(text, pos, scale, true, true);
+	}
+
+	public static void drawText(String text, BlockPos pos, float scale, boolean depth, boolean shadow) {
+		drawText(text, getBlockCenter(pos), scale, depth, shadow);
 	}
 
 	public static void drawText(String text, BlockPos pos, float scale, boolean depth) {
-		drawText(text, getBlockCenter(pos), scale, depth);
+		drawText(text, pos, scale, depth, true);
 	}
 
 	public static void drawText(String text, BlockPos pos, float scale) {
-		drawText(text, getBlockCenter(pos), scale, true);
+		drawText(text, pos, scale, true, true);
+	}
+
+	public static void drawText(String text, Vec3 pos, float scale, int color, boolean depth, boolean shadow) {
+		Font font = mc.font;
+		queuedTexts.add(new TextData(text, pos, scale, depth, UWorld.getCamera().rotation(), font, font.width(text), color, 0, 0, shadow));
+	}
+
+	public static void drawText(String text, Vec3 pos, float scale, int color, boolean depth) {
+		drawText(text, pos, scale, color, depth, true);
+	}
+
+	public static void drawText(String text, Vec3 pos, float scale, int color) {
+		drawText(text, pos, scale, color, true, true);
+	}
+
+	public static void drawText(String text, BlockPos pos, float scale, int color, boolean depth, boolean shadow) {
+		drawText(text, getBlockCenter(pos), scale, color, depth, shadow);
+	}
+
+	public static void drawText(String text, BlockPos pos, float scale, int color, boolean depth) {
+		drawText(text, pos, scale, color, depth, true);
+	}
+
+	public static void drawText(String text, BlockPos pos, float scale, int color) {
+		drawText(text, pos, scale, color, true, true);
+	}
+
+	public static void drawText(String text, Vec3 pos, float scale, Color color, boolean depth, boolean shadow) {
+		drawText(text, pos, scale, color.getRGB(), depth, shadow);
+	}
+
+	public static void drawText(String text, Vec3 pos, float scale, Color color, boolean depth) {
+		drawText(text, pos, scale, color.getRGB(), depth, true);
+	}
+
+	public static void drawText(String text, Vec3 pos, float scale, Color color) {
+		drawText(text, pos, scale, color.getRGB(), true, true);
+	}
+
+	public static void drawText(String text, BlockPos pos, float scale, Color color, boolean depth, boolean shadow) {
+		drawText(text, getBlockCenter(pos), scale, color.getRGB(), depth, shadow);
+	}
+
+	public static void drawText(String text, BlockPos pos, float scale, Color color, boolean depth) {
+		drawText(text, pos, scale, color.getRGB(), depth, true);
+	}
+
+	public static void drawText(String text, BlockPos pos, float scale, Color color) {
+		drawText(text, pos, scale, color.getRGB(), true, true);
+	}
+
+	// ==========================================
+	// Draw Background Text
+	// ==========================================
+	public static void drawBackgroundText(String text, Vec3 pos, float scale, int color, int backgroundColor, boolean depth, boolean shadow) {
+		Font font = mc.font;
+		queuedTexts.add(new TextData(text, pos, scale, depth, UWorld.getCamera().rotation(), font, font.width(text), color, backgroundColor, 0, shadow));
+	}
+
+	public static void drawBackgroundText(String text, Vec3 pos, float scale, int color, int backgroundColor, boolean depth) {
+		drawBackgroundText(text, pos, scale, color, backgroundColor, depth, true);
+	}
+
+	public static void drawBackgroundText(String text, Vec3 pos, float scale, int color, int backgroundColor) {
+		drawBackgroundText(text, pos, scale, color, backgroundColor, true, true);
+	}
+
+	public static void drawBackgroundText(String text, BlockPos pos, float scale, int color, int backgroundColor, boolean depth, boolean shadow) {
+		drawBackgroundText(text, getBlockCenter(pos), scale, color, backgroundColor, depth, shadow);
+	}
+
+	public static void drawBackgroundText(String text, BlockPos pos, float scale, int color, int backgroundColor, boolean depth) {
+		drawBackgroundText(text, pos, scale, color, backgroundColor, depth, true);
+	}
+
+	public static void drawBackgroundText(String text, BlockPos pos, float scale, int color, int backgroundColor) {
+		drawBackgroundText(text, pos, scale, color, backgroundColor, true, true);
+	}
+
+	public static void drawBackgroundText(String text, Vec3 pos, float scale, int backgroundColor, boolean depth, boolean shadow) {
+		drawBackgroundText(text, pos, scale, -1, backgroundColor, depth, shadow);
+	}
+
+	public static void drawBackgroundText(String text, Vec3 pos, float scale, int backgroundColor, boolean depth) {
+		drawBackgroundText(text, pos, scale, backgroundColor, depth, true);
+	}
+
+	public static void drawBackgroundText(String text, Vec3 pos, float scale, int backgroundColor) {
+		drawBackgroundText(text, pos, scale, backgroundColor, true, true);
+	}
+
+	public static void drawBackgroundText(String text, BlockPos pos, float scale, int backgroundColor, boolean depth, boolean shadow) {
+		drawBackgroundText(text, getBlockCenter(pos), scale, -1, backgroundColor, depth, shadow);
+	}
+
+	public static void drawBackgroundText(String text, BlockPos pos, float scale, int backgroundColor, boolean depth) {
+		drawBackgroundText(text, pos, scale, backgroundColor, depth, true);
+	}
+
+	public static void drawBackgroundText(String text, BlockPos pos, float scale, int backgroundColor) {
+		drawBackgroundText(text, pos, scale, backgroundColor, true, true);
+	}
+
+	public static void drawBackgroundText(String text, Vec3 pos, float scale, Color color, Color backgroundColor, boolean depth, boolean shadow) {
+		drawBackgroundText(text, pos, scale, color.getRGB(), backgroundColor.getRGB(), depth, shadow);
+	}
+
+	public static void drawBackgroundText(String text, Vec3 pos, float scale, Color color, Color backgroundColor, boolean depth) {
+		drawBackgroundText(text, pos, scale, color.getRGB(), backgroundColor.getRGB(), depth, true);
+	}
+
+	public static void drawBackgroundText(String text, Vec3 pos, float scale, Color color, Color backgroundColor) {
+		drawBackgroundText(text, pos, scale, color.getRGB(), backgroundColor.getRGB(), true, true);
+	}
+
+	public static void drawBackgroundText(String text, BlockPos pos, float scale, Color color, Color backgroundColor, boolean depth, boolean shadow) {
+		drawBackgroundText(text, getBlockCenter(pos), scale, color.getRGB(), backgroundColor.getRGB(), depth, shadow);
+	}
+
+	public static void drawBackgroundText(String text, BlockPos pos, float scale, Color color, Color backgroundColor, boolean depth) {
+		drawBackgroundText(text, pos, scale, color.getRGB(), backgroundColor.getRGB(), depth, true);
+	}
+
+	public static void drawBackgroundText(String text, BlockPos pos, float scale, Color color, Color backgroundColor) {
+		drawBackgroundText(text, pos, scale, color.getRGB(), backgroundColor.getRGB(), true, true);
+	}
+
+	public static void drawBackgroundText(String text, Vec3 pos, float scale, Color backgroundColor, boolean depth, boolean shadow) {
+		drawBackgroundText(text, pos, scale, -1, backgroundColor.getRGB(), depth, shadow);
+	}
+
+	public static void drawBackgroundText(String text, Vec3 pos, float scale, Color backgroundColor, boolean depth) {
+		drawBackgroundText(text, pos, scale, backgroundColor, depth, true);
+	}
+
+	public static void drawBackgroundText(String text, Vec3 pos, float scale, Color backgroundColor) {
+		drawBackgroundText(text, pos, scale, backgroundColor, true, true);
+	}
+
+	public static void drawBackgroundText(String text, BlockPos pos, float scale, Color backgroundColor, boolean depth, boolean shadow) {
+		drawBackgroundText(text, getBlockCenter(pos), scale, -1, backgroundColor.getRGB(), depth, shadow);
+	}
+
+	public static void drawBackgroundText(String text, BlockPos pos, float scale, Color backgroundColor, boolean depth) {
+		drawBackgroundText(text, pos, scale, backgroundColor, depth, true);
+	}
+
+	public static void drawBackgroundText(String text, BlockPos pos, float scale, Color backgroundColor) {
+		drawBackgroundText(text, getBlockCenter(pos), scale, -1, backgroundColor.getRGB(), true, true);
+	}
+
+	// ==========================================
+	// Draw Outline Text
+	// ==========================================
+	public static void drawOutlineText(String text, Vec3 pos, float scale, int color, int outlineColor, boolean depth, boolean shadow) {
+		Font font = mc.font;
+		queuedTexts.add(new TextData(text, pos, scale, depth, UWorld.getCamera().rotation(), font, font.width(text), color, 0, outlineColor, shadow));
+	}
+
+	public static void drawOutlineText(String text, Vec3 pos, float scale, int color, int outlineColor, boolean depth) {
+		drawOutlineText(text, pos, scale, color, outlineColor, depth, true);
+	}
+
+	public static void drawOutlineText(String text, Vec3 pos, float scale, int color, int outlineColor) {
+		drawOutlineText(text, pos, scale, color, outlineColor, true, true);
+	}
+
+	public static void drawOutlineText(String text, BlockPos pos, float scale, int color, int outlineColor, boolean depth, boolean shadow) {
+		drawOutlineText(text, getBlockCenter(pos), scale, color, outlineColor, depth, shadow);
+	}
+
+	public static void drawOutlineText(String text, BlockPos pos, float scale, int color, int outlineColor, boolean depth) {
+		drawOutlineText(text, pos, scale, color, outlineColor, depth, true);
+	}
+
+	public static void drawOutlineText(String text, BlockPos pos, float scale, int color, int outlineColor) {
+		drawOutlineText(text, pos, scale, color, outlineColor, true, true);
+	}
+
+	public static void drawOutlineText(String text, Vec3 pos, float scale, int outlineColor, boolean depth, boolean shadow) {
+		drawOutlineText(text, pos, scale, -1, outlineColor, depth, shadow);
+	}
+
+	public static void drawOutlineText(String text, Vec3 pos, float scale, int outlineColor, boolean depth) {
+		drawOutlineText(text, pos, scale, outlineColor, depth, true);
+	}
+
+	public static void drawOutlineText(String text, Vec3 pos, float scale, int outlineColor) {
+		drawOutlineText(text, pos, scale, outlineColor, true, true);
+	}
+
+	public static void drawOutlineText(String text, BlockPos pos, float scale, int outlineColor, boolean depth, boolean shadow) {
+		drawOutlineText(text, getBlockCenter(pos), scale, -1, outlineColor, depth, shadow);
+	}
+
+	public static void drawOutlineText(String text, BlockPos pos, float scale, int outlineColor, boolean depth) {
+		drawOutlineText(text, pos, scale, outlineColor, depth, true);
+	}
+
+	public static void drawOutlineText(String text, BlockPos pos, float scale, int outlineColor) {
+		drawOutlineText(text, pos, scale, outlineColor, true, true);
+	}
+
+	public static void drawOutlineText(String text, Vec3 pos, float scale, Color color, Color outlineColor, boolean depth, boolean shadow) {
+		drawOutlineText(text, pos, scale, color.getRGB(), outlineColor.getRGB(), depth, shadow);
+	}
+
+	public static void drawOutlineText(String text, Vec3 pos, float scale, Color color, Color outlineColor, boolean depth) {
+		drawOutlineText(text, pos, scale, color.getRGB(), outlineColor.getRGB(), depth, true);
+	}
+
+	public static void drawOutlineText(String text, Vec3 pos, float scale, Color color, Color outlineColor) {
+		drawOutlineText(text, pos, scale, color.getRGB(), outlineColor.getRGB(), true, true);
+	}
+
+	public static void drawOutlineText(String text, BlockPos pos, float scale, Color color, Color outlineColor, boolean depth, boolean shadow) {
+		drawOutlineText(text, getBlockCenter(pos), scale, color.getRGB(), outlineColor.getRGB(), depth, shadow);
+	}
+
+	public static void drawOutlineText(String text, BlockPos pos, float scale, Color color, Color outlineColor, boolean depth) {
+		drawOutlineText(text, pos, scale, color.getRGB(), outlineColor.getRGB(), depth, true);
+	}
+
+	public static void drawOutlineText(String text, BlockPos pos, float scale, Color color, Color outlineColor) {
+		drawOutlineText(text, pos, scale, color.getRGB(), outlineColor.getRGB(), true, true);
+	}
+
+	public static void drawOutlineText(String text, Vec3 pos, float scale, Color outlineColor, boolean depth, boolean shadow) {
+		drawOutlineText(text, pos, scale, -1, outlineColor.getRGB(), depth, shadow);
+	}
+
+	public static void drawOutlineText(String text, Vec3 pos, float scale, Color outlineColor, boolean depth) {
+		drawOutlineText(text, pos, scale, outlineColor, depth, true);
+	}
+
+	public static void drawOutlineText(String text, Vec3 pos, float scale, Color outlineColor) {
+		drawOutlineText(text, pos, scale, outlineColor, true, true);
+	}
+
+	public static void drawOutlineText(String text, BlockPos pos, float scale, Color outlineColor, boolean depth, boolean shadow) {
+		drawOutlineText(text, getBlockCenter(pos), scale, -1, outlineColor.getRGB(), depth, shadow);
+	}
+
+	public static void drawOutlineText(String text, BlockPos pos, float scale, Color outlineColor, boolean depth) {
+		drawOutlineText(text, pos, scale, outlineColor, depth, true);
+	}
+
+	public static void drawOutlineText(String text, BlockPos pos, float scale, Color outlineColor) {
+		drawOutlineText(text, getBlockCenter(pos), scale, -1, outlineColor.getRGB(), true, true);
 	}
 
 	// ==========================================
@@ -660,7 +917,9 @@ public class Render3D {
 
 		for (LineData line : queuedLines) {
 			submitNodeCollector.submitCustomGeometry(matrix, line.renderType(), (pose, buffer) -> {
-				Vector3f start = new Vector3f((float) line.from.x, (float) line.from.y, (float) line.from.z);
+				Vec3 drawCamera = UWorld.getCameraPos();
+				Vec3 relativeFrom = line.from.subtract(drawCamera);
+				Vector3f start = new Vector3f((float) relativeFrom.x, (float) relativeFrom.y, (float) relativeFrom.z);
 				Vec3 dir = line.to.subtract(line.from);
 				PrimitiveRenderer.renderVector(pose, buffer, start, dir, line.color1, line.color2, line.thickness);
 			});
@@ -668,7 +927,9 @@ public class Render3D {
 
 		for (BoxData box : queuedWireBoxes) {
 			submitNodeCollector.submitCustomGeometry(matrix, box.lineRenderType(), (pose, buffer) -> {
-				PrimitiveRenderer.renderLineBox(pose, buffer, box.aabb, box.r, box.g, box.b, box.a, box.thickness);
+				Vec3 drawCamera = UWorld.getCameraPos();
+				AABB relativeAABB = box.aabb.move(-drawCamera.x, -drawCamera.y, -drawCamera.z);
+				PrimitiveRenderer.renderLineBox(pose, buffer, relativeAABB, box.r, box.g, box.b, box.a, box.thickness);
 			});
 		}
 	}
@@ -678,7 +939,9 @@ public class Render3D {
 
 		for (BoxData box : queuedFilledBoxes) {
 			submitNodeCollector.submitCustomGeometry(matrix, box.filledRenderType(), (pose, buffer) -> {
-				PrimitiveRenderer.addChainedFilledBoxVertices(pose, buffer, (float) box.aabb.minX, (float) box.aabb.minY, (float) box.aabb.minZ, (float) box.aabb.maxX, (float) box.aabb.maxY, (float) box.aabb.maxZ, box.r, box.g, box.b, box.a);
+				Vec3 drawCamera = UWorld.getCameraPos();
+				AABB relativeAABB = box.aabb.move(-drawCamera.x, -drawCamera.y, -drawCamera.z);
+				PrimitiveRenderer.addChainedFilledBoxVertices(pose, buffer, (float) relativeAABB.minX, (float) relativeAABB.minY, (float) relativeAABB.minZ, (float) relativeAABB.maxX, (float) relativeAABB.maxY, (float) relativeAABB.maxZ, box.r, box.g, box.b, box.a);
 			});
 		}
 	}
@@ -690,7 +953,7 @@ public class Render3D {
 			matrix.translate((float) (textData.pos.x - camera.x), (float) (textData.pos.y - camera.y), (float) (textData.pos.z - camera.z));
 			matrix.mulPose(textData.cameraRotation);
 			matrix.scale(scaleFactor, -scaleFactor, scaleFactor);
-			submitNodeCollector.submitText(matrix, -textData.textWidth / 2f, 0f, net.minecraft.network.chat.Component.literal(textData.text).getVisualOrderText(), true, textData.depth ? Font.DisplayMode.POLYGON_OFFSET : Font.DisplayMode.SEE_THROUGH, -1, LightCoordsUtil.FULL_BRIGHT, 0, 0);
+			submitNodeCollector.submitText(matrix, -textData.textWidth / 2f, 0f, Component.literal(textData.text).getVisualOrderText(), textData.shadow, textData.depth ? Font.DisplayMode.POLYGON_OFFSET : Font.DisplayMode.SEE_THROUGH, LightCoordsUtil.FULL_BRIGHT, textData.color, textData.backgroundColor, textData.outlineColor);
 			matrix.popPose();
 		}
 	}
