@@ -2,6 +2,7 @@ package silence.simsool.lucent.general.utils.useful;
 
 import static silence.simsool.lucent.Lucent.mc;
 
+import net.minecraft.client.Camera;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Blocks;
@@ -72,6 +73,18 @@ public class UWorld {
 
 	public static Vec3 getBottomCenter(BlockPos pos) {
 		return Vec3.atBottomCenterOf(pos);
+	}
+
+	public static Camera getCamera() {
+		return mc.gameRenderer.getMainCamera();
+	}
+
+	public static Vec3 getCameraPos() {
+		return mc.gameRenderer.getMainCamera().position();
+	}
+
+	public static float getPartialTick() {
+		return mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
 	}
 
 }

@@ -13,8 +13,10 @@ public class TextData {
 	public final Quaternionf cameraRotation;
 	public final Font font;
 	public final float textWidth;
+	public final int color;
+	public final boolean shadow;
 
-	public TextData(String text, Vec3 pos, float scale, boolean depth, Quaternionf rotation, Font font, float width) {
+	public TextData(String text, Vec3 pos, float scale, boolean depth, Quaternionf rotation, Font font, float width, int color, boolean shadow) {
 		this.text = text;
 		this.pos = pos;
 		this.scale = scale;
@@ -22,5 +24,11 @@ public class TextData {
 		this.cameraRotation = rotation;
 		this.font = font;
 		this.textWidth = width;
+		this.color = color;
+		this.shadow = shadow;
+	}
+
+	public TextData(String text, Vec3 pos, float scale, boolean depth, Quaternionf rotation, Font font, float width) {
+		this(text, pos, scale, depth, rotation, font, width, -1, true);
 	}
 }

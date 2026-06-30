@@ -44,6 +44,7 @@ import silence.simsool.lucent.events.impl.PacketEvent;
 import silence.simsool.lucent.general.enums.DropType;
 import silence.simsool.lucent.general.utils.Pair;
 import silence.simsool.lucent.general.utils.useful.UChat;
+import silence.simsool.lucent.general.utils.useful.UWorld;
 
 public class LucentEventRegister {
 
@@ -101,7 +102,7 @@ public class LucentEventRegister {
 
 		WorldRenderEvents.END_MAIN.register(context -> {
 			if (mc.level == null || mc.player == null) return;
-			float partialTick = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+			float partialTick = UWorld.getPartialTick();
 			LucentEvent.WORLD_RENDER_LAST.invoker().onRenderWorldLast(new LucentEvent.RenderWorldLastEvent(context, context.worldRenderer(), partialTick));
 		});
 
