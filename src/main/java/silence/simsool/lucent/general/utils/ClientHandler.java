@@ -53,7 +53,7 @@ public class ClientHandler {
 
 	public static void playSound(SoundEvent sound, float pitch, float volume) {
 		mc.schedule(() -> {
-			USound.playSound(sound, volume, pitch);
+			USound.playSound(sound, pitch, volume);
 		});
 	}
 

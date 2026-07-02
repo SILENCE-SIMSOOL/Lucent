@@ -15,7 +15,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -487,7 +486,7 @@ public class Render3D {
 	// Draw Tracer
 	// ==========================================
 	public static void drawTracer(Vec3 to, int color, boolean depth, float thickness) {
-		drawLine(getTracerSource(), to, color, depth, thickness);
+		queuedLines.add(new LineData(getTracerSource(), to, color, color, thickness, depth, true));
 	}
 
 	public static void drawTracer(Vec3 to, int color, float thickness) {
@@ -503,7 +502,7 @@ public class Render3D {
 	}
 
 	public static void drawTracer(BlockPos to, int color, boolean depth, float thickness) {
-		drawLine(getTracerSource(), getBlockCenter(to), color, depth, thickness);
+		queuedLines.add(new LineData(getTracerSource(), getBlockCenter(to), color, color, thickness, depth, true));
 	}
 
 	public static void drawTracer(BlockPos to, int color, float thickness) {
@@ -918,9 +917,10 @@ public class Render3D {
 		for (LineData line : queuedLines) {
 			submitNodeCollector.submitCustomGeometry(matrix, line.renderType(), (pose, buffer) -> {
 				Vec3 drawCamera = UWorld.getCameraPos();
-				Vec3 relativeFrom = line.from.subtract(drawCamera);
+				Vec3 fromPos = line.isTracer ? getTracerSource() : line.from;
+				Vec3 relativeFrom = fromPos.subtract(drawCamera);
 				Vector3f start = new Vector3f((float) relativeFrom.x, (float) relativeFrom.y, (float) relativeFrom.z);
-				Vec3 dir = line.to.subtract(line.from);
+				Vec3 dir = line.to.subtract(fromPos);
 				PrimitiveRenderer.renderVector(pose, buffer, start, dir, line.color1, line.color2, line.thickness);
 			});
 		}
@@ -993,11 +993,9 @@ public class Render3D {
 		return UColor.getAlpha(color) == 0xFF;
 	}
 
-	public static RenderType resolveLineRenderType(boolean depth, boolean fullyOpaque) {
-		if (depth && fullyOpaque) return RenderTypes.lines();
-		if (depth) return RenderTypes.linesTranslucent();
-		if (fullyOpaque) return LucentRenderType.LINES_ESP;
-		return LucentRenderType.LINES_TRANSLUCENT_ESP;
+	public static RenderType resolveLineRenderType(boolean depth) {
+		if (depth) return LucentRenderType.LINES_OPAQUE;
+		else return LucentRenderType.LINES_TRANSLUCENT_ESP;
 	}
 
 	public static class PrimitiveRenderer {

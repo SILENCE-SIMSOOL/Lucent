@@ -1,7 +1,6 @@
 package silence.simsool.lucent.general.models.data.render;
 
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.world.phys.AABB;
 import silence.simsool.lucent.general.utils.render.LucentRenderType;
 import silence.simsool.lucent.general.utils.render.Render3D;
@@ -24,11 +23,11 @@ public class BoxData {
 	}
 
 	public RenderType lineRenderType() {
-		boolean fullyOpaque = a >= 0.999f;
-		return Render3D.resolveLineRenderType(depth, fullyOpaque);
+		//boolean fullyOpaque = a >= 0.999f;
+		return Render3D.resolveLineRenderType(depth);
 	}
 
 	public RenderType filledRenderType() {
-		return depth ? RenderTypes.debugFilledBox() : LucentRenderType.QUADS_ESP;
+		return depth ? LucentRenderType.QUADS_OPAQUE : LucentRenderType.QUADS_ESP;
 	}
 }

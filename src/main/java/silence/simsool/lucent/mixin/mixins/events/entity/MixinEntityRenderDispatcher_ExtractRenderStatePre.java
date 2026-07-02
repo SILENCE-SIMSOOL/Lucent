@@ -27,6 +27,7 @@ public class MixinEntityRenderDispatcher_ExtractRenderStatePre {
 
 	@Inject(method = "extractEntity", at = @At("HEAD"), cancellable = true)
 	private void preExtractRenderEntity(Entity entity, float f, CallbackInfoReturnable<EntityRenderState> cir) {
+		if (entity == null) return;
 		EntityEvent.ExtractRenderStatePre event = new EntityEvent.ExtractRenderStatePre(entity, f);
 		EntityEvent.EXTRACT_RENDER_STATE_PRE.invoker().onExtractRenderStatePre(event);
 		if (event.isCanceled()) {

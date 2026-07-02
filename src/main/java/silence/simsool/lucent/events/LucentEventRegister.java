@@ -106,7 +106,7 @@ public class LucentEventRegister {
 //			LucentEvent.WORLD_RENDER_LAST.invoker().onRenderWorldLast(new LucentEvent.RenderWorldLastEvent(context, context.levelRenderer(), partialTick));
 //		});
 
-		LevelRenderEvents.AFTER_TRANSLUCENT_TERRAIN.register(context -> {
+		LevelRenderEvents.END_MAIN.register(context -> {
 			if (mc.level == null || mc.player == null) return;
 			float partialTick = UWorld.getPartialTick();
 			LucentEvent.WORLD_RENDER.invoker().onRenderWorld(new LucentEvent.RenderWorldEvent(context, context.levelRenderer(), partialTick));

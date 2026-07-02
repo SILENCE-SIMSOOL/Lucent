@@ -151,11 +151,11 @@ public class TextBox extends UIWidget {
 			} else if (key == GLFW.GLFW_KEY_C) {
 				String selText = getSelectedText();
 				if (!selText.isEmpty()) {
-					UDesktop.setClipboardString(selText);
+					UDesktop.setClipboard(selText);
 				}
 				return true;
 			} else if (key == GLFW.GLFW_KEY_V) {
-				String clipboard = UDesktop.getClipboardString();
+				String clipboard = UDesktop.getClipboard();
 				if (clipboard != null) {
 					writeText(clipboard);
 				}
@@ -163,7 +163,7 @@ public class TextBox extends UIWidget {
 			} else if (key == GLFW.GLFW_KEY_X) {
 				String selText = getSelectedText();
 				if (!selText.isEmpty()) {
-					UDesktop.setClipboardString(selText);
+					UDesktop.setClipboard(selText);
 					writeText("");
 				}
 				return true;

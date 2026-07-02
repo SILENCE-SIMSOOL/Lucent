@@ -159,12 +159,12 @@ public class UDesktop {
 		}
 	}
 
-	public static String getClipboardString() {
+	public static String getClipboard() {
 		return mc.keyboardHandler.getClipboard();
 	}
 
-	public static void setClipboardString(String str) {
-		mc.keyboardHandler.setClipboard(str);
+	public static void setClipboard(String text) {
+		mc.keyboardHandler.setClipboard(text);
 	}
 
 	public static boolean copyToClipboard(String text) {
