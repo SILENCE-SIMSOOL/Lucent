@@ -80,7 +80,6 @@ public abstract class Mod {
 	public void onRenderTooltip(GUIEvent.TooltipEvent event) {}
 
 	public void onRenderEntity(EntityEvent.RenderEntityAllowEvent event) {}
-	public void onRenderEntityColor(EntityEvent.RenderEntityColorEvent event) {}
 	public void onNameChange(EntityEvent.NameChangeEvent event) {}
 	public void onExtractRenderStatePre(EntityEvent.ExtractRenderStatePre event) {}
 	public void onExtractRenderStatePost(EntityEvent.ExtractRenderStatePost event) {}

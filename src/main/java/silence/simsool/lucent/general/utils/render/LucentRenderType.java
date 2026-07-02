@@ -9,7 +9,7 @@ public class LucentRenderType {
 
 	public static final RenderType LINES_OPAQUE = RenderType.create(
 		"lines-opaque",
-		RenderSetup.builder(LucentRenderPipelines.LINES_OPAQUE)
+		RenderSetup.builder(LucentRenderPipelines.LINES)
 			.setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
 			.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
 			.createRenderSetup()
@@ -39,14 +39,14 @@ public class LucentRenderType {
 
 	public static final RenderType QUADS_OPAQUE = RenderType.create(
 		"quads-opaque",
-		RenderSetup.builder(LucentRenderPipelines.QUADS_OPAQUE)
+		RenderSetup.builder(LucentRenderPipelines.FILLED)
 			.setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
 			.createRenderSetup()
 	);
 
 	public static final RenderType QUADS_TRANSLUCENT = RenderType.create(
 		"quads-translucent",
-		RenderSetup.builder(LucentRenderPipelines.QUADS_TRANSLUCENT)
+		RenderSetup.builder(LucentRenderPipelines.FILLED_TRANSLUCENT)
 			.sortOnUpload()
 			.setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
 			.createRenderSetup()
@@ -54,7 +54,7 @@ public class LucentRenderType {
 
 	public static final RenderType QUADS_ESP = RenderType.create(
 		"quads-esp",
-		RenderSetup.builder(LucentRenderPipelines.QUADS_ESP)
+		RenderSetup.builder(LucentRenderPipelines.FILLED_ESP)
 			.sortOnUpload()
 			.setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
 			.createRenderSetup()
@@ -62,7 +62,7 @@ public class LucentRenderType {
 
 	public static final RenderType QUADS_TRANSLUCENT_ESP = RenderType.create(
 		"quads-translucent-esp",
-		RenderSetup.builder(LucentRenderPipelines.QUADS_TRANSLUCENT_ESP)
+		RenderSetup.builder(LucentRenderPipelines.FILLED_TRANSLUCENT_ESP)
 			.sortOnUpload()
 			.setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
 			.createRenderSetup()

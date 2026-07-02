@@ -7,12 +7,16 @@ import silence.simsool.lucent.general.utils.render.Render3D;
 import silence.simsool.lucent.ui.utils.UColor;
 
 public class BoxData {
-	public final AABB aabb;
-	public final float r, g, b, a;
-	public final float thickness;
-	public final boolean depth;
+	public AABB aabb;
+	public float r, g, b, a;
+	public float thickness;
+	public boolean depth;
 
 	public BoxData(AABB aabb, int color, float thickness, boolean depth) {
+		set(aabb, color, thickness, depth);
+	}
+
+	public void set(AABB aabb, int color, float thickness, boolean depth) {
 		this.aabb = aabb;
 		this.r = UColor.getRedF(color);
 		this.g = UColor.getGreenF(color);

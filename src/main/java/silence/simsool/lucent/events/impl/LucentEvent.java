@@ -4,6 +4,7 @@ import static net.fabricmc.fabric.api.event.EventFactory.createArrayBacked;
 
 import java.util.ArrayList;
 
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelExtractionContext;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.fabricmc.fabric.api.event.Event;
 import net.minecraft.client.particle.Particle;
@@ -492,11 +493,11 @@ public class LucentEvent {
 	}
 
 	public static class RenderWorldEvent {
-		public final LevelRenderContext context;
+		public final LevelExtractionContext context;
 		public final LevelRenderer handler;
 		public final float partialTick;
 
-		public RenderWorldEvent(LevelRenderContext context, LevelRenderer handler, float partialTick) {
+		public RenderWorldEvent(LevelExtractionContext context, LevelRenderer handler, float partialTick) {
 			this.context = context;
 			this.handler = handler;
 			this.partialTick = partialTick;

@@ -7,6 +7,8 @@ import java.net.http.HttpResponse;
 
 import org.lwjgl.glfw.GLFW;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vulkan.VulkanDevice;
 import com.mojang.brigadier.Command;
 
 import net.fabricmc.api.ClientModInitializer;
@@ -33,6 +35,7 @@ import silence.simsool.lucent.general.utils.render.RoundRectPIPRenderer;
 import silence.simsool.lucent.general.utils.useful.UChat;
 import silence.simsool.lucent.general.utils.useful.ULog;
 import silence.simsool.lucent.hud.HUDManager;
+import silence.simsool.lucent.mixin.accessors.GpuDeviceAccessor;
 import silence.simsool.lucent.ui.manager.LucentResourceManager;
 import silence.simsool.lucent.ui.utils.nvg.Fonts;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
@@ -106,10 +109,10 @@ public class Lucent implements ClientModInitializer {
 		});
 
 		LucentEvent.SERVER_JOIN_EVENT.register(() -> {
-			if (GLFW.glfwExtensionSupported("VK_KHR_surface")) {
+			if (((GpuDeviceAccessor) RenderSystem.getDevice()).getBackend() instanceof VulkanDevice) {
 				if (warningVulkan) return;
 				warningVulkan = true;
-				UChat.chat("\n §cLucent does not currently support Vulkan. Please go to Minecraft Video Settings, change the Graphics API to Default or OpenGL, and restart the game.");
+				UChat.chat("\n §cLucent does not currently support Vulkan. Please go to Minecraft Video Settings, change the Graphics API to Default or OpenGL, and restart the game.\n");
 			}
 		});
 

@@ -17,6 +17,7 @@ import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelExtractionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
@@ -94,11 +95,11 @@ public class LucentEventRegister {
 			}
 		});
 
-//		LevelExtractionEvents.END_EXTRACTION.register(context -> {
-//			if (mc.level == null || mc.player == null) return;
-//			float partialTick = context.deltaTracker().getGameTimeDeltaPartialTick(false);
-//			LucentEvent.WORLD_RENDER.invoker().onRenderWorld(new LucentEvent.RenderWorldEvent(context, context.levelRenderer(), partialTick));
-//		});
+		LevelExtractionEvents.END_EXTRACTION.register(context -> {
+			if (mc.level == null || mc.player == null) return;
+			float partialTick = context.deltaTracker().getGameTimeDeltaPartialTick(false);
+			LucentEvent.WORLD_RENDER.invoker().onRenderWorld(new LucentEvent.RenderWorldEvent(context, context.levelRenderer(), partialTick));
+		});
 //
 //		LevelRenderEvents.END_MAIN.register(context -> {
 //			if (mc.level == null || mc.player == null) return;
@@ -106,10 +107,10 @@ public class LucentEventRegister {
 //			LucentEvent.WORLD_RENDER_LAST.invoker().onRenderWorldLast(new LucentEvent.RenderWorldLastEvent(context, context.levelRenderer(), partialTick));
 //		});
 
-		LevelRenderEvents.END_MAIN.register(context -> {
+		LevelRenderEvents.AFTER_TRANSLUCENT_TERRAIN.register(context -> {
 			if (mc.level == null || mc.player == null) return;
 			float partialTick = UWorld.getPartialTick();
-			LucentEvent.WORLD_RENDER.invoker().onRenderWorld(new LucentEvent.RenderWorldEvent(context, context.levelRenderer(), partialTick));
+			//LucentEvent.WORLD_RENDER.invoker().onRenderWorld(new LucentEvent.RenderWorldEvent(context, context.levelRenderer(), partialTick));
 			LucentEvent.WORLD_RENDER_LAST.invoker().onRenderWorldLast(new LucentEvent.RenderWorldLastEvent(context, context.levelRenderer(), partialTick));
 		});
 
