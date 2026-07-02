@@ -13,25 +13,68 @@ import silence.simsool.lucent.Lucent;
 
 public class LucentRenderPipelines {
 
+	public static final RenderPipeline LINES_OPAQUE = RenderPipelines.register(
+		RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
+			.withLocation(Lucent.ID + "/lines_opaque")
+			.withCull(false)
+			.build()
+	);
+
+	public static final RenderPipeline LINES_TRANSLUCENT = RenderPipelines.register(
+		RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
+			.withLocation(Lucent.ID + "/lines_translucent")
+			.withCull(false)
+			.withBlend(BlendFunction.TRANSLUCENT)
+			.build()
+	);
+
 	public static final RenderPipeline LINES_ESP = RenderPipelines.register(
 		RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
-			.withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
 			.withLocation(Lucent.ID + "/lines_esp")
+			.withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+			.withCull(false)
 			.build()
 	);
 
 	public static final RenderPipeline LINES_TRANSLUCENT_ESP = RenderPipelines.register(
 		RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
-			.withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
 			.withLocation(Lucent.ID + "/lines_translucent_esp")
+			.withBlend(BlendFunction.TRANSLUCENT)
+			.withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+			.withCull(false)
 			.withDepthWrite(false)
+			.build()
+	);
+
+	public static final RenderPipeline QUADS_OPAQUE = RenderPipelines.register(
+		RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
+			.withLocation(Lucent.ID + "/quads_opaque")
+			.withCull(false)
+			.build()
+	);
+
+	public static final RenderPipeline QUADS_TRANSLUCENT = RenderPipelines.register(
+		RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
+			.withLocation(Lucent.ID + "/quads_translucent")
+			.withBlend(BlendFunction.TRANSLUCENT)
+			.withCull(true)
 			.build()
 	);
 
 	public static final RenderPipeline QUADS_ESP = RenderPipelines.register(
 		RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
-			.withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
 			.withLocation(Lucent.ID + "/quads_esp")
+			.withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+			.withCull(false)
+			.build()
+	);
+
+	public static final RenderPipeline QUADS_TRANSLUCENT_ESP = RenderPipelines.register(
+		RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
+			.withLocation(Lucent.ID + "/quads_translucent_esp")
+			.withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+			.withBlend(BlendFunction.TRANSLUCENT)
+			.withCull(false)
 			.build()
 	);
 
@@ -42,7 +85,7 @@ public class LucentRenderPipelines {
 			.withVertexShader(Identifier.fromNamespaceAndPath(Lucent.ID, "core/round_rect"))
 			.withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS)
 			.withUniform("u", UniformType.UNIFORM_BUFFER)
-			.withBlend(BlendFunction.TRANSLUCENT_PREMULTIPLIED_ALPHA)
+			.withBlend(BlendFunction.TRANSLUCENT)
 			.build()
 	);
 

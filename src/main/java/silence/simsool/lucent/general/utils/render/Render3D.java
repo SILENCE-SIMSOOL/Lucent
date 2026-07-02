@@ -12,11 +12,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.client.Camera;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
@@ -29,7 +29,6 @@ import silence.simsool.lucent.general.models.data.render.BeaconBeamData;
 import silence.simsool.lucent.general.models.data.render.BoxData;
 import silence.simsool.lucent.general.models.data.render.LineData;
 import silence.simsool.lucent.general.models.data.render.TextData;
-import silence.simsool.lucent.general.utils.useful.URender;
 import silence.simsool.lucent.general.utils.useful.UWorld;
 import silence.simsool.lucent.mixin.accessors.BeaconBeamAccessor;
 import silence.simsool.lucent.ui.utils.UColor;
@@ -487,7 +486,7 @@ public class Render3D {
 	// Draw Tracer
 	// ==========================================
 	public static void drawTracer(Vec3 to, int color, boolean depth, float thickness) {
-		drawLine(getTracerSource(), to, color, depth, thickness);
+		queuedLines.add(new LineData(getTracerSource(), to, color, color, thickness, depth, true));
 	}
 
 	public static void drawTracer(Vec3 to, int color, float thickness) {
@@ -503,7 +502,7 @@ public class Render3D {
 	}
 
 	public static void drawTracer(BlockPos to, int color, boolean depth, float thickness) {
-		drawLine(getTracerSource(), getBlockCenter(to), color, depth, thickness);
+		queuedLines.add(new LineData(getTracerSource(), getBlockCenter(to), color, color, thickness, depth, true));
 	}
 
 	public static void drawTracer(BlockPos to, int color, float thickness) {
@@ -707,7 +706,8 @@ public class Render3D {
 	}
 
 	private static Vec3 getTracerSource() {
-		return URender.getRenderPos(mc.player).add(mc.player.getForward().add(0.0, mc.player.getEyeHeight(), 0.0));
+		Camera camera = UWorld.getCamera();
+		return camera.position().add(Vec3.directionFromRotation(camera.xRot(), camera.yRot()));
 	}
 
 	private static void renderQueuedLinesAndWireBoxes(PoseStack matrix, MultiBufferSource.BufferSource bufferSource) {
@@ -716,8 +716,9 @@ public class Render3D {
 
 		for (LineData line : queuedLines) {
 			VertexConsumer buffer = bufferSource.getBuffer(line.renderType());
-			Vector3f start = new Vector3f((float) line.from.x, (float) line.from.y, (float) line.from.z);
-			Vec3 dir = line.to.subtract(line.from);
+			Vec3 fromPos = line.isTracer ? getTracerSource() : line.from;
+			Vector3f start = new Vector3f((float) fromPos.x, (float) fromPos.y, (float) fromPos.z);
+			Vec3 dir = line.to.subtract(fromPos);
 			PrimitiveRenderer.renderVector(last, buffer, start, dir, line.color1, line.color2, line.thickness);
 		}
 
@@ -783,11 +784,9 @@ public class Render3D {
 		return UColor.getAlpha(color) == 0xFF;
 	}
 
-	public static RenderType resolveLineRenderType(boolean depth, boolean fullyOpaque) {
-		if (depth && fullyOpaque) return RenderTypes.lines();
-		if (depth) return RenderTypes.linesTranslucent();
-		if (fullyOpaque) return LucentRenderType.LINES_ESP;
-		return LucentRenderType.LINES_TRANSLUCENT_ESP;
+	public static RenderType resolveLineRenderType(boolean depth) {
+		if (depth) return LucentRenderType.LINES_OPAQUE;
+		else return LucentRenderType.LINES_TRANSLUCENT_ESP;
 	}
 
 	public static class PrimitiveRenderer {

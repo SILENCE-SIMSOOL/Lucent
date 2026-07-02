@@ -16,6 +16,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.main.GameConfig;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -42,24 +43,17 @@ public class MixinMinecraft {
 		LucentEvent.RESOURCES_READY_EVENT.invoker().onResourcesReady();
 	}
 
-	@Inject(
-		method = "startUseItem",
-		at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;interactAt(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/EntityHitResult;Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/InteractionResult;"),
-		cancellable = true
-	)
+	@Inject(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;interactAt(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/EntityHitResult;Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/InteractionResult;"), cancellable = true)
 	private void onEntityInteract(CallbackInfo ci, @Local Entity entity) {
 		EntityEvent.EntityInteractEvent event = new EntityEvent.EntityInteractEvent(entity);
 		EntityEvent.ENTITY_INTERACT_EVENT.invoker().onEntityInteract(event);
 		if (event.isCanceled()) ci.cancel();
 	}
 
-	@WrapOperation(
-		method = "startUseItem",
-		at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;useItemOn(Lnet/minecraft/client/player/LocalPlayer;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;")
-	)
+	@WrapOperation(method = "startUseItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;useItemOn(Lnet/minecraft/client/player/LocalPlayer;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;"))
 	private InteractionResult onBlockInteract(MultiPlayerGameMode instance, LocalPlayer localPlayer, InteractionHand interactionHand, BlockHitResult blockHitResult, Operation<InteractionResult> original) {
 		ItemStack item = localPlayer.getItemInHand(interactionHand);
-		net.minecraft.core.BlockPos pos = blockHitResult.getBlockPos();
+		BlockPos pos = blockHitResult.getBlockPos();
 		LucentEvent.BlockInteractEvent event = new LucentEvent.BlockInteractEvent(item, pos);
 		LucentEvent.BLOCK_INTERACT_EVENT.invoker().onBlockInteract(event);
 		if (event.isCanceled()) return InteractionResult.PASS;
