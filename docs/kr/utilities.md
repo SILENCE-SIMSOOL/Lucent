@@ -155,6 +155,7 @@ ARGB 정수형 색상을 자유자재로 다루고 변환하는 클래스입니�
 - **[UMouse](../../src/main/java/silence/simsool/lucent/general/utils/useful/UMouse.java)**: 마우스 커서의 좌표 획득(물리 좌표 및 GUI 스케일 반영 좌표) 및 특정 다각형 영역에 호버 상태인지 검사.
 - **[UObject](../../src/main/java/silence/simsool/lucent/general/utils/useful/UObject.java)**: Null 검사 보조 및 객체의 안전한 캐스팅.
 - **[UPacket](../../src/main/java/silence/simsool/lucent/general/utils/useful/UPacket.java)**: 서버로 커스텀 연결 패킷 송신.
+- **[UPlayer](../../src/main/java/silence/simsool/lucent/general/utils/useful/UPlayer.java)**: 로컬 플레이어 및 타 플레이어의 정보(이름, 손에 든 아이템 등) 획득.
 - **[URender](../../src/main/java/silence/simsool/lucent/general/utils/useful/URender.java)**: NanoVG API를 이용하여 공통 시각 요소(예: 토글 버튼)를 정적 위치에 빠르게 그리기.
 - **[UScreen](../../src/main/java/silence/simsool/lucent/general/utils/useful/UScreen.java)**: 안전하게 특정 GUI 화면으로 스크린 전환.
 - **[USlot](../../src/main/java/silence/simsool/lucent/general/utils/useful/USlot.java)**: 마인크래프트 컨테이너 슬롯 상의 데이터 접근 보조.

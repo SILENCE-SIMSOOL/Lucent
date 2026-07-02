@@ -155,6 +155,7 @@ Convenient shortcuts prefixing standard API bindings:
 - **[UMouse](../../src/main/java/silence/simsool/lucent/general/utils/useful/UMouse.java)**: Retrieves mouse coordinates (both raw and scaled), and performs hover boundary checks.
 - **[UObject](../../src/main/java/silence/simsool/lucent/general/utils/useful/UObject.java)**: Safe null operations and casting helpers.
 - **[UPacket](../../src/main/java/silence/simsool/lucent/general/utils/useful/UPacket.java)**: Sends client-to-server connection packets.
+- **[UPlayer](../../src/main/java/silence/simsool/lucent/general/utils/useful/UPlayer.java)**: Interacts with the local client player.
 - **[URender](../../src/main/java/silence/simsool/lucent/general/utils/useful/URender.java)**: Specialized helper that uses NanoVG to draw components (e.g. `drawToggleButton`).
 - **[UScreen](../../src/main/java/silence/simsool/lucent/general/utils/useful/UScreen.java)**: Opens screen instances safely.
 - **[USlot](../../src/main/java/silence/simsool/lucent/general/utils/useful/USlot.java)**: Interacts with slot items in container screens.
