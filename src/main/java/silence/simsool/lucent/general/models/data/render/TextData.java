@@ -6,17 +6,25 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.world.phys.Vec3;
 
 public class TextData {
-	public final String text;
-	public final Vec3 pos;
-	public final float scale;
-	public final boolean depth;
-	public final Quaternionf cameraRotation;
-	public final Font font;
-	public final float textWidth;
-	public final int color;
-	public final boolean shadow;
+	public String text;
+	public Vec3 pos;
+	public float scale;
+	public boolean depth;
+	public Quaternionf cameraRotation;
+	public Font font;
+	public float textWidth;
+	public int color;
+	public boolean shadow;
 
 	public TextData(String text, Vec3 pos, float scale, boolean depth, Quaternionf rotation, Font font, float width, int color, boolean shadow) {
+		set(text, pos, scale, depth, rotation, font, width, color, shadow);
+	}
+
+	public TextData(String text, Vec3 pos, float scale, boolean depth, Quaternionf rotation, Font font, float width) {
+		set(text, pos, scale, depth, rotation, font, width, -1, true);
+	}
+
+	public void set(String text, Vec3 pos, float scale, boolean depth, Quaternionf rotation, Font font, float width, int color, boolean shadow) {
 		this.text = text;
 		this.pos = pos;
 		this.scale = scale;
@@ -26,9 +34,5 @@ public class TextData {
 		this.textWidth = width;
 		this.color = color;
 		this.shadow = shadow;
-	}
-
-	public TextData(String text, Vec3 pos, float scale, boolean depth, Quaternionf rotation, Font font, float width) {
-		this(text, pos, scale, depth, rotation, font, width, -1, true);
 	}
 }

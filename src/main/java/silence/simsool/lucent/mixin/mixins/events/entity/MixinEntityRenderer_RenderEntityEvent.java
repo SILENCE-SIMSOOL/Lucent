@@ -26,7 +26,6 @@ public abstract class MixinEntityRenderer_RenderEntityEvent<T extends Entity> {
 	@Inject(method = "createRenderState(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;", at = @At("TAIL"))
 	private void postExtractRenderEntity(Entity entity, float f, CallbackInfoReturnable<EntityRenderState> cir, @Local EntityRenderState state) {
 		if (entity == null) return;
-		EntityEvent.RENDER_STATE_ENTITIES.put(state, entity);
 		EntityEvent.ExtractRenderStatePost event = new EntityEvent.ExtractRenderStatePost(entity, state, f);
 		EntityEvent.EXTRACT_RENDER_STATE_POST.invoker().onExtractRenderStatePost(event);
 	}

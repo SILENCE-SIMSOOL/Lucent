@@ -447,10 +447,6 @@ public class ModManager {
 			if (module.isEnabled) module.onRenderEntity(event);
 		});
 
-		EntityEvent.RENDER_ENTITY_COLOR_EVENT.register(event -> {
-			if (module.isEnabled) module.onRenderEntityColor(event);
-		});
-
 		EntityEvent.EXTRACT_RENDER_STATE_PRE.register(event -> {
 			if (module.isEnabled) module.onExtractRenderStatePre(event);
 		});

@@ -3,8 +3,6 @@ package silence.simsool.lucent.events.impl;
 import static net.fabricmc.fabric.api.event.EventFactory.createArrayBacked;
 
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
@@ -29,15 +27,12 @@ import silence.simsool.lucent.general.models.interfaces.events.entityevent.IEnti
 import silence.simsool.lucent.general.models.interfaces.events.entityevent.IExtractRenderStatePostEvent;
 import silence.simsool.lucent.general.models.interfaces.events.entityevent.IExtractRenderStatePreEvent;
 import silence.simsool.lucent.general.models.interfaces.events.entityevent.IRenderEntityAllowEvent;
-import silence.simsool.lucent.general.models.interfaces.events.entityevent.IRenderEntityColorEvent;
 import silence.simsool.lucent.general.models.interfaces.events.entityevent.IRenderEntityPreEvent;
 import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IEntityDataEvent;
 import silence.simsool.lucent.general.models.interfaces.events.lucentevent.INameChangeEvent;
 import silence.simsool.lucent.general.utils.Pair;
 
 public final class EntityEvent {
-
-	public static final Map<EntityRenderState, Entity> RENDER_STATE_ENTITIES = new WeakHashMap<>();
 
 	public static final Event<IEntityJoinEvent> ENTITY_JOIN_EVENT = createArrayBacked(
 		IEntityJoinEvent.class, listeners -> event -> {
@@ -76,14 +71,6 @@ public final class EntityEvent {
 		IRenderEntityPreEvent.class, listeners -> event -> {
 			for (IRenderEntityPreEvent listener : listeners) {
 				listener.onRenderEntity(event);
-			}
-		}
-	);
-
-	public static final Event<IRenderEntityColorEvent> RENDER_ENTITY_COLOR_EVENT = createArrayBacked(
-		IRenderEntityColorEvent.class, listeners -> event -> {
-			for (IRenderEntityColorEvent listener : listeners) {
-				listener.onRenderEntityColor(event);
 			}
 		}
 	);
@@ -300,29 +287,6 @@ public final class EntityEvent {
 
 		public boolean isCanceled() {
 			return canceled;
-		}
-	}
-
-	public static class RenderEntityColorEvent {
-		public final Entity entity;
-		public final EntityRenderState state;
-		private int color = 0;
-
-		public RenderEntityColorEvent(Entity entity, EntityRenderState state) {
-			this.entity = entity;
-			this.state = state;
-		}
-
-		public void setColor(int color) {
-			this.color = color;
-		}
-
-		public int getColor() {
-			return color;
-		}
-
-		public boolean hasColor() {
-			return color != 0;
 		}
 	}
 

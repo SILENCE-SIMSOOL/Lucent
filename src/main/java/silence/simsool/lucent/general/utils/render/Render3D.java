@@ -6,6 +6,7 @@ import java.awt.Color;
 import java.util.List;
 
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -40,6 +41,96 @@ public class Render3D {
 	private static final List<BoxData> queuedWireBoxes = new ObjectArrayList<>();
 	private static final List<TextData> queuedTexts = new ObjectArrayList<>();
 	private static final List<BeaconBeamData> queuedBeaconBeams = new ObjectArrayList<>();
+	private static final List<CircleData> queuedCircles = new ObjectArrayList<>();
+
+	// Pools
+	private static final List<LineData> linePool = new ObjectArrayList<>();
+	private static final List<BoxData> boxPool = new ObjectArrayList<>();
+	private static final List<TextData> textPool = new ObjectArrayList<>();
+	private static final List<BeaconBeamData> beaconBeamPool = new ObjectArrayList<>();
+	private static final List<CircleData> circlePool = new ObjectArrayList<>();
+
+	private static int linePoolIndex = 0;
+	private static int boxPoolIndex = 0;
+	private static int textPoolIndex = 0;
+	private static int beaconBeamPoolIndex = 0;
+	private static int circlePoolIndex = 0;
+
+	// Lookup tables for Circle Rendering
+	private static final float[] COS_TABLE = new float[181];
+	private static final float[] SIN_TABLE = new float[181];
+	static {
+		for (int i = 0; i <= 180; i++) {
+			double rad = Math.toRadians(i * 2);
+			COS_TABLE[i] = (float) Math.cos(rad);
+			SIN_TABLE[i] = (float) Math.sin(rad);
+		}
+	}
+
+	private static LineData getOrCreateLine(Vec3 from, Vec3 to, int color1, int color2, float thickness, boolean depth, boolean isTracer) {
+		if (linePoolIndex < linePool.size()) {
+			LineData data = linePool.get(linePoolIndex++);
+			data.set(from, to, color1, color2, thickness, depth, isTracer);
+			return data;
+		} else {
+			LineData data = new LineData(from, to, color1, color2, thickness, depth, isTracer);
+			linePool.add(data);
+			linePoolIndex++;
+			return data;
+		}
+	}
+
+	private static BoxData getOrCreateBox(AABB aabb, int color, float thickness, boolean depth) {
+		if (boxPoolIndex < boxPool.size()) {
+			BoxData data = boxPool.get(boxPoolIndex++);
+			data.set(aabb, color, thickness, depth);
+			return data;
+		} else {
+			BoxData data = new BoxData(aabb, color, thickness, depth);
+			boxPool.add(data);
+			boxPoolIndex++;
+			return data;
+		}
+	}
+
+	private static TextData getOrCreateText(String text, Vec3 pos, float scale, boolean depth, Quaternionf rotation, Font font, float width, int color, boolean shadow) {
+		if (textPoolIndex < textPool.size()) {
+			TextData data = textPool.get(textPoolIndex++);
+			data.set(text, pos, scale, depth, rotation, font, width, color, shadow);
+			return data;
+		} else {
+			TextData data = new TextData(text, pos, scale, depth, rotation, font, width, color, shadow);
+			textPool.add(data);
+			textPoolIndex++;
+			return data;
+		}
+	}
+
+	private static BeaconBeamData getOrCreateBeaconBeam(Vec3 pos, int color, float partialTicks, long gameTime, boolean isScoping) {
+		if (beaconBeamPoolIndex < beaconBeamPool.size()) {
+			BeaconBeamData data = beaconBeamPool.get(beaconBeamPoolIndex++);
+			data.set(pos, color, partialTicks, gameTime, isScoping);
+			return data;
+		} else {
+			BeaconBeamData data = new BeaconBeamData(pos, color, partialTicks, gameTime, isScoping);
+			beaconBeamPool.add(data);
+			beaconBeamPoolIndex++;
+			return data;
+		}
+	}
+
+	private static CircleData getOrCreateCircle(Vec3 pos, float radius, float thickness, int color, boolean depth, boolean filled) {
+		if (circlePoolIndex < circlePool.size()) {
+			CircleData data = circlePool.get(circlePoolIndex++);
+			data.set(pos, radius, thickness, color, depth, filled);
+			return data;
+		} else {
+			CircleData data = new CircleData(pos, radius, thickness, color, depth, filled);
+			circlePool.add(data);
+			circlePoolIndex++;
+			return data;
+		}
+	}
 
 	private static final Identifier BEAM_TEXTURE = Identifier.withDefaultNamespace("textures/entity/beacon_beam.png");
 
@@ -64,6 +155,7 @@ public class Render3D {
 
 			renderQueuedLinesAndWireBoxes(matrix, bufferSource);
 			renderQueuedFilledBoxes(matrix, bufferSource);
+			renderQueuedCircles(matrix, bufferSource);
 
 			matrix.popPose();
 
@@ -121,7 +213,7 @@ public class Render3D {
 	// Draw Box
 	// ==========================================
 	public static void drawBox(AABB aabb, int color, boolean depth) {
-		queuedFilledBoxes.add(new BoxData(aabb, color, 3f, depth));
+		queuedFilledBoxes.add(getOrCreateBox(aabb, color, 3f, depth));
 	}
 
 	public static void drawBox(AABB aabb, int color) {
@@ -172,7 +264,7 @@ public class Render3D {
 	// Draw Box Line
 	// ==========================================
 	public static void drawBoxLine(AABB aabb, int color, float thickness, boolean depth) {
-		queuedWireBoxes.add(new BoxData(aabb, color, thickness, depth));
+		queuedWireBoxes.add(getOrCreateBox(aabb, color, thickness, depth));
 	}
 
 	public static void drawBoxLine(AABB aabb, int color, float thickness) {
@@ -427,7 +519,7 @@ public class Render3D {
 	// Draw Line
 	// ==========================================
 	public static void drawLine(Vec3 from, Vec3 to, int color1, int color2, boolean depth, float thickness) {
-		queuedLines.add(new LineData(from, to, color1, color2, thickness, depth));
+		queuedLines.add(getOrCreateLine(from, to, color1, color2, thickness, depth, false));
 	}
 
 	public static void drawLine(Vec3 from, Vec3 to, int color, boolean depth, float thickness) {
@@ -486,7 +578,7 @@ public class Render3D {
 	// Draw Tracer
 	// ==========================================
 	public static void drawTracer(Vec3 to, int color, boolean depth, float thickness) {
-		queuedLines.add(new LineData(getTracerSource(), to, color, color, thickness, depth, true));
+		queuedLines.add(getOrCreateLine(getTracerSource(), to, color, color, thickness, depth, true));
 	}
 
 	public static void drawTracer(Vec3 to, int color, float thickness) {
@@ -502,7 +594,7 @@ public class Render3D {
 	}
 
 	public static void drawTracer(BlockPos to, int color, boolean depth, float thickness) {
-		queuedLines.add(new LineData(getTracerSource(), getBlockCenter(to), color, color, thickness, depth, true));
+		queuedLines.add(getOrCreateLine(getTracerSource(), getBlockCenter(to), color, color, thickness, depth, true));
 	}
 
 	public static void drawTracer(BlockPos to, int color, float thickness) {
@@ -546,7 +638,7 @@ public class Render3D {
 
 	public static void drawText(String text, Vec3 pos, float scale, int color, boolean depth, boolean shadow) {
 		Font font = mc.font;
-		queuedTexts.add(new TextData(text, pos, scale, depth, UWorld.getCamera().rotation(), font, font.width(text), color, shadow));
+		queuedTexts.add(getOrCreateText(text, pos, scale, depth, UWorld.getCamera().rotation(), font, font.width(text), color, shadow));
 	}
 
 	public static void drawText(String text, Vec3 pos, float scale, int color, boolean depth) {
@@ -594,6 +686,79 @@ public class Render3D {
 	}
 
 	// ==========================================
+	// Draw Circle
+	// ==========================================
+	public static void drawCircle(Vec3 pos, float radius, int color, boolean depth) {
+		queuedCircles.add(getOrCreateCircle(pos, radius, 1.0f, color, depth, true));
+	}
+
+	public static void drawCircle(Vec3 pos, float radius, int color) {
+		drawCircle(pos, radius, color, true);
+	}
+
+	public static void drawCircle(Vec3 pos, float radius, Color color, boolean depth) {
+		drawCircle(pos, radius, color.getRGB(), depth);
+	}
+
+	public static void drawCircle(Vec3 pos, float radius, Color color) {
+		drawCircle(pos, radius, color.getRGB(), true);
+	}
+
+	public static void drawCircle(BlockPos pos, float radius, int color, boolean depth) {
+		drawCircle(
+			new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5),
+			radius, color, depth
+		);
+	}
+
+	public static void drawCircle(BlockPos pos, float radius, int color) {
+		drawCircle(pos, radius, color, true);
+	}
+
+	public static void drawCircle(BlockPos pos, float radius, Color color, boolean depth) {
+		drawCircle(pos, radius, color.getRGB(), depth);
+	}
+
+	public static void drawCircle(BlockPos pos, float radius, Color color) {
+		drawCircle(pos, radius, color.getRGB(), true);
+	}
+
+	public static void drawCircleLine(Vec3 pos, float radius, float thickness, int color, boolean depth) {
+		queuedCircles.add(getOrCreateCircle(pos, radius, thickness, color, depth, false));
+	}
+
+	public static void drawCircleLine(Vec3 pos, float radius, float thickness, int color) {
+		drawCircleLine(pos, radius, thickness, color, true);
+	}
+
+	public static void drawCircleLine(Vec3 pos, float radius, float thickness, Color color, boolean depth) {
+		drawCircleLine(pos, radius, thickness, color.getRGB(), depth);
+	}
+
+	public static void drawCircleLine(Vec3 pos, float radius, float thickness, Color color) {
+		drawCircleLine(pos, radius, thickness, color.getRGB(), true);
+	}
+
+	public static void drawCircleLine(BlockPos pos, float radius, float thickness, int color, boolean depth) {
+		drawCircleLine(
+			new Vec3(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5),
+			radius, thickness, color, depth
+		);
+	}
+
+	public static void drawCircleLine(BlockPos pos, float radius, float thickness, int color) {
+		drawCircleLine(pos, radius, thickness, color, true);
+	}
+
+	public static void drawCircleLine(BlockPos pos, float radius, float thickness, Color color, boolean depth) {
+		drawCircleLine(pos, radius, thickness, color.getRGB(), depth);
+	}
+
+	public static void drawCircleLine(BlockPos pos, float radius, float thickness, Color color) {
+		drawCircleLine(pos, radius, thickness, color.getRGB(), true);
+	}
+
+	// ==========================================
 	// Draw Cylinder
 	// ==========================================
 	public static void drawCylinder(Vec3 center, float radius, float height, int color, int segments, float thickness, boolean depth) {
@@ -613,9 +778,9 @@ public class Render3D {
 			Vec3 p1Bottom = center.add(x1, 0, z1);
 			Vec3 p2Bottom = center.add(x2, 0, z2);
 
-			queuedLines.add(new LineData(p1Top, p2Top, color, color, thickness, depth));
-			queuedLines.add(new LineData(p1Bottom, p2Bottom, color, color, thickness, depth));
-			queuedLines.add(new LineData(p1Bottom, p1Top, color, color, thickness, depth));
+			queuedLines.add(getOrCreateLine(p1Top, p2Top, color, color, thickness, depth, false));
+			queuedLines.add(getOrCreateLine(p1Bottom, p2Bottom, color, color, thickness, depth, false));
+			queuedLines.add(getOrCreateLine(p1Bottom, p1Top, color, color, thickness, depth, false));
 		}
 	}
 
@@ -651,7 +816,7 @@ public class Render3D {
 	// Draw Beacon Beam
 	// ==========================================
 	public static void drawBeaconBeam(Vec3 pos, int color, float partialTicks, long gameTime, boolean isScoping) {
-		queuedBeaconBeams.add(new BeaconBeamData(pos, color, partialTicks, gameTime, isScoping));
+		queuedBeaconBeams.add(getOrCreateBeaconBeam(pos, color, partialTicks, gameTime, isScoping));
 	}
 
 	public static void drawBeaconBeam(Vec3 pos, int color, boolean isScoping) {
@@ -699,6 +864,13 @@ public class Render3D {
 		queuedWireBoxes.clear();
 		queuedTexts.clear();
 		queuedBeaconBeams.clear();
+		queuedCircles.clear();
+
+		linePoolIndex = 0;
+		boxPoolIndex = 0;
+		textPoolIndex = 0;
+		beaconBeamPoolIndex = 0;
+		circlePoolIndex = 0;
 	}
 
 	private static Vec3 getBlockCenter(BlockPos pos) {
@@ -735,6 +907,50 @@ public class Render3D {
 		for (BoxData box : queuedFilledBoxes) {
 			VertexConsumer buffer = bufferSource.getBuffer(box.filledRenderType());
 			PrimitiveRenderer.addChainedFilledBoxVertices(last, buffer, (float) box.aabb.minX, (float) box.aabb.minY, (float) box.aabb.minZ, (float) box.aabb.maxX, (float) box.aabb.maxY, (float) box.aabb.maxZ, box.r, box.g, box.b, box.a);
+		}
+	}
+
+	private static void renderQueuedCircles(PoseStack matrix, MultiBufferSource.BufferSource bufferSource) {
+		if (queuedCircles.isEmpty()) return;
+		PoseStack.Pose last = matrix.last();
+
+		for (CircleData circle : queuedCircles) {
+			VertexConsumer buffer = bufferSource.getBuffer(circle.renderType());
+			float cx = (float) circle.center.x;
+			float cy = (float) circle.center.y;
+			float cz = (float) circle.center.z;
+
+			if (circle.filled) {
+				Matrix4f matrix4f = last.pose();
+				for (int i = 0; i < 360; i += 2) {
+					int idx1 = i / 2;
+					int idx2 = (i + 2) / 2;
+					float dx1 = COS_TABLE[idx1] * circle.radius;
+					float dz1 = SIN_TABLE[idx1] * circle.radius;
+					float dx2 = COS_TABLE[idx2] * circle.radius;
+					float dz2 = SIN_TABLE[idx2] * circle.radius;
+
+					buffer.addVertex(matrix4f, cx, cy, cz).setColor(circle.r, circle.g, circle.b, circle.a);
+					buffer.addVertex(matrix4f, cx + dx1, cy, cz + dz1).setColor(circle.r, circle.g, circle.b, circle.a);
+					buffer.addVertex(matrix4f, cx + dx2, cy, cz + dz2).setColor(circle.r, circle.g, circle.b, circle.a);
+					buffer.addVertex(matrix4f, cx, cy, cz).setColor(circle.r, circle.g, circle.b, circle.a);
+				}
+			} else {
+				for (int i = 0; i < 360; i += 2) {
+					int idx1 = i / 2;
+					int idx2 = (i + 2) / 2;
+					float dx1 = COS_TABLE[idx1] * circle.radius;
+					float dz1 = SIN_TABLE[idx1] * circle.radius;
+					float dx2 = COS_TABLE[idx2] * circle.radius;
+					float dz2 = SIN_TABLE[idx2] * circle.radius;
+
+					float nx = dx2 - dx1;
+					float nz = dz2 - dz1;
+
+					buffer.addVertex(last, cx + dx1, cy, cz + dz1).setColor(circle.r, circle.g, circle.b, circle.a).setNormal(last, nx, 0, nz).setLineWidth(circle.thickness);
+					buffer.addVertex(last, cx + dx2, cy, cz + dz2).setColor(circle.r, circle.g, circle.b, circle.a).setNormal(last, nx, 0, nz).setLineWidth(circle.thickness);
+				}
+			}
 		}
 	}
 
@@ -867,6 +1083,39 @@ public class Render3D {
 
 			buffer.addVertex(pose, start.x(), start.y(), start.z()).setColor(startColor).setNormal(pose, nx, ny, nz).setLineWidth(thickness);
 			buffer.addVertex(pose, endX, endY, endZ).setColor(endColor).setNormal(pose, nx, ny, nz).setLineWidth(thickness);
+		}
+	}
+
+	public static class CircleData {
+		public Vec3 center;
+		public float radius;
+		public float thickness;
+		public float r, g, b, a;
+		public boolean depth;
+		public boolean filled;
+
+		public CircleData(Vec3 center, float radius, float thickness, int color, boolean depth, boolean filled) {
+			set(center, radius, thickness, color, depth, filled);
+		}
+
+		public void set(Vec3 center, float radius, float thickness, int color, boolean depth, boolean filled) {
+			this.center = center;
+			this.radius = radius;
+			this.thickness = thickness;
+			this.r = UColor.getRedF(color);
+			this.g = UColor.getGreenF(color);
+			this.b = UColor.getBlueF(color);
+			this.a = UColor.getAlphaF(color);
+			this.depth = depth;
+			this.filled = filled;
+		}
+
+		public RenderType renderType() {
+			if (filled) {
+				return depth ? LucentRenderType.QUADS_OPAQUE : LucentRenderType.QUADS_ESP;
+			} else {
+				return Render3D.resolveLineRenderType(depth);
+			}
 		}
 	}
 
