@@ -30,7 +30,6 @@ public class LineData {
 	}
 
 	public RenderType renderType() {
-		//boolean fullyOpaque = Render3D.isFullyOpaque(color1) && Render3D.isFullyOpaque(color2);
-		return Render3D.resolveLineRenderType(depth);
+		return Render3D.resolveLineRenderType(depth, Render3D.isFullyOpaque(color1) && Render3D.isFullyOpaque(color2));
 	}
 }

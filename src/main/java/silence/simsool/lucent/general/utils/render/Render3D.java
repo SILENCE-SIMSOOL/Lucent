@@ -10,7 +10,6 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.gui.Font;
@@ -29,6 +28,7 @@ import silence.simsool.lucent.events.impl.LucentEvent;
 import silence.simsool.lucent.general.enums.RenderStyle;
 import silence.simsool.lucent.general.models.data.render.BeaconBeamData;
 import silence.simsool.lucent.general.models.data.render.BoxData;
+import silence.simsool.lucent.general.models.data.render.CircleData;
 import silence.simsool.lucent.general.models.data.render.LineData;
 import silence.simsool.lucent.general.models.data.render.TextData;
 import silence.simsool.lucent.general.utils.useful.UWorld;
@@ -65,71 +65,6 @@ public class Render3D {
 			double rad = Math.toRadians(i * 2);
 			COS_TABLE[i] = (float) Math.cos(rad);
 			SIN_TABLE[i] = (float) Math.sin(rad);
-		}
-	}
-
-	private static LineData getOrCreateLine(Vec3 from, Vec3 to, int color1, int color2, float thickness, boolean depth, boolean isTracer) {
-		if (linePoolIndex < linePool.size()) {
-			LineData data = linePool.get(linePoolIndex++);
-			data.set(from, to, color1, color2, thickness, depth, isTracer);
-			return data;
-		} else {
-			LineData data = new LineData(from, to, color1, color2, thickness, depth, isTracer);
-			linePool.add(data);
-			linePoolIndex++;
-			return data;
-		}
-	}
-
-	private static BoxData getOrCreateBox(AABB aabb, int color, float thickness, boolean depth) {
-		if (boxPoolIndex < boxPool.size()) {
-			BoxData data = boxPool.get(boxPoolIndex++);
-			data.set(aabb, color, thickness, depth);
-			return data;
-		} else {
-			BoxData data = new BoxData(aabb, color, thickness, depth);
-			boxPool.add(data);
-			boxPoolIndex++;
-			return data;
-		}
-	}
-
-	private static TextData getOrCreateText(String text, Vec3 pos, float scale, boolean depth, Quaternionf rotation, Font font, float width, int color, int backgroundColor, int outlineColor, boolean shadow) {
-		if (textPoolIndex < textPool.size()) {
-			TextData data = textPool.get(textPoolIndex++);
-			data.set(text, pos, scale, depth, rotation, font, width, color, backgroundColor, outlineColor, shadow);
-			return data;
-		} else {
-			TextData data = new TextData(text, pos, scale, depth, rotation, font, width, color, backgroundColor, outlineColor, shadow);
-			textPool.add(data);
-			textPoolIndex++;
-			return data;
-		}
-	}
-
-	private static BeaconBeamData getOrCreateBeaconBeam(Vec3 pos, int color, float partialTicks, long gameTime, boolean isScoping) {
-		if (beaconBeamPoolIndex < beaconBeamPool.size()) {
-			BeaconBeamData data = beaconBeamPool.get(beaconBeamPoolIndex++);
-			data.set(pos, color, partialTicks, gameTime, isScoping);
-			return data;
-		} else {
-			BeaconBeamData data = new BeaconBeamData(pos, color, partialTicks, gameTime, isScoping);
-			beaconBeamPool.add(data);
-			beaconBeamPoolIndex++;
-			return data;
-		}
-	}
-
-	private static CircleData getOrCreateCircle(Vec3 pos, float radius, float thickness, int color, boolean depth, boolean filled) {
-		if (circlePoolIndex < circlePool.size()) {
-			CircleData data = circlePool.get(circlePoolIndex++);
-			data.set(pos, radius, thickness, color, depth, filled);
-			return data;
-		} else {
-			CircleData data = new CircleData(pos, radius, thickness, color, depth, filled);
-			circlePool.add(data);
-			circlePoolIndex++;
-			return data;
 		}
 	}
 
@@ -1211,122 +1146,82 @@ public class Render3D {
 		return UColor.getAlpha(color) == 0xFF;
 	}
 
-	public static RenderType resolveLineRenderType(boolean depth) {
-		if (depth) return LucentRenderType.LINES_OPAQUE;
-		else return LucentRenderType.LINES_TRANSLUCENT_ESP;
+	public static RenderType resolveLineRenderType(boolean depth, boolean isFullOpaque) {
+		if (depth && isFullOpaque) return LucentRenderType.LINES;
+		else if (depth) return LucentRenderType.LINES_TRANSLUCENT;
+		else if (isFullOpaque) return LucentRenderType.LINES_ESP;
+		return LucentRenderType.LINES_TRANSLUCENT_ESP;
 	}
 
-	public static class PrimitiveRenderer {
-		private static final int[] EDGES = { 0, 1, 1, 5, 5, 4, 4, 0, 3, 2, 2, 6, 6, 7, 7, 3, 0, 3, 1, 2, 5, 6, 4, 7 };
+	public static RenderType resolveFillRenderType(boolean depth, boolean isFullOpaque) {
+		if (depth && isFullOpaque) return LucentRenderType.FILLED;
+		else if (depth) return LucentRenderType.FILLED_TRANSLUCENT;
+		else if (isFullOpaque) return LucentRenderType.FILLED_ESP;
+		return LucentRenderType.FILLED_TRANSLUCENT_ESP;
+	}
 
-		public static void renderLineBox(PoseStack.Pose pose, VertexConsumer buffer, AABB aabb, float r, float g, float b, float a, float thickness) {
-			float x0 = (float) aabb.minX;
-			float y0 = (float) aabb.minY;
-			float z0 = (float) aabb.minZ;
-			float x1 = (float) aabb.maxX;
-			float y1 = (float) aabb.maxY;
-			float z1 = (float) aabb.maxZ;
-
-			float[] corners = { x0, y0, z0, x1, y0, z0, x1, y1, z0, x0, y1, z0, x0, y0, z1, x1, y0, z1, x1, y1, z1, x0, y1, z1 };
-
-			for (int i = 0; i < EDGES.length; i += 2) {
-				int i0 = EDGES[i] * 3;
-				int i1 = EDGES[i + 1] * 3;
-				float cx0 = corners[i0];
-				float cy0 = corners[i0 + 1];
-				float cz0 = corners[i0 + 2];
-				float cx1 = corners[i1];
-				float cy1 = corners[i1 + 1];
-				float cz1 = corners[i1 + 2];
-				float dx = cx1 - cx0;
-				float dy = cy1 - cy0;
-				float dz = cz1 - cz0;
-
-				buffer.addVertex(pose, cx0, cy0, cz0).setColor(r, g, b, a).setNormal(pose, dx, dy, dz).setLineWidth(thickness);
-				buffer.addVertex(pose, cx1, cy1, cz1).setColor(r, g, b, a).setNormal(pose, dx, dy, dz).setLineWidth(thickness);
-			}
-		}
-
-		public static void addChainedFilledBoxVertices(PoseStack.Pose pose, VertexConsumer buffer, float minX, float minY, float minZ, float maxX, float maxY, float maxZ, float r, float g, float b, float a) {
-			Matrix4f matrix = pose.pose();
-			vertex(buffer, matrix, minX, minY, minZ, r, g, b, a);
-			vertex(buffer, matrix, minX, minY, maxZ, r, g, b, a);
-			vertex(buffer, matrix, minX, maxY, maxZ, r, g, b, a);
-			vertex(buffer, matrix, minX, maxY, minZ, r, g, b, a);
-
-			vertex(buffer, matrix, maxX, minY, maxZ, r, g, b, a);
-			vertex(buffer, matrix, maxX, minY, minZ, r, g, b, a);
-			vertex(buffer, matrix, maxX, maxY, minZ, r, g, b, a);
-			vertex(buffer, matrix, maxX, maxY, maxZ, r, g, b, a);
-
-			vertex(buffer, matrix, minX, minY, minZ, r, g, b, a);
-			vertex(buffer, matrix, minX, maxY, minZ, r, g, b, a);
-			vertex(buffer, matrix, maxX, maxY, minZ, r, g, b, a);
-			vertex(buffer, matrix, maxX, minY, minZ, r, g, b, a);
-
-			vertex(buffer, matrix, maxX, minY, maxZ, r, g, b, a);
-			vertex(buffer, matrix, maxX, maxY, maxZ, r, g, b, a);
-			vertex(buffer, matrix, minX, maxY, maxZ, r, g, b, a);
-			vertex(buffer, matrix, minX, minY, maxZ, r, g, b, a);
-
-			vertex(buffer, matrix, minX, minY, minZ, r, g, b, a);
-			vertex(buffer, matrix, maxX, minY, minZ, r, g, b, a);
-			vertex(buffer, matrix, maxX, minY, maxZ, r, g, b, a);
-			vertex(buffer, matrix, minX, minY, maxZ, r, g, b, a);
-
-			vertex(buffer, matrix, minX, maxY, maxZ, r, g, b, a);
-			vertex(buffer, matrix, maxX, maxY, maxZ, r, g, b, a);
-			vertex(buffer, matrix, maxX, maxY, minZ, r, g, b, a);
-			vertex(buffer, matrix, minX, maxY, minZ, r, g, b, a);
-		}
-
-		private static void vertex(VertexConsumer buffer, Matrix4f matrix, float x, float y, float z, float r, float g, float b, float a) {
-			buffer.addVertex(matrix, x, y, z).setColor(r, g, b, a);
-		}
-
-		public static void renderVector(PoseStack.Pose pose, VertexConsumer buffer, Vector3f start, Vec3 direction, int startColor, int endColor, float thickness) {
-			float endX = start.x() + (float) direction.x;
-			float endY = start.y() + (float) direction.y;
-			float endZ = start.z() + (float) direction.z;
-			float nx = (float) direction.x;
-			float ny = (float) direction.y;
-			float nz = (float) direction.z;
-
-			buffer.addVertex(pose, start.x(), start.y(), start.z()).setColor(startColor).setNormal(pose, nx, ny, nz).setLineWidth(thickness);
-			buffer.addVertex(pose, endX, endY, endZ).setColor(endColor).setNormal(pose, nx, ny, nz).setLineWidth(thickness);
+	private static LineData getOrCreateLine(Vec3 from, Vec3 to, int color1, int color2, float thickness, boolean depth, boolean isTracer) {
+		if (linePoolIndex < linePool.size()) {
+			LineData data = linePool.get(linePoolIndex++);
+			data.set(from, to, color1, color2, thickness, depth, isTracer);
+			return data;
+		} else {
+			LineData data = new LineData(from, to, color1, color2, thickness, depth, isTracer);
+			linePool.add(data);
+			linePoolIndex++;
+			return data;
 		}
 	}
 
-	public static class CircleData {
-		public Vec3 center;
-		public float radius;
-		public float thickness;
-		public float r, g, b, a;
-		public boolean depth;
-		public boolean filled;
-
-		public CircleData(Vec3 center, float radius, float thickness, int color, boolean depth, boolean filled) {
-			set(center, radius, thickness, color, depth, filled);
+	private static BoxData getOrCreateBox(AABB aabb, int color, float thickness, boolean depth) {
+		if (boxPoolIndex < boxPool.size()) {
+			BoxData data = boxPool.get(boxPoolIndex++);
+			data.set(aabb, color, thickness, depth);
+			return data;
+		} else {
+			BoxData data = new BoxData(aabb, color, thickness, depth);
+			boxPool.add(data);
+			boxPoolIndex++;
+			return data;
 		}
+	}
 
-		public void set(Vec3 center, float radius, float thickness, int color, boolean depth, boolean filled) {
-			this.center = center;
-			this.radius = radius;
-			this.thickness = thickness;
-			this.r = UColor.getRedF(color);
-			this.g = UColor.getGreenF(color);
-			this.b = UColor.getBlueF(color);
-			this.a = UColor.getAlphaF(color);
-			this.depth = depth;
-			this.filled = filled;
+	private static TextData getOrCreateText(String text, Vec3 pos, float scale, boolean depth, Quaternionf rotation, Font font, float width, int color, int backgroundColor, int outlineColor, boolean shadow) {
+		if (textPoolIndex < textPool.size()) {
+			TextData data = textPool.get(textPoolIndex++);
+			data.set(text, pos, scale, depth, rotation, font, width, color, backgroundColor, outlineColor, shadow);
+			return data;
+		} else {
+			TextData data = new TextData(text, pos, scale, depth, rotation, font, width, color, backgroundColor, outlineColor, shadow);
+			textPool.add(data);
+			textPoolIndex++;
+			return data;
 		}
+	}
 
-		public RenderType renderType() {
-			if (filled) {
-				return depth ? LucentRenderType.QUADS_OPAQUE : LucentRenderType.QUADS_ESP;
-			} else {
-				return Render3D.resolveLineRenderType(depth);
-			}
+	private static BeaconBeamData getOrCreateBeaconBeam(Vec3 pos, int color, float partialTicks, long gameTime, boolean isScoping) {
+		if (beaconBeamPoolIndex < beaconBeamPool.size()) {
+			BeaconBeamData data = beaconBeamPool.get(beaconBeamPoolIndex++);
+			data.set(pos, color, partialTicks, gameTime, isScoping);
+			return data;
+		} else {
+			BeaconBeamData data = new BeaconBeamData(pos, color, partialTicks, gameTime, isScoping);
+			beaconBeamPool.add(data);
+			beaconBeamPoolIndex++;
+			return data;
+		}
+	}
+
+	private static CircleData getOrCreateCircle(Vec3 pos, float radius, float thickness, int color, boolean depth, boolean filled) {
+		if (circlePoolIndex < circlePool.size()) {
+			CircleData data = circlePool.get(circlePoolIndex++);
+			data.set(pos, radius, thickness, color, depth, filled);
+			return data;
+		} else {
+			CircleData data = new CircleData(pos, radius, thickness, color, depth, filled);
+			circlePool.add(data);
+			circlePoolIndex++;
+			return data;
 		}
 	}
 

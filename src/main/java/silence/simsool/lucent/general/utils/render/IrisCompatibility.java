@@ -17,7 +17,7 @@ public interface IrisCompatibility {
 	static void init() {
 		INSTANCE.registerRenderType(LucentRenderType.LINES_ESP, IrisShaderType.LINES);
 		INSTANCE.registerRenderType(LucentRenderType.LINES_TRANSLUCENT_ESP, IrisShaderType.LINES);
-		INSTANCE.registerRenderType(LucentRenderType.QUADS_ESP, IrisShaderType.BASIC);
+		INSTANCE.registerRenderType(LucentRenderType.FILLED_ESP, IrisShaderType.BASIC);
 	}
 
 	private static IrisCompatibility resolve() {

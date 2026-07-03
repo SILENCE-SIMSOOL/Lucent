@@ -10,6 +10,7 @@
 		"accessors.BeaconBeamAccessor",
 		"accessors.GpuDeviceAccessor",
 		"accessors.KeyMappingAccessor",
+		"accessors.LevelRendererAccessor",
 		"mixins.events.entity.MixinEntityRenderDispatcher_ExtractRenderStatePre",
 		"mixins.events.entity.MixinEntityRenderer_RenderEntityEvent",
 		"mixins.events.entity.MixinLivingEntity",
