@@ -12,6 +12,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
+import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item.TooltipContext;
@@ -34,6 +35,17 @@ public final class GUIEvent {
 		public RenderHUD(GuiGraphics graphics) {
 			this.graphics = graphics;
 		}
+	}
+
+	public static final class OPEN_PRE {
+		public static final Event<IGUIOpenPreEvent> EVENT = createArrayBacked(
+			IGUIOpenPreEvent.class, listeners -> event -> {
+				for (IGUIOpenPreEvent l : listeners) {
+					l.onOpenPre(event);
+					if (event.isCanceled()) break;
+				}
+			}
+		);
 	}
 
 	public static final class OPEN {
@@ -319,6 +331,25 @@ public final class GUIEvent {
 			this.scanCode = scanCode;
 			this.screen = screen;
 			this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
+		}
+
+		public void cancel() {
+			this.canceled = true;
+		}
+
+		public boolean isCanceled() {
+			return canceled;
+		}
+	}
+
+	public static class GUIOpenPreEvent {
+		public final ClientboundOpenScreenPacket packet;
+		public final String title;
+		private boolean canceled = false;
+
+		public GUIOpenPreEvent(ClientboundOpenScreenPacket packet) {
+			this.packet = packet;
+			this.title = packet.getTitle() != null ? packet.getTitle().getString() : "";
 		}
 
 		public void cancel() {

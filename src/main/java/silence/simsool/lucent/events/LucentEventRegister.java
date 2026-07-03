@@ -35,6 +35,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.events.impl.EntityEvent;
@@ -104,6 +105,13 @@ public class LucentEventRegister {
 			if (mc.level == null || mc.player == null) return;
 			float partialTick = UWorld.getPartialTick();
 			LucentEvent.WORLD_RENDER_LAST.invoker().onRenderWorldLast(new LucentEvent.RenderWorldLastEvent(context, context.worldRenderer(), partialTick));
+		});
+
+		WorldRenderEvents.AFTER_BLOCK_OUTLINE_EXTRACTION.register((worldContext, hitResult) -> {
+			if (mc.level == null || mc.player == null || hitResult == null || hitResult.getType() == HitResult.Type.MISS) return;
+			LucentEvent.BlockOverlayEvent event = new LucentEvent.BlockOverlayEvent(worldContext, hitResult);
+			LucentEvent.BLOCK_OVERLAY_EVENT.invoker().onBlockOverlay(event);
+			if (event.isCanceled()) worldContext.worldState().blockOutlineRenderState = null;
 		});
 
 		// ───────────────────────────── GUI Screen ─────────────────────────────

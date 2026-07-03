@@ -7,7 +7,7 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 
 public class LucentRenderType {
 
-	public static final RenderType LINES_OPAQUE = RenderType.create(
+	public static final RenderType LINES = RenderType.create(
 		"lines-opaque",
 		RenderSetup.builder(LucentRenderPipelines.LINES)
 			.setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
@@ -37,14 +37,14 @@ public class LucentRenderType {
 			.createRenderSetup()
 	);
 
-	public static final RenderType QUADS_OPAQUE = RenderType.create(
+	public static final RenderType FILLED = RenderType.create(
 		"quads-opaque",
 		RenderSetup.builder(LucentRenderPipelines.FILLED)
 			.setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
 			.createRenderSetup()
 	);
 
-	public static final RenderType QUADS_TRANSLUCENT = RenderType.create(
+	public static final RenderType FILLED_TRANSLUCENT = RenderType.create(
 		"quads-translucent",
 		RenderSetup.builder(LucentRenderPipelines.FILLED_TRANSLUCENT)
 			.sortOnUpload()
@@ -52,7 +52,7 @@ public class LucentRenderType {
 			.createRenderSetup()
 	);
 
-	public static final RenderType QUADS_ESP = RenderType.create(
+	public static final RenderType FILLED_ESP = RenderType.create(
 		"quads-esp",
 		RenderSetup.builder(LucentRenderPipelines.FILLED_ESP)
 			.sortOnUpload()
@@ -60,7 +60,7 @@ public class LucentRenderType {
 			.createRenderSetup()
 	);
 
-	public static final RenderType QUADS_TRANSLUCENT_ESP = RenderType.create(
+	public static final RenderType FILLED_TRANSLUCENT_ESP = RenderType.create(
 		"quads-translucent-esp",
 		RenderSetup.builder(LucentRenderPipelines.FILLED_TRANSLUCENT_ESP)
 			.sortOnUpload()

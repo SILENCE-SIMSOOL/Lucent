@@ -13,6 +13,8 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.PacketListener;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
+import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
+import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import silence.simsool.lucent.events.impl.GUIEvent;
@@ -22,6 +24,16 @@ import silence.simsool.lucent.general.utils.useful.UScreen;
 
 @Mixin(ClientPacketListener.class)
 public class MixinClientPacketListener {
+
+	@Inject(method = "handleOpenScreen", at = @At("HEAD"), cancellable = true)
+	private void onHandleOpenScreen(ClientboundOpenScreenPacket packet, CallbackInfo ci) {
+		GUIEvent.GUIOpenPreEvent event = new GUIEvent.GUIOpenPreEvent(packet);
+		GUIEvent.OPEN_PRE.EVENT.invoker().onOpenPre(event);
+		if (event.isCanceled()) {
+			((ClientPacketListener) (Object) this).send(new ServerboundContainerClosePacket(packet.getContainerId()));
+			ci.cancel();
+		}
+	}
 
 	@Inject(method = "handleContainerSetSlot", at = @At("TAIL"))
 	private void onHandleContainerSetSlot(ClientboundContainerSetSlotPacket packet, CallbackInfo ci) {
