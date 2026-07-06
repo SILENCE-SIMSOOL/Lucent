@@ -142,7 +142,7 @@ public class UColor {
 			default -> { r = v; g = p; b = q; }
 		}
 
-		return argb((int)(a * 255), (int)(r * 255), (int)(g * 255), (int)(b * 255));
+		return argb(Math.round(a * 255f), Math.round(r * 255f), Math.round(g * 255f), Math.round(b * 255f));
 	}
 
 	/** ARGB int → "#RRGGBBAA" */

@@ -12,6 +12,7 @@ import silence.simsool.lucent.general.models.abstracts.Mod;
 import silence.simsool.lucent.general.models.data.KeyBind;
 import silence.simsool.lucent.general.models.interfaces.annotations.ModConfig;
 import silence.simsool.lucent.general.models.interfaces.annotations.ModConfigExtra;
+import silence.simsool.lucent.general.utils.MinecraftColor;
 import silence.simsool.lucent.general.utils.useful.UChat;
 import silence.simsool.lucent.general.utils.useful.ULog;
 
@@ -242,6 +243,39 @@ public class ExampleMod extends Mod {
 		priority = 1
 	)
 	public static boolean ExtraSwitch5 = true;
+
+	@ModConfigExtra(
+		type = ConfigType.COLOR,
+		name = "Extra Color",
+		description = "",
+		category = "Extra Example"
+	)
+	public static Color ExtraColor = MinecraftColor.WHITE;
+
+	@ModConfigExtra(
+		type = ConfigType.KEYBIND,
+		name = "Extra Keybind",
+		description = "",
+		category = "Extra Example"
+	)
+	public static KeyBind ExtraKeybind = KeyBind.ofKey(GLFW.GLFW_KEY_RIGHT_SHIFT, 0);
+
+	@ModConfigExtra(
+		type = ConfigType.SELECTOR,
+		name = "Extra Selector",
+		description = "",
+		category = "Extra Example",
+		options = {"Extra", "Selector"}
+	)
+	public static String ExtraSelector = "";
+
+	@ModConfigExtra(
+		type = ConfigType.TEXT,
+		name = "Extra Text",
+		description = "",
+		category = "Extra Example"
+	)
+	public static String ExtraText = "";
 
 	@Override
 	public void onTick() {

@@ -67,3 +67,11 @@ Lucent는 Fabric의 콜백 시스템 위에 설계된 강력한 이벤트 시스
 
 ### 📦 PacketEvent
 - `ReceiveEvent` & `SendEvent`: 네트워크 패킷 수신 및 송신 시 발생합니다.
+
+### ⚙️ ConfigEvent
+- `ToggleButtonEvent`: 설정 토글 버튼 상태가 변경될 때 발생합니다.
+- `SliderEvent`: 설정 슬라이더의 값이 변경될 때 발생합니다.
+- `SelectorEvent`: 설정 셀렉터의 옵션이 변경될 때 발생합니다.
+- `ColorPickerEvent`: 설정 컬러 피커의 색상이 변경될 때 발생합니다.
+- `TextBoxEvent`: 설정 텍스트 박스의 텍스트가 변경될 때 발생합니다.
+- `KeyBindEvent`: 설정 키바인드가 변경될 때 발생합니다.
