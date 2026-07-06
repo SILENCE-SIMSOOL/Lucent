@@ -5,6 +5,7 @@ import silence.simsool.lucent.events.impl.GUIEvent;
 import silence.simsool.lucent.events.impl.InputEvent;
 import silence.simsool.lucent.events.impl.LucentEvent;
 import silence.simsool.lucent.events.impl.PacketEvent;
+import silence.simsool.lucent.events.impl.ConfigEvent;
 
 public abstract class Mod {
 	public final String name;
@@ -60,6 +61,13 @@ public abstract class Mod {
 	public void onRightClickPre(LucentEvent.RightClickPreEvent event) {}
 	public void onRightClickPost(LucentEvent.RightClickPostEvent event) {}
 	public void onBlockOverlay(LucentEvent.BlockOverlayEvent event) {}
+
+	public void onToggleButtonChange(ConfigEvent.ToggleButtonEvent event) {}
+	public void onSliderChange(ConfigEvent.SliderEvent event) {}
+	public void onSelectorChange(ConfigEvent.SelectorEvent event) {}
+	public void onColorPickerChange(ConfigEvent.ColorPickerEvent event) {}
+	public void onTextBoxChange(ConfigEvent.TextBoxEvent event) {}
+	public void onKeyBindChange(ConfigEvent.KeyBindEvent event) {}
 
 	public void onMouseInput(InputEvent.MouseInputEvent event) {}
 	public void onKeyInput(InputEvent.KeyInputEvent event) {}

@@ -67,3 +67,11 @@ A complete list of overrideable event methods can be found in [Mod.java](../../s
 
 ### 📦 PacketEvent
 - `ReceiveEvent` & `SendEvent`: Dispatched when network packets are received or sent.
+
+### ⚙️ ConfigEvent
+- `ToggleButtonEvent`: Dispatched when a configuration toggle button changes state.
+- `SliderEvent`: Dispatched when a configuration slider value is updated.
+- `SelectorEvent`: Dispatched when a configuration selector option changes.
+- `ColorPickerEvent`: Dispatched when a configuration color picker changes color.
+- `TextBoxEvent`: Dispatched when a configuration text box value changes.
+- `KeyBindEvent`: Dispatched when a configuration keybind is updated.

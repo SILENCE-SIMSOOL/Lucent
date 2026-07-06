@@ -55,6 +55,7 @@ import silence.simsool.lucent.ui.widget.components.Slider;
 import silence.simsool.lucent.ui.widget.components.TextBox;
 import silence.simsool.lucent.ui.widget.components.ToggleButton;
 import silence.simsool.lucent.ui.widget.components.color.ColorPickerButton;
+import silence.simsool.lucent.events.impl.ConfigEvent;
 
 public class ConfigScreen extends Screen {
 
@@ -105,6 +106,14 @@ public class ConfigScreen extends Screen {
 	public ConfigScreen(ModManager moduleManager) {
 		super(Component.literal(L10n.translate("lucent.config.title")));
 		this.moduleManager = moduleManager;
+	}
+
+	public float getUiScale() {
+		return this.uiScale;
+	}
+
+	public double getScrollOffset() {
+		return this.scrollOffset;
 	}
 
 	/** 특정 모듈의 세부설정으로 바로 진입 */
@@ -705,6 +714,8 @@ public class ConfigScreen extends Screen {
 			NVGRenderer.pop();
 			NVGRenderer.popScissor();
 
+			if (maxScroll > 0) renderScrollbar(smx, smy);
+
 			// For OPEN overlays, render them without scissor so dropdown is visible
 			for (UIWidget w : overlayWidgets) {
 				if (!shouldSkipOverlay(w)) {
@@ -715,8 +726,6 @@ public class ConfigScreen extends Screen {
 					w.setPosition(w.getX(), oy);
 				}
 			}
-
-			if (maxScroll > 0) renderScrollbar(smx, smy);
 
 			NVGRenderer.pop();
 		});
@@ -729,6 +738,25 @@ public class ConfigScreen extends Screen {
 		float mx = UMouse.getNvgScaledX(uiScale);
 		float my = UMouse.getNvgScaledY(uiScale);
 		int btn  = event.button();
+
+		// KeyBindButton이 대기 중일 때 모든 클릭을 가로챔
+		for (UIWidget w : widgets) {
+			if (w instanceof KeyBindButton kbb && kbb.isWaiting()) {
+				if (kbb.mouseClicked(mx, my + scrollOffset, btn)) return true;
+			}
+		}
+		for (UIWidget w : overlayWidgets) {
+			if (w instanceof KeyBindButton kbb && kbb.isWaiting()) {
+				if (kbb.mouseClicked(mx, my + scrollOffset, btn)) return true;
+			}
+		}
+
+		// 활성화된 오버레이 위젯(ColorPicker 등)이 있으면 클릭 이벤트를 최우선 전달하여 가로챔
+		for (UIWidget w : overlayWidgets) {
+			if (!shouldSkipOverlay(w)) {
+				if (w.mouseClicked(mx, my + scrollOffset, btn)) return true;
+			}
+		}
 
 		if (btn == 0 && isScrollbarHit(mx, my)) {
 			scrollbarDragging = true;
@@ -750,11 +778,7 @@ public class ConfigScreen extends Screen {
 			if (hit) return true;
 		}
 
-		for (UIWidget w : overlayWidgets) {
-			if (!shouldSkipOverlay(w)) {
-				if (w.mouseClicked(mx, my + scrollOffset, btn)) return true;
-			}
-		}
+
 
 		if (mx >= contentX && mx <= contentX + contentW && my >= scissorY && my <= scissorY + scissorH) {
 			for (UIWidget w : widgets) {
@@ -1364,9 +1388,12 @@ public class ConfigScreen extends Screen {
 							toggleButton.setAnimProgress(toggleAnimCache.get(fid));
 						}
 					}
+					final Object finalVal = val;
 					toggleButton.setOnChange(v -> {
 						try {
+							boolean old = (boolean) finalVal;
 							if (field != null) field.set(currentModSettings, v);
+							ConfigEvent.TOGGLE_BUTTON.invoker().onChange(new ConfigEvent.ToggleButtonEvent(currentModSettings, field, field != null ? field.getName() : "", old, v));
 							refreshUI(true); // Preserve scroll position and animation state
 						} catch (Exception e) {}
 					});
@@ -1386,12 +1413,14 @@ public class ConfigScreen extends Screen {
 					Slider slider = new Slider(ux - 290, controlYBase, 290, 24, cfg.min(), cfg.max(), cfg.step(), dVal, sType);
 					slider.setOnChange(v -> {
 						try {
+							double old = dVal;
 							if (field != null) {
 								Class<?> fType = field.getType();
 								if (fType == float.class || fType == Float.class) field.set(currentModSettings, v.floatValue());
 								else if (fType == int.class || fType == Integer.class) field.set(currentModSettings, (int) Math.round(v));
 								else field.set(currentModSettings, v);
 							}
+							ConfigEvent.SLIDER.invoker().onChange(new ConfigEvent.SliderEvent(currentModSettings, field, field != null ? field.getName() : "", old, v));
 						} catch (Exception e) {}
 					});
 					widgets.add(slider);
@@ -1411,11 +1440,14 @@ public class ConfigScreen extends Screen {
 							displayOpts.add(translated);
 						}
 					}
-					Selector selector = new Selector(ux - 148, controlYBase - 8, 148, 38, rawOpts, displayOpts);
+					Selector selector = new Selector(ux - 160, controlYBase - 8, 160, 38, rawOpts, displayOpts);
 					selector.setValue((String) val);
+					final Object finalVal = val;
 					selector.setOnChange(v -> {
 						try {
+							String old = (String) finalVal;
 							if (field != null) field.set(currentModSettings, v);
+							ConfigEvent.SELECTOR.invoker().onChange(new ConfigEvent.SelectorEvent(currentModSettings, field, field != null ? field.getName() : "", old, v));
 							refreshUI(true);
 						} catch (Exception e) {}
 					});
@@ -1429,12 +1461,15 @@ public class ConfigScreen extends Screen {
 					int width = 64;
 					ColorPickerButton cp = new ColorPickerButton(ux - width, controlYBase - 8, width, 38, initialColor);
 					final Field f = (member instanceof Field field) ? field : null;
+					final int finalColor = initialColor;
 					cp.setOnChange(c -> { 
 						try { 
+							int old = finalColor;
 							if (f != null) {
 								if (f.getType() == Color.class) f.set(currentModSettings, new Color(c, true));
 								else f.set(currentModSettings, c);
 							}
+							ConfigEvent.COLOR_PICKER.invoker().onChange(new ConfigEvent.ColorPickerEvent(currentModSettings, f, f != null ? f.getName() : "", old, c));
 						} catch (Exception e) {} 
 					});
 					overlayWidgets.add(cp);
@@ -1458,11 +1493,14 @@ public class ConfigScreen extends Screen {
 				case KEYBIND -> {
 					KeyBind initialBind = null;
 					if (val instanceof KeyBind kb) initialBind = kb;
-					KeyBindButton kbb = new KeyBindButton(ux - 100, controlYBase - 6, 100, 34, initialBind, cfg.keymode());
+					KeyBindButton kbb = new KeyBindButton(ux - 128, controlYBase - 8, 128, 38, initialBind, cfg.keymode());
 					final Field field = (member instanceof Field f) ? f : null;
+					final KeyBind finalBind = initialBind;
 					kbb.setOnChange(v -> {
 						try {
+							KeyBind old = finalBind;
 							if (field != null) field.set(currentModSettings, v);
+							ConfigEvent.KEY_BIND.invoker().onChange(new ConfigEvent.KeyBindEvent(currentModSettings, field, field != null ? field.getName() : "", old, v));
 						} catch (Exception e) {}
 					});
 					widgets.add(kbb);
@@ -1470,9 +1508,12 @@ public class ConfigScreen extends Screen {
 				case TEXT -> {
 					TextBox tb = new TextBox(ux - 200, controlYBase - 6, 200, 34, (String) val);
 					final Field field = (member instanceof Field f) ? f : null;
+					final Object finalVal = val;
 					tb.setOnChange(v -> {
 						try {
+							String old = (String) finalVal;
 							if (field != null) field.set(currentModSettings, v);
+							ConfigEvent.TEXT_BOX.invoker().onChange(new ConfigEvent.TextBoxEvent(currentModSettings, field, field != null ? field.getName() : "", old, v));
 						} catch (Exception e) {}
 					});
 					widgets.add(tb);
@@ -1602,11 +1643,11 @@ public class ConfigScreen extends Screen {
 			switch (cfg.type()) {
 				case SWITCH  -> { widgetW = 40; widgetH = 20; }
 				case SLIDER  -> { widgetW = Math.min(240, colW - pad * 2 - 40); widgetH = 18; }
-				case SELECTOR-> { widgetW = Math.min(110, colW - pad * 2 - 20); widgetH = 28; }
-				case COLOR   -> { widgetW = 50;  widgetH = 28; }
+				case SELECTOR-> { widgetW = Math.min(128, colW - pad * 2 - 20); widgetH = 32; }
+				case COLOR   -> { widgetW = 52;  widgetH = 28; }
 				case BUTTON  -> { String bt = cfg.display(); widgetW = (bt == null || bt.isEmpty()) ? 36 : Math.min(80, colW - pad * 2 - 20); widgetH = 26; }
-				case KEYBIND -> { widgetW = Math.min(80, colW - pad * 2 - 20); widgetH = 26; }
-				case TEXT    -> { widgetW = Math.min(110, colW - pad * 2 - 20); widgetH = 24; }
+				case KEYBIND -> { widgetW = Math.min(112, colW - pad * 2 - 20); widgetH = 32; }
+				case TEXT    -> { widgetW = Math.min(148, colW - pad * 2 - 20); widgetH = 28; }
 				default      -> { widgetW = 60;  widgetH = 24; }
 			}
 
@@ -1645,9 +1686,12 @@ public class ConfigScreen extends Screen {
 					String fid = field.getName();
 					tb.setId(fid);
 					if (toggleAnimCache.containsKey(fid)) tb.setAnimProgress(toggleAnimCache.get(fid));
+					final Object finalVal = val;
 					tb.setOnChange(v -> {
 						try {
+							boolean old = (boolean) finalVal;
 							field.set(currentModSettings, v);
+							ConfigEvent.TOGGLE_BUTTON.invoker().onChange(new ConfigEvent.ToggleButtonEvent(currentModSettings, field, field.getName(), old, v));
 							refreshUI(true);
 						} catch (Exception e) {}
 					});
@@ -1662,10 +1706,12 @@ public class ConfigScreen extends Screen {
 					Slider slider = new Slider(widgetX, widgetY, widgetW, widgetH, cfg.min(), cfg.max(), cfg.step(), dVal, sType);
 					slider.setOnChange(v -> {
 						try {
+							double old = dVal;
 							Class<?> ft = field.getType();
 							if (ft == float.class || ft == Float.class) field.set(currentModSettings, v.floatValue());
 							else if (ft == int.class || ft == Integer.class) field.set(currentModSettings, (int) Math.round(v));
 							else field.set(currentModSettings, v);
+							ConfigEvent.SLIDER.invoker().onChange(new ConfigEvent.SliderEvent(currentModSettings, field, field.getName(), old, v));
 						} catch (Exception e) {}
 					});
 					widgets.add(slider);
@@ -1686,9 +1732,12 @@ public class ConfigScreen extends Screen {
 					}
 					Selector sel = new Selector(widgetX, widgetY, widgetW, widgetH, rawOpts, displayOpts);
 					sel.setValue((String) val);
+					final Object finalVal = val;
 					sel.setOnChange(v -> {
 						try {
+							String old = (String) finalVal;
 							field.set(currentModSettings, v);
+							ConfigEvent.SELECTOR.invoker().onChange(new ConfigEvent.SelectorEvent(currentModSettings, field, field.getName(), old, v));
 							refreshUI(true);
 						} catch (Exception e) {}
 					});
@@ -1699,10 +1748,13 @@ public class ConfigScreen extends Screen {
 					if (val instanceof Color cObj) initialColor = cObj.getRGB();
 					else if (val instanceof Number nObj) initialColor = nObj.intValue();
 					ColorPickerButton cp = new ColorPickerButton(widgetX, widgetY, widgetW, widgetH, initialColor);
+					final int finalColor = initialColor;
 					cp.setOnChange(c -> {
 						try {
+							int old = finalColor;
 							if (field.getType() == Color.class) field.set(currentModSettings, new Color(c, true));
 							else field.set(currentModSettings, c);
+							ConfigEvent.COLOR_PICKER.invoker().onChange(new ConfigEvent.ColorPickerEvent(currentModSettings, field, field.getName(), old, c));
 						} catch (Exception e) {}
 					});
 					overlayWidgets.add(cp);
@@ -1716,18 +1768,24 @@ public class ConfigScreen extends Screen {
 				case KEYBIND -> {
 					KeyBind initialBind = (val instanceof KeyBind kb) ? kb : null;
 					KeyBindButton kbb = new KeyBindButton(widgetX, widgetY, widgetW, widgetH, initialBind, cfg.keymode());
+					final KeyBind finalBind = initialBind;
 					kbb.setOnChange(v -> {
 						try {
+							KeyBind old = finalBind;
 							field.set(currentModSettings, v);
+							ConfigEvent.KEY_BIND.invoker().onChange(new ConfigEvent.KeyBindEvent(currentModSettings, field, field.getName(), old, v));
 						} catch (Exception e) {}
 					});
 					widgets.add(kbb);
 				}
 				case TEXT -> {
 					TextBox tb2 = new TextBox(widgetX, widgetY, widgetW, widgetH, (String) val);
+					final Object finalVal = val;
 					tb2.setOnChange(v -> {
 						try {
+							String old = (String) finalVal;
 							field.set(currentModSettings, v);
+							ConfigEvent.TEXT_BOX.invoker().onChange(new ConfigEvent.TextBoxEvent(currentModSettings, field, field.getName(), old, v));
 						} catch (Exception e) {}
 					});
 					widgets.add(tb2);
@@ -1949,7 +2007,8 @@ public class ConfigScreen extends Screen {
 		int ix = winX + PAD;
 
 		if (moduleManager.getTitleFont() == null) moduleManager.setTitleFont(Fonts.PRETENDARD_SEMIBOLD);
-		NVGRenderer.text(moduleManager.getTitle(), ix, winY + 26f, moduleManager.getTitleFont(), moduleManager.getTitleColor(), moduleManager.getTitleSize());
+		int titleColor = moduleManager.isThemeColor() ? UIColors.ACCENT_BLUE : moduleManager.getTitleColor();
+		NVGRenderer.text(moduleManager.getTitle(), ix, winY + 26f, moduleManager.getTitleFont(), titleColor, moduleManager.getTitleSize());
 
 		int sy = winY + 44;
 
@@ -2115,7 +2174,9 @@ public class ConfigScreen extends Screen {
 	}
 
 	private boolean shouldSkipOverlay(UIWidget widget) {
-		if (widget instanceof Selector selector && !selector.isOpen()) return true;
+		if (widget instanceof Selector selector) {
+			return !selector.isOpen() && selector.getDropdownAnim() <= 0.01f;
+		}
 		if (widget instanceof ColorPickerButton colorPickerButton && !colorPickerButton.isPickerOpen()) return true;
 		return false;
 	}

@@ -151,3 +151,55 @@ The [LucentAPI](../../src/main/java/silence/simsool/lucent/config/api/LucentAPI.
 - `createConfigScreen(ModManager manager)`: Generates the settings GUI.
 - `createEditHUDScreen(ModManager manager)`: Generates the drag-and-drop HUD layout screen.
 - `registerHUD(ModManager manager, LucentHUD hud)`: Registers a HUD component.
+
+---
+
+## 6. Listening to Config Changes
+
+You can subscribe to events triggered when configuration values change.
+
+### Subscribing Directly via Fabric Events
+Register a listener directly using `ConfigEvent.<EVENT_NAME>`:
+```java
+import silence.simsool.lucent.events.impl.ConfigEvent;
+
+ConfigEvent.TOGGLE_BUTTON.register(event -> {
+	System.out.println("Config " + event.getConfigName() + " changed from " + event.getOldValue() + " to " + event.getNewValue());
+});
+```
+
+### Overriding Handlers in your Module Class
+Inside module classes extending `Mod`, override the following methods to easily capture changes:
+```java
+import silence.simsool.lucent.events.impl.ConfigEvent;
+
+@Override
+public void onToggleButtonChange(ConfigEvent.ToggleButtonEvent event) {
+	// Handle toggle button state changes
+}
+
+@Override
+public void onSliderChange(ConfigEvent.SliderEvent event) {
+	// Handle slider value changes
+}
+
+@Override
+public void onSelectorChange(ConfigEvent.SelectorEvent event) {
+	// Handle selector changes
+}
+
+@Override
+public void onColorPickerChange(ConfigEvent.ColorPickerEvent event) {
+	// Handle color changes
+}
+
+@Override
+public void onTextBoxChange(ConfigEvent.TextBoxEvent event) {
+	// Handle text input changes
+}
+
+@Override
+public void onKeyBindChange(ConfigEvent.KeyBindEvent event) {
+	// Handle keybind changes
+}
+```

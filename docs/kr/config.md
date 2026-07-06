@@ -151,3 +151,55 @@ Minecraft.getInstance().setScreen(configScreen);
 - `createConfigScreen(ModManager manager)`: 모던 설정화면 GUI 스크린 객체를 만듭니다.
 - `createEditHUDScreen(ModManager manager)`: HUD 배치를 자유롭게 드래그하고 크기 조정할 수 있는 스크린 객체를 만듭니다.
 - `registerHUD(ModManager manager, LucentHUD hud)`: HUD 렌더러 컴포넌트를 매니저에 등록합니다.
+
+---
+
+## 6. 콘피그 변경 이벤트 수신
+
+설정값이 변경될 때 발생하는 이벤트를 구독하여 특정 로직을 실행할 수 있습니다. 
+
+### 패브릭 이벤트를 직접 구독하는 방법
+`ConfigEvent.<이벤트명>`을 통해 리스너를 직접 등록할 수 있습니다:
+```java
+import silence.simsool.lucent.events.impl.ConfigEvent;
+
+ConfigEvent.TOGGLE_BUTTON.register(event -> {
+	System.out.println("설정 필드 " + event.getConfigName() + "의 값이 " + event.getOldValue() + "에서 " + event.getNewValue() + "(으)로 변경됨!");
+});
+```
+
+### 모듈 클래스에서 오버라이드하여 수신하는 방법
+`Mod` 클래스를 상속받은 모듈 클래스 내에서 아래의 이벤트 메서드들을 오버라이드하여 편리하게 변경사항을 수신할 수 있습니다:
+```java
+import silence.simsool.lucent.events.impl.ConfigEvent;
+
+@Override
+public void onToggleButtonChange(ConfigEvent.ToggleButtonEvent event) {
+	// 토글 버튼 변경 시 처리
+}
+
+@Override
+public void onSliderChange(ConfigEvent.SliderEvent event) {
+	// 슬라이더 값 변경 시 처리
+}
+
+@Override
+public void onSelectorChange(ConfigEvent.SelectorEvent event) {
+	// 셀렉터 값 변경 시 처리
+}
+
+@Override
+public void onColorPickerChange(ConfigEvent.ColorPickerEvent event) {
+	// 컬러피커 색상 변경 시 처리
+}
+
+@Override
+public void onTextBoxChange(ConfigEvent.TextBoxEvent event) {
+	// 텍스트 박스 내용 변경 시 처리
+}
+
+@Override
+public void onKeyBindChange(ConfigEvent.KeyBindEvent event) {
+	// 키바인드 설정 변경 시 처리
+}
+```

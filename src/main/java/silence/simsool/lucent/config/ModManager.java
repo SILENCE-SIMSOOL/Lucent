@@ -24,6 +24,7 @@ import silence.simsool.lucent.events.impl.LucentEvent;
 import silence.simsool.lucent.events.impl.InputEvent;
 import silence.simsool.lucent.events.impl.PacketEvent;
 import silence.simsool.lucent.events.impl.EntityEvent;
+import silence.simsool.lucent.events.impl.ConfigEvent;
 import silence.simsool.lucent.examplemod.mods.ExampleMod;
 import silence.simsool.lucent.general.models.abstracts.Mod;
 import silence.simsool.lucent.general.models.data.KeyBind;
@@ -49,6 +50,15 @@ public class ModManager {
 	private LucentFont titleFont = Fonts.PRETENDARD_SEMIBOLD;
 	private int titleColor = UIColors.ACCENT_BLUE;
 	private float titleSize = 20.f;
+	private boolean themeColor = true;
+
+	public void setThemeColor(boolean themeColor) {
+		this.themeColor = themeColor;
+	}
+
+	public boolean isThemeColor() {
+		return themeColor;
+	}
 
 	public void setTitle(String title) {
 		this.title = title;
@@ -493,6 +503,30 @@ public class ModManager {
 
 		PacketEvent.SEND.register(event -> {
 			if (module.isEnabled) module.onSendPacket(event);
+		});
+
+		ConfigEvent.TOGGLE_BUTTON.register(event -> {
+			if (module.isEnabled) module.onToggleButtonChange(event);
+		});
+
+		ConfigEvent.SLIDER.register(event -> {
+			if (module.isEnabled) module.onSliderChange(event);
+		});
+
+		ConfigEvent.SELECTOR.register(event -> {
+			if (module.isEnabled) module.onSelectorChange(event);
+		});
+
+		ConfigEvent.COLOR_PICKER.register(event -> {
+			if (module.isEnabled) module.onColorPickerChange(event);
+		});
+
+		ConfigEvent.TEXT_BOX.register(event -> {
+			if (module.isEnabled) module.onTextBoxChange(event);
+		});
+
+		ConfigEvent.KEY_BIND.register(event -> {
+			if (module.isEnabled) module.onKeyBindChange(event);
 		});
 	}
 

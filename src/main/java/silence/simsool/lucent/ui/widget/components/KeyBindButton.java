@@ -83,16 +83,32 @@ public class KeyBindButton extends UIWidget {
 
 		float fontSize = 13f;
 		float tw = NVGRenderer.textWidth(label, Fonts.PRETENDARD_MEDIUM, fontSize);
-		float tx = x + (width - tw) / 2f;
+
+		float iconSize = 4f;
+		float iconGap = 1f;
+		//float iconW = iconSize * 3 + iconGap * 2;
+		float iconH = iconSize * 2 + iconGap;
+		float ix = x + 12;
+		float iy = y + (height - iconH) / 2f;
+
+		int iconColor = waiting ? UIColors.ACCENT_BLUE : (!value.isBound() ? UIColors.MUTED : UIColors.TEXT_SECONDARY);
+
+		// Keyboard Icon
+		NVGRenderer.rect(ix + iconSize + iconGap, iy, iconSize, iconSize, iconColor, 1f); // W
+		NVGRenderer.rect(ix, iy + iconSize + iconGap, iconSize, iconSize, iconColor, 1f); // A
+		NVGRenderer.rect(ix + iconSize + iconGap, iy + iconSize + iconGap, iconSize, iconSize, iconColor, 1f); // S
+		NVGRenderer.rect(ix + iconSize * 2 + iconGap * 2, iy + iconSize + iconGap, iconSize, iconSize, iconColor, 1f); // D
+
+		float tx = x + 28 + (width - 28 - tw) / 2f;
 		float ty = y + (height - fontSize) / 2f;
-		NVGRenderer.text(label, tx, ty, Fonts.PRETENDARD_MEDIUM, textColor, fontSize);
+		NVGRenderer.text(label, tx - 6, ty, Fonts.PRETENDARD_MEDIUM, textColor, fontSize);
 
 		// 대기 중일 때 ESC 힌트
 		if (waiting) {
 			String hint = "ESC to clear";
 			float hw = NVGRenderer.textWidth(hint, Fonts.PRETENDARD, 10f);
 			float hintAlpha = 0.5f + 0.3f * (float) Math.sin(waitAnim * Math.PI * 2);
-			NVGRenderer.text(hint, x + (width - hw) / 2f, y + height + 6f, Fonts.PRETENDARD, UColor.withAlpha(UIColors.TEXT_PRIMARY, (int) (hintAlpha * 255)), 10f);
+			NVGRenderer.text(hint, x + (width - hw) / 2f, y + height + 4f, Fonts.PRETENDARD, UColor.withAlpha(UIColors.TEXT_PRIMARY, (int) (hintAlpha * 255)), 10f);
 		}
 		
 		NVGRenderer.pop();
@@ -103,13 +119,8 @@ public class KeyBindButton extends UIWidget {
 		if (!enabled || !visible) return false;
 
 		if (waiting) {
-			if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT || button == GLFW.GLFW_MOUSE_BUTTON_RIGHT || button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE || button >= 3) {
-				if (!isMouseOver(mouseX, mouseY) || button != GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-					setBind(KeyBind.ofMouse(button, 0));
-					return true;
-				}
-			}
-			return false;
+			setBind(KeyBind.ofMouse(button, 0));
+			return true;
 		}
 
 		if (button == 0 && isMouseOver(mouseX, mouseY)) {

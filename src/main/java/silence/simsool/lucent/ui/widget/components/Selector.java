@@ -23,7 +23,6 @@ public class Selector extends UIWidget {
 
 	private static int PADDING = 14;
 	private static int ARROW_W = 16;
-	private static int ITEM_HEIGHT = 38;
 	private static int MAX_VISIBLE = 6;
 	private static float FONT_SIZE = 14f;
 
@@ -59,7 +58,7 @@ public class Selector extends UIWidget {
 		NVGRenderer.push();
 		dropdownAnim = UAnimation.stepProgress(dropdownAnim, isOpen, 12f, delta);
 
-		int bg = UColor.withAlpha(UIColors.PURE_BLACK, 60);
+		int bg = UColor.withAlpha(UIColors.PURE_BLACK, 40);
 		int border = isOpen ? UIColors.ACCENT_BLUE : (hovered ? UColor.withAlpha(UIColors.ACCENT_BLUE, 180) : UIColors.ITEM_BORDER);
 
 		NVGRenderer.rect(x, y, width, height, bg, 8f);
@@ -72,7 +71,7 @@ public class Selector extends UIWidget {
 		int ty = y + (height - 14) / 2;
 		NVGRenderer.text(clipped, x + PADDING, ty, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_PRIMARY, 14f);
 
-		drawChevron(x + width - PADDING - 10, y + height / 2, dropdownAnim);
+		drawChevron(x + width - PADDING - 4, y + height / 2, dropdownAnim);
 		NVGRenderer.pop();
 	}
 
@@ -84,7 +83,8 @@ public class Selector extends UIWidget {
 		NVGRenderer.translate(cx, cy);
 		NVGRenderer.rotate(angle);
 		
-		NVGRenderer.outlineTriangle(-size, -size/2, size, -size/2, 0, size/2, 1.5f, UIColors.TEXT_SECONDARY);
+		NVGRenderer.line(-size, -size/2, 0, size/2, 1.5f, UIColors.TEXT_SECONDARY);
+		NVGRenderer.line(0, size/2, size, -size/2, 1.5f, UIColors.TEXT_SECONDARY);
 		
 		NVGRenderer.pop();
 	}
@@ -94,35 +94,36 @@ public class Selector extends UIWidget {
 		if (dropdownAnim <= 0.01f) return;
 		NVGRenderer.push();
 		int visibleCount = Math.min(options.size(), MAX_VISIBLE);
-		int totalH = visibleCount * ITEM_HEIGHT;
+		int itemHeight = this.height;
+		int totalH = visibleCount * itemHeight;
 		int visibleH = (int)(totalH * UAnimation.Easing.easeOut(dropdownAnim));
 
 		int dx = x;
 		int dy = y + height + 2;
 
 		NVGRenderer.pushScissor(dx, dy, width, visibleH);
-		NVGRenderer.rect(dx, dy, width, totalH, dropdownBgColor, 10f);
-		NVGRenderer.outlineRect(dx, dy, width, totalH, 1, borderColor, 10f);
+		NVGRenderer.rect(dx, dy, width, visibleH, dropdownBgColor, 10f);
+		NVGRenderer.outlineRect(dx, dy, width, visibleH, 1, borderColor, 10f);
 
 		for (int i = 0; i < visibleCount; i++) {
 			int idx = i + scrollOffset;
 			if (idx >= options.size()) break;
-			int iy = dy + i * ITEM_HEIGHT;
+			int iy = dy + i * itemHeight;
 
 			boolean isSelected = (idx == selectedIndex);
 			boolean isItemHovered = (hoveredItem == idx);
 
-			if (i < visibleCount - 1) NVGRenderer.rect(dx + 4, iy + ITEM_HEIGHT - 1, width - 8, 1, separatorColor);
+			if (i < visibleCount - 1) NVGRenderer.rect(dx + 4, iy + itemHeight - 1, width - 8, 1, separatorColor);
 
 			if (isSelected || isItemHovered) {
 				int targetBg = isSelected ? UColor.withAlpha(UIColors.ACCENT_BLUE, 100) : itemHoverColor;
-				if (i == 0) NVGRenderer.rect(dx, iy, width, ITEM_HEIGHT, targetBg, 10, 10, 0, 0);
-				else if (i == visibleCount - 1) NVGRenderer.rect(dx, iy, width, ITEM_HEIGHT, targetBg, 0, 0, 10, 10);
-				else NVGRenderer.rect(dx, iy, width, ITEM_HEIGHT, targetBg);
+				if (i == 0) NVGRenderer.rect(dx, iy, width, itemHeight, targetBg, 10, 10, 0, 0);
+				else if (i == visibleCount - 1) NVGRenderer.rect(dx, iy, width, itemHeight, targetBg, 0, 0, 10, 10);
+				else NVGRenderer.rect(dx, iy, width, itemHeight, targetBg);
 			}
 
 			String optText = fitText(displayOptions.get(idx), width - PADDING * 2, Fonts.PRETENDARD_MEDIUM);
-			int iTextY = iy + (ITEM_HEIGHT - (int)FONT_SIZE) / 2;
+			int iTextY = iy + (itemHeight - (int)FONT_SIZE) / 2;
 			NVGRenderer.text(optText, dx + PADDING, iTextY, Fonts.PRETENDARD_MEDIUM, textColor, FONT_SIZE);
 
 		}
@@ -141,8 +142,8 @@ public class Selector extends UIWidget {
 		hoveredItem = -1;
 		for (int i = 0; i < visibleCount; i++) {
 			int idx = i + scrollOffset;
-			int iy = dy + 2 + i * ITEM_HEIGHT;
-			if (ULayout.isHovered(mouseX, mouseY, dx, iy, width, ITEM_HEIGHT)) {
+			int iy = dy + 2 + i * itemHeight;
+			if (ULayout.isHovered(mouseX, mouseY, dx, iy, width, itemHeight)) {
 				hoveredItem = idx;
 				break;
 			}
@@ -167,10 +168,11 @@ public class Selector extends UIWidget {
 		if (isOpen) {
 			int visibleCount = Math.min(options.size(), MAX_VISIBLE);
 			int dy = y + height + 2;
+			int itemHeight = this.height;
 			for (int i = 0; i < visibleCount; i++) {
 				int idx = i + scrollOffset;
-				int iy = dy + 2 + i * ITEM_HEIGHT;
-				if (ULayout.isHovered(mouseX, mouseY, x, iy, width, ITEM_HEIGHT)) {
+				int iy = dy + 2 + i * itemHeight;
+				if (ULayout.isHovered(mouseX, mouseY, x, iy, width, itemHeight)) {
 					selectIndex(idx);
 					close();
 					return true;
@@ -193,7 +195,8 @@ public class Selector extends UIWidget {
 	public boolean mouseScrolled(double mouseX, double mouseY, double hAmt, double vAmt) {
 		if (!isOpen) return false;
 		int dy = y + height + 2;
-		int totalH = Math.min(options.size(), MAX_VISIBLE) * ITEM_HEIGHT;
+		int itemHeight = this.height;
+		int totalH = Math.min(options.size(), MAX_VISIBLE) * itemHeight;
 		if (ULayout.isHovered(mouseX, mouseY, x, dy, width, totalH)) {
 			scrollOffset = (int) UAnimation.clamp(scrollOffset - (int) vAmt, 0, Math.max(0, options.size() - MAX_VISIBLE));
 			return true;
@@ -267,5 +270,9 @@ public class Selector extends UIWidget {
 
 	public boolean isOpen() {
 		return isOpen;
+	}
+
+	public float getDropdownAnim() {
+		return dropdownAnim;
 	}
 }
