@@ -166,6 +166,6 @@ dependencies {
 
 ## 라이선스
 
-본 프로젝트는 **MIT License**를 따릅니다.
+본 프로젝트는 **SILENCE License**를 따릅니다.
 
 자세한 내용은 [`LICENSE`](https://www.google.com/search?q=./LICENSE)를 참고하세요.
