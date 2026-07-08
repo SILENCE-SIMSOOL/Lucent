@@ -171,5 +171,5 @@ dependencies {
 
 ## License
 
-Licensed under the **MIT License**.  
+Licensed under the **SILENCE License**.  
 See [`LICENSE`](./LICENSE) for more information.
