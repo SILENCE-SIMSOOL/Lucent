@@ -18,6 +18,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.world.LevelRenderEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
@@ -103,6 +104,14 @@ public class LucentEventRegister {
 			if (mc.level == null || mc.player == null) return;
 			float partialTick = mc.getDeltaTracker().getGameTimeDeltaPartialTick(false);
 			LucentEvent.WORLD_RENDER_LAST.invoker().onRenderWorldLast(new LucentEvent.RenderWorldLastEvent(context, context.worldRenderer(), partialTick));
+		});
+
+		LevelRenderEvents.AFTER_BLOCK_OUTLINE_EXTRACTION.register((worldContext, hitResult) -> {
+			if (mc.level == null || mc.player == null) return true;
+			LucentEvent.BlockOverlayEvent event = new LucentEvent.BlockOverlayEvent(worldContext, hitResult);
+			LucentEvent.BLOCK_OVERLAY_EVENT.invoker().onBlockOverlay(event);
+			if (event.isCanceled()) worldContext.levelState().blockOutlineRenderState = null;
+			return !event.isCanceled();
 		});
 
 		// ───────────────────────────── GUI Screen ─────────────────────────────

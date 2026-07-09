@@ -59,6 +59,7 @@ public abstract class Mod {
 	public void onLeftClickPost(LucentEvent.LeftClickPostEvent event) {}
 	public void onRightClickPre(LucentEvent.RightClickPreEvent event) {}
 	public void onRightClickPost(LucentEvent.RightClickPostEvent event) {}
+	public void onBlockOverlay(LucentEvent.BlockOverlayEvent event) {}
 
 	public void onMouseInput(InputEvent.MouseInputEvent event) {}
 	public void onKeyInput(InputEvent.KeyInputEvent event) {}

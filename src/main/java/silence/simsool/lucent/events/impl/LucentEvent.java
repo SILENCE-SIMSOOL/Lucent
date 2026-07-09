@@ -6,6 +6,8 @@ import java.util.ArrayList;
 
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldExtractionContext;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
+import net.minecraft.world.phys.HitResult;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IBlockOverlayEvent;
 import net.fabricmc.fabric.api.event.Event;
 import net.minecraft.client.particle.Particle;
 import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IParticleSpawnEvent;
@@ -300,6 +302,15 @@ public class LucentEvent {
 		IRightClickPostEvent.class, listeners -> event -> {
 			for (IRightClickPostEvent listener : listeners) {
 				listener.onRightClickPost(event);
+			}
+		}
+	);
+
+	public static final Event<IBlockOverlayEvent> BLOCK_OVERLAY_EVENT = createArrayBacked(
+		IBlockOverlayEvent.class, listeners -> event -> {
+			for (IBlockOverlayEvent listener : listeners) {
+				listener.onBlockOverlay(event);
+				if (event.isCanceled()) break;
 			}
 		}
 	);
@@ -630,6 +641,25 @@ public class LucentEvent {
 	}
 
 	public static class RightClickPostEvent {
+	}
+
+	public static class BlockOverlayEvent {
+		public final WorldExtractionContext renderContext;
+		public final HitResult hitResult;
+		private boolean canceled = false;
+
+		public BlockOverlayEvent(WorldExtractionContext renderContext, HitResult hitResult) {
+			this.renderContext = renderContext;
+			this.hitResult = hitResult;
+		}
+
+		public void cancel() {
+			this.canceled = true;
+		}
+
+		public boolean isCanceled() {
+			return canceled;
+		}
 	}
 
 	public static class ParticleSpawnEvent {

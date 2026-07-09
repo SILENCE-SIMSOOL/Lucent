@@ -286,6 +286,10 @@ public class ModManager {
 			if (module.isEnabled) module.onBlockInteract(event);
 		});
 
+		LucentEvent.BLOCK_OVERLAY_EVENT.register(event -> {
+			if (module.isEnabled) module.onBlockOverlay(event);
+		});
+
 		LucentEvent.MESSAGE_SENT_EVENT.register(event -> {
 			if (module.isEnabled) module.onMessageSent(event);
 		});
