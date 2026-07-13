@@ -358,7 +358,7 @@ public class PremiumCosmetics {
 
 	public static CosmeticSetting getCosmeticSetting(UUID uuid, String cosmeticName) {
 		if (uuid == null) return null;
-		if (cosmeticName.equalsIgnoreCase("wing") && !LucentConfig.renderPremiumWings) return null;
+		if (cosmeticName.equalsIgnoreCase("wings") && !LucentConfig.renderPremiumWings) return null;
 		if (cosmeticName.equalsIgnoreCase("hat") && !LucentConfig.renderPremiumHats) return null;
 		if (cosmeticName.equalsIgnoreCase("cape") && !LucentConfig.renderPremiumCapes) return null;
 		if (isPreviewActive && uuid.equals(Minecraft.getInstance().getUser().getProfileId())) {
