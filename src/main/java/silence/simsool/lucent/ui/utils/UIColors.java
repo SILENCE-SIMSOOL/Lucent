@@ -32,6 +32,9 @@ public class UIColors {
 	public static int DARK                   = 0xFF2A2A2D;  
 	public static int ACCENT_BLUE            = 0xFF3B82F6;
 
+	// ----------- Transparent -----------
+	public static int TRANSPARENT            = 0x00000000;
+
 	// ---------- Utilities ----------
 	public static int withAlpha(int color, int alpha) {
 		return (color & 0x00FFFFFF) | (alpha << 24);

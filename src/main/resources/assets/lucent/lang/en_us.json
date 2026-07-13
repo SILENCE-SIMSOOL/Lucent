@@ -33,5 +33,11 @@
 	"lucent.category.performance": "Performance",
 	"lucent.category.utility": "Utility",
 	"lucent.category.others": "Others",
-	"lucent.category.qol": "QOL"
+	"lucent.category.qol": "QOL",
+	"lucent.preferences.render_hats": "Render Hats",
+	"lucent.preferences.render_hats.desc": "Toggles rendering of hat cosmetics.",
+	"lucent.preferences.render_wings": "Render Wings",
+	"lucent.preferences.render_wings.desc": "Toggles rendering of wing cosmetics.",
+	"lucent.preferences.render_capes": "Render Capes",
+	"lucent.preferences.render_capes.desc": "Toggles rendering of cape cosmetics."
 }

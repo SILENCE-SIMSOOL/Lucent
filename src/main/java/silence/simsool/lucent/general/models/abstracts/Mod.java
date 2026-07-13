@@ -74,6 +74,7 @@ public abstract class Mod {
 
 	public void onRenderHUD(GUIEvent.RenderHUD event) {}
 	public void onGUIOpen(GUIEvent.GUIOpenEvent event) {}
+	public void onGUIOpenPre(GUIEvent.GUIOpenPreEvent event) {}
 	public void onGUIClose(GUIEvent.GUICloseEvent event) {}
 	public void onGUIClick(GUIEvent.GUIClickEvent event) {}
 	public void onGUIKey(GUIEvent.GUIKeyEvent event) {}

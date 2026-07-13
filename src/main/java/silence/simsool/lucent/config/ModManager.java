@@ -401,6 +401,10 @@ public class ModManager {
 			if (module.isEnabled) module.onGUIOpen(event);
 		});
 
+		GUIEvent.OPEN_PRE.EVENT.register(event -> {
+			if (module.isEnabled) module.onGUIOpenPre(event);
+		});
+
 		GUIEvent.CLOSE.EVENT.register(event -> {
 			if (module.isEnabled) module.onGUIClose(event);
 		});
@@ -681,6 +685,10 @@ public class ModManager {
 			if (json.has("uiBlur")) LucentConfig.uiBlur = json.get("uiBlur").getAsBoolean();
 			if (json.has("uiBlurStrength")) LucentConfig.uiBlurStrength = json.get("uiBlurStrength").getAsFloat();
 			if (json.has("setupLanguage")) LucentConfig.setupLanguage = json.get("setupLanguage").getAsString();
+			if (json.has("uiScale")) LucentConfig.uiScale = json.get("uiScale").getAsFloat();
+			if (json.has("renderPremiumHats")) LucentConfig.renderPremiumHats = json.get("renderPremiumHats").getAsBoolean();
+			if (json.has("renderPremiumWings")) LucentConfig.renderPremiumWings = json.get("renderPremiumWings").getAsBoolean();
+			if (json.has("renderPremiumCapes")) LucentConfig.renderPremiumCapes = json.get("renderPremiumCapes").getAsBoolean();
 
 		} catch (Exception e) {}
 	}
@@ -706,6 +714,10 @@ public class ModManager {
 		json.addProperty("uiBlur", LucentConfig.uiBlur);
 		json.addProperty("uiBlurStrength", LucentConfig.uiBlurStrength);
 		json.addProperty("setupLanguage", LucentConfig.setupLanguage);
+		json.addProperty("uiScale", LucentConfig.uiScale);
+		json.addProperty("renderPremiumHats", LucentConfig.renderPremiumHats);
+		json.addProperty("renderPremiumWings", LucentConfig.renderPremiumWings);
+		json.addProperty("renderPremiumCapes", LucentConfig.renderPremiumCapes);
 
 		try (FileWriter writer = new FileWriter(file)) {
 			GSON.toJson(json, writer);

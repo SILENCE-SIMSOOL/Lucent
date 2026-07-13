@@ -1156,27 +1156,32 @@ public class ConfigScreen extends Screen {
 		int sy = scissorY;
 		int itemW = contentW - PAD * 2;
 		
+		int currentY = sy;
+
 		// 1. Open Animation
-		widgets.add(new SettingRowWidget(sx, sy, itemW, 74, L10n.translate("lucent.preferences.open_animation"), L10n.translate("lucent.preferences.open_animation.desc")));
-		ToggleButton animBtn = new ToggleButton(sx + itemW - PAD - 48, sy + 25, 48, 24, LucentConfig.openAnimation);
+		widgets.add(new SettingRowWidget(sx, currentY, itemW, 74, L10n.translate("lucent.preferences.open_animation"), L10n.translate("lucent.preferences.open_animation.desc")));
+		ToggleButton animBtn = new ToggleButton(sx + itemW - PAD - 48, currentY + 25, 48, 24, LucentConfig.openAnimation);
 		animBtn.setOnChange(v -> { LucentConfig.openAnimation = v; Lucent.config.saveGlobalConfig(); });
 		widgets.add(animBtn);
+		currentY += 84;
 
 		// 2. UI Blur
-		widgets.add(new SettingRowWidget(sx, sy + 84, itemW, 74, L10n.translate("lucent.preferences.ui_blur"), L10n.translate("lucent.preferences.ui_blur.desc")));
-		ToggleButton blurBtn = new ToggleButton(sx + itemW - PAD - 48, sy + 25 + 84, 48, 24, LucentConfig.uiBlur);
+		widgets.add(new SettingRowWidget(sx, currentY, itemW, 74, L10n.translate("lucent.preferences.ui_blur"), L10n.translate("lucent.preferences.ui_blur.desc")));
+		ToggleButton blurBtn = new ToggleButton(sx + itemW - PAD - 48, currentY + 25, 48, 24, LucentConfig.uiBlur);
 		blurBtn.setOnChange(v -> { LucentConfig.uiBlur = v; Lucent.config.saveGlobalConfig(); });
 		widgets.add(blurBtn);
+		currentY += 84;
 
 		// 3. UI Blur Strength
-		widgets.add(new SettingRowWidget(sx, sy + 168, itemW, 74, L10n.translate("lucent.preferences.ui_blur_strength"), L10n.translate("lucent.preferences.ui_blur_strength.desc")));
-		Slider blurSlider = new Slider(sx + itemW - PAD - 200, sy + 25 + 168, 200, 24, 0, 20, 1, LucentConfig.uiBlurStrength);
+		widgets.add(new SettingRowWidget(sx, currentY, itemW, 74, L10n.translate("lucent.preferences.ui_blur_strength"), L10n.translate("lucent.preferences.ui_blur_strength.desc")));
+		Slider blurSlider = new Slider(sx + itemW - PAD - 200, currentY + 25, 200, 24, 0, 20, 1, LucentConfig.uiBlurStrength);
 		blurSlider.setOnChange(v -> { LucentConfig.uiBlurStrength = (float)(double)v; Lucent.config.saveGlobalConfig(); });
 		widgets.add(blurSlider);
+		currentY += 84;
 
 		// 4. Setup Language
-		widgets.add(new SettingRowWidget(sx, sy + 252, itemW, 74, L10n.translate("lucent.preferences.language"), L10n.translate("lucent.preferences.language.desc")));
-		Selector langSel = new Selector(sx + itemW - PAD - 148, sy + 17 + 252, 148, 38, List.of("English", "Korean", "Chinese", "Japanese", "Russian", "Spanish", "Hebrew"));
+		widgets.add(new SettingRowWidget(sx, currentY, itemW, 74, L10n.translate("lucent.preferences.language"), L10n.translate("lucent.preferences.language.desc")));
+		Selector langSel = new Selector(sx + itemW - PAD - 148, currentY + 17, 148, 38, List.of("English", "Korean", "Chinese", "Japanese", "Russian", "Spanish", "Hebrew"));
 		langSel.setValue(LucentConfig.setupLanguage);
 		langSel.setOnChange(v -> { 
 			LucentConfig.setupLanguage = v; 
@@ -1185,29 +1190,52 @@ public class ConfigScreen extends Screen {
 			refreshUI(true);
 		});
 		overlayWidgets.add(langSel);
+		currentY += 84;
 
 		// 5. UI Scale
-		widgets.add(new SettingRowWidget(sx, sy + 336, itemW, 74, L10n.translate("lucent.preferences.ui_scale"), L10n.translate("lucent.preferences.ui_scale.desc")));
-		Slider scaleSlider = new Slider(sx + itemW - PAD - 200, sy + 25 + 336, 200, 24, 1.0, 2.0, 0.1, (double) LucentConfig.uiScale);
+		widgets.add(new SettingRowWidget(sx, currentY, itemW, 74, L10n.translate("lucent.preferences.ui_scale"), L10n.translate("lucent.preferences.ui_scale.desc")));
+		Slider scaleSlider = new Slider(sx + itemW - PAD - 200, currentY + 25, 200, 24, 1.0, 2.0, 0.1, (double) LucentConfig.uiScale);
 		scaleSlider.setOnRelease(v -> { 
 			LucentConfig.uiScale = (float)(double)v; 
 			Lucent.config.saveGlobalConfig();
 			init(); // Re-calculate dimensions immediately
 		});
 		widgets.add(scaleSlider);
+		currentY += 84;
 
-		// 6. Version Info
-		widgets.add(new SettingRowWidget(sx, sy + 420, itemW, 74, L10n.translate("lucent.preferences.version"), "Current: " + Lucent.VERSION + "  |  Latest: " + Lucent.LATEST_VERSION));
+		// 6. Render Premium Hats
+		widgets.add(new SettingRowWidget(sx, currentY, itemW, 74, L10n.translate("lucent.preferences.render_hats"), L10n.translate("lucent.preferences.render_hats.desc")));
+		ToggleButton renderHatsBtn = new ToggleButton(sx + itemW - PAD - 48, currentY + 25, 48, 24, LucentConfig.renderPremiumHats);
+		renderHatsBtn.setOnChange(v -> { LucentConfig.renderPremiumHats = v; Lucent.config.saveGlobalConfig(); });
+		widgets.add(renderHatsBtn);
+		currentY += 84;
+
+		// 7. Render Premium Wings
+		widgets.add(new SettingRowWidget(sx, currentY, itemW, 74, L10n.translate("lucent.preferences.render_wings"), L10n.translate("lucent.preferences.render_wings.desc")));
+		ToggleButton renderWingsBtn = new ToggleButton(sx + itemW - PAD - 48, currentY + 25, 48, 24, LucentConfig.renderPremiumWings);
+		renderWingsBtn.setOnChange(v -> { LucentConfig.renderPremiumWings = v; Lucent.config.saveGlobalConfig(); });
+		widgets.add(renderWingsBtn);
+		currentY += 84;
+
+		// 8. Render Premium Capes
+		widgets.add(new SettingRowWidget(sx, currentY, itemW, 74, L10n.translate("lucent.preferences.render_capes"), L10n.translate("lucent.preferences.render_capes.desc")));
+		ToggleButton renderCapesBtn = new ToggleButton(sx + itemW - PAD - 48, currentY + 25, 48, 24, LucentConfig.renderPremiumCapes);
+		renderCapesBtn.setOnChange(v -> { LucentConfig.renderPremiumCapes = v; Lucent.config.saveGlobalConfig(); });
+		widgets.add(renderCapesBtn);
+		currentY += 84;
+
+		// 9. Version Info
+		widgets.add(new SettingRowWidget(sx, currentY, itemW, 74, L10n.translate("lucent.preferences.version"), "Current: " + Lucent.VERSION + "  |  Latest: " + Lucent.LATEST_VERSION));
 		
 		int btnW = 120;
-		ActionButton updateBtn = new ActionButton(sx + itemW - PAD - btnW, sy + 19 + 420, btnW, 36, L10n.translate("lucent.preferences.update"));
+		ActionButton updateBtn = new ActionButton(sx + itemW - PAD - btnW, currentY + 19, btnW, 36, L10n.translate("lucent.preferences.update"));
 		updateBtn.setOnClick(() -> {
 			Util.getPlatform().openUri(LucentConfig.GITHUB_LINK + "/releases");
 		});
 		widgets.add(updateBtn);
 
 		// Action Buttons
-		int rowY = sy + 504 + 20;
+		int rowY = currentY + 74 + 20;
 
 		ActionButton openConfig = new ActionButton(sx, rowY, btnW, 36, L10n.translate("lucent.preferences.open_config"));
 		openConfig.setOnClick(() -> {

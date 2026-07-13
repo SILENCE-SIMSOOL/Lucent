@@ -9,6 +9,7 @@
 	],
 	"client": [
 		"accessors.BeaconBeamAccessor",
+		"accessors.InventoryScreenAccessor",
 		"accessors.KeyMappingAccessor",
 		"mixins.events.entity.MixinEntityRenderDispatcher_ExtractRenderStatePre",
 		"mixins.events.entity.MixinEntityRenderer_RenderEntityEvent",
@@ -27,6 +28,8 @@
 		"mixins.events.packet.MixinConnection",
 		"mixins.events.particle.MixinParticleEngin",
 		"mixins.events.player.MixinLocalPlayer",
+		"mixins.events.player.MixinPlayer",
+		"mixins.events.player.MixinPlayerInfo",
 		"mixins.events.world.MixinLevelChunk_BLOCK_UPDATE_EVENT"
 	]
 }

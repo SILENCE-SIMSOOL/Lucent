@@ -33,5 +33,11 @@
 	"lucent.category.performance": "性能优化",
 	"lucent.category.utility": "实用工具",
 	"lucent.category.others": "其他",
-	"lucent.category.qol": "QOL"
+	"lucent.category.qol": "QOL",
+	"lucent.preferences.render_hats": "渲染帽子",
+	"lucent.preferences.render_hats.desc": "是否渲染帽子饰品。",
+	"lucent.preferences.render_wings": "渲染翅膀",
+	"lucent.preferences.render_wings.desc": "是否渲染翅膀饰品。",
+	"lucent.preferences.render_capes": "渲染披风",
+	"lucent.preferences.render_capes.desc": "是否渲染披风饰品。"
 }

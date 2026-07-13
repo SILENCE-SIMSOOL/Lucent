@@ -33,5 +33,11 @@
 	"lucent.category.performance": "ביצועים",
 	"lucent.category.utility": "כלי עזר",
 	"lucent.category.others": "אחרים",
-	"lucent.category.qol": "QOL"
+	"lucent.category.qol": "QOL",
+	"lucent.preferences.render_hats": "הצגת כובעים",
+	"lucent.preferences.render_hats.desc": "קובע אם להציג כובעי קוסמטיקה.",
+	"lucent.preferences.render_wings": "הצגת כנפיים",
+	"lucent.preferences.render_wings.desc": "קובע אם להציג כנפי קוסמטיקה.",
+	"lucent.preferences.render_capes": "הצגת גלימות",
+	"lucent.preferences.render_capes.desc": "קובע אם להציג גלימות קוסמטיקה."
 }

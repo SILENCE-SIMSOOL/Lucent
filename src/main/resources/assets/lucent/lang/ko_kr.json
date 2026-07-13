@@ -33,5 +33,11 @@
 	"lucent.category.performance": "성능",
 	"lucent.category.utility": "유틸리티",
 	"lucent.category.others": "기타",
-	"lucent.category.qol": "QOL"
+	"lucent.category.qol": "QOL",
+	"lucent.preferences.render_hats": "모자 랜더링",
+	"lucent.preferences.render_hats.desc": "모자 치장품의 랜더링 여부를 설정합니다.",
+	"lucent.preferences.render_wings": "날개 랜더링",
+	"lucent.preferences.render_wings.desc": "날개 치장품의 랜더링 여부를 설정합니다.",
+	"lucent.preferences.render_capes": "망토 랜더링",
+	"lucent.preferences.render_capes.desc": "망토 치장품의 랜더링 여부를 설정합니다."
 }

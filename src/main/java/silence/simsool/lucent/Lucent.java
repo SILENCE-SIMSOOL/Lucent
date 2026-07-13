@@ -31,16 +31,19 @@ import silence.simsool.lucent.general.utils.render.ItemRenderer;
 import silence.simsool.lucent.general.utils.render.Render3D;
 import silence.simsool.lucent.general.utils.render.RoundRectPIPRenderer;
 import silence.simsool.lucent.general.utils.useful.ULog;
+import silence.simsool.lucent.general.utils.useful.UScreen;
 import silence.simsool.lucent.hud.HUDManager;
 import silence.simsool.lucent.ui.manager.LucentResourceManager;
 import silence.simsool.lucent.ui.utils.nvg.Fonts;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
+import silence.simsool.lucent.init.PremiumCosmetics;
+import silence.simsool.lucent.general.utils.useful.UChat;
 
 public class Lucent implements ClientModInitializer {
 
 	public static final String ID = "lucent";
 	public static final String NAME = "Lucent";
-	public static final String VERSION = "1.3.0";
+	public static final String VERSION = "1.3.1";
 	public static String LATEST_VERSION = "Fetching...";
 
 	public static Minecraft mc = Minecraft.getInstance();
@@ -64,6 +67,7 @@ public class Lucent implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		LOG.info("Lucent library initializing..");
+		PremiumCosmetics.init();
 
 		Fonts.initAsync();
 		LucentEventRegister.initialize();
@@ -105,24 +109,39 @@ public class Lucent implements ClientModInitializer {
 		});
 
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-			String[] commands = {"lucent", "config"};
+			dispatcher.register(ClientCommandManager.literal("config")
+				.executes(context -> {
+					UScreen.setScreenMC(LucentAPI.createEditHUDScreen(config));
+					return Command.SINGLE_SUCCESS;
+				})
+			);
 
-			for (String label : commands) {
-				dispatcher.register(ClientCommandManager.literal(label)
+			dispatcher.register(ClientCommandManager.literal("lucent")
+				.executes(context -> {
+					UScreen.setScreenMC(LucentAPI.createEditHUDScreen(config));
+					return Command.SINGLE_SUCCESS;
+				})
+				.then(ClientCommandManager.literal("refresh")
 					.executes(context -> {
-						mc.schedule(() -> mc.setScreen(LucentAPI.createEditHUDScreen(config)));
+						PremiumCosmetics.loadPremiumData();
+						UChat.chat("§aPremium cosmetics database reloaded.");
 						return Command.SINGLE_SUCCESS;
 					})
-				);
-			}
+				)
+				.then(ClientCommandManager.literal("reload")
+					.executes(context -> {
+						PremiumCosmetics.loadPremiumData();
+						UChat.chat("§aPremium cosmetics database reloaded.");
+						return Command.SINGLE_SUCCESS;
+					})
+				)
+			);
 		});
 
 		InputEvent.KEY.register(event -> {
 			if (event.state) {
 				if (Lucent.CONFIG_KEY.matches(event.keyEvent)) {
-					mc.execute(() -> {
-						mc.setScreen(LucentAPI.createEditHUDScreen(config));
-					});
+					UScreen.setScreenMC(LucentAPI.createEditHUDScreen(config));
 				}
 			}
 		});
