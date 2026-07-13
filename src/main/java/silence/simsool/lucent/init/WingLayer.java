@@ -39,7 +39,7 @@ public class WingLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
 
 		else {
 			UUID uuid = PremiumCosmetics.getUuidFromState(state.id); if (uuid == null) return;
-			CosmeticSetting setting = PremiumCosmetics.getCosmeticSetting(uuid, "wing"); if (setting == null || !setting.enabled) return;
+			CosmeticSetting setting = PremiumCosmetics.getCosmeticSetting(uuid, "wings"); if (setting == null || !setting.enabled) return;
 			mode = setting.mode; if (mode == null) return;
 			texture = PremiumCosmetics.getCosmeticTexture("wings", setting); if (texture == null) return;
 		}
