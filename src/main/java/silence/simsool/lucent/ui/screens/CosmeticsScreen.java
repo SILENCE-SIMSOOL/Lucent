@@ -114,9 +114,9 @@ public class CosmeticsScreen extends Screen {
 
 		UUID localUuid = mc.getUser().getProfileId();
 		PremiumCosmetics.localPreviews.clear();
-		String currentWing = PremiumCosmetics.getCosmeticMode(localUuid, "wing");
-		if (currentWing != null) PremiumCosmetics.localPreviews.put("wing", currentWing);
-		else PremiumCosmetics.localPreviews.put("wing", "none");
+		String currentWing = PremiumCosmetics.getCosmeticMode(localUuid, "wings");
+		if (currentWing != null) PremiumCosmetics.localPreviews.put("wings", currentWing);
+		else PremiumCosmetics.localPreviews.put("wings", "none");
 	}
 
 	@Override
@@ -369,12 +369,13 @@ public class CosmeticsScreen extends Screen {
 
 	private void drawAlbumCard(int x, int y, int w, int h, String name, String mode, int index, float smx, float smy) {
 		boolean selected = false;
-		String curMode = PremiumCosmetics.localPreviews.get(currentCategory.toLowerCase().substring(0, currentCategory.length() - 1));
+		String categoryKey = getCategoryKey();
+		String curMode = PremiumCosmetics.localPreviews.get(categoryKey);
 		if (curMode == null && mode.equals("none")) selected = true;
 		else if (curMode != null && curMode.equalsIgnoreCase(mode)) selected = true;
 
 		boolean equipped = false;
-		String equippedMode = PremiumCosmetics.getCosmeticMode(mc.getUser().getProfileId(), currentCategory.toLowerCase().substring(0, currentCategory.length() - 1));
+		String equippedMode = PremiumCosmetics.getCosmeticMode(mc.getUser().getProfileId(), categoryKey);
 		if (equippedMode == null || equippedMode.isEmpty()) equippedMode = "none";
 		if (equippedMode.equalsIgnoreCase(mode)) equipped = true;
 
@@ -518,8 +519,15 @@ public class CosmeticsScreen extends Screen {
 		return super.mouseClicked(event, isDoubleClick);
 	}
 
+	private String getCategoryKey() {
+		if (currentCategory.equalsIgnoreCase("Wings")) {
+			return "wings";
+		}
+		return currentCategory.toLowerCase().substring(0, currentCategory.length() - 1);
+	}
+
 	private void selectCosmetic(String mode) {
-		PremiumCosmetics.localPreviews.put(currentCategory.toLowerCase().substring(0, currentCategory.length() - 1), mode);
+		PremiumCosmetics.localPreviews.put(getCategoryKey(), mode);
 	}
 
 	@Override
