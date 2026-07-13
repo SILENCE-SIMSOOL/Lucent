@@ -33,5 +33,11 @@
 	"lucent.category.performance": "Производительность",
 	"lucent.category.utility": "Утилиты",
 	"lucent.category.others": "Другое",
-	"lucent.category.qol": "QOL"
+	"lucent.category.qol": "QOL",
+	"lucent.preferences.render_hats": "Отображение шляп",
+	"lucent.preferences.render_hats.desc": "Включает или выключает отображение шляп.",
+	"lucent.preferences.render_wings": "Отображение крыльев",
+	"lucent.preferences.render_wings.desc": "Включает или выключает отображение крыльев.",
+	"lucent.preferences.render_capes": "Отображение плащей",
+	"lucent.preferences.render_capes.desc": "Включает или выключает отображение плащей."
 }

@@ -22,6 +22,7 @@ import silence.simsool.lucent.general.models.abstracts.Mod;
 import silence.simsool.lucent.general.utils.LucentUtils;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
 import silence.simsool.lucent.general.utils.useful.UMouse;
+import silence.simsool.lucent.general.utils.useful.UScreen;
 import silence.simsool.lucent.ui.manager.LucentResourceManager;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UIColors;
@@ -212,20 +213,19 @@ public class EditHUDScreen extends Screen {
 
 				// Center Mods Button
 				if (mx >= bx && mx <= bx + bw && my >= by && my <= by + bh) {
-					mc.setScreenAndShow(new ConfigScreen(parentManager != null ? parentManager : Lucent.config));
+					UScreen.setScreenMC(new ConfigScreen(parentManager != null ? parentManager : Lucent.config));
 					return true;
 				}
 
 				// Left Button
 				if (mx >= bx - sideS - gap && mx <= bx - gap && my >= by && my <= by + sideS) {
-					mc.setScreenAndShow(new ConfigScreen(parentManager != null ? parentManager : Lucent.config));
+					UScreen.setScreenMC(new ConfigScreen(parentManager != null ? parentManager : Lucent.config));
 					return true;
 				}
 
-				// Right Button (Profiles)
+				// Right Button (Cosmetics)
 				if (mx >= bx + bw + gap && mx <= bx + bw + gap + sideS && my >= by && my <= by + sideS) {
-					ConfigScreen cs = new ConfigScreen(parentManager != null ? parentManager : Lucent.config);
-					mc.setScreenAndShow(cs);
+					UScreen.setScreenMC(new CosmeticsScreen(parentManager != null ? parentManager : Lucent.config));
 					return true;
 				}
 			}

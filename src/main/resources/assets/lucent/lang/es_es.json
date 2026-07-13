@@ -33,5 +33,11 @@
 	"lucent.category.performance": "Rendimiento",
 	"lucent.category.utility": "Utilidad",
 	"lucent.category.others": "Others",
-	"lucent.category.qol": "QOL"
+	"lucent.category.qol": "QOL",
+	"lucent.preferences.render_hats": "Renderizar sombreros",
+	"lucent.preferences.render_hats.desc": "Activa o desactiva el renderizado de sombreros.",
+	"lucent.preferences.render_wings": "Renderizar alas",
+	"lucent.preferences.render_wings.desc": "Activa o desactiva el renderizado de alas.",
+	"lucent.preferences.render_capes": "Renderizar capas",
+	"lucent.preferences.render_capes.desc": "Activa o desactiva el renderizado de capas."
 }

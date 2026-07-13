@@ -33,5 +33,11 @@
 	"lucent.category.performance": "パフォーマンス",
 	"lucent.category.utility": "ユーティリティ",
 	"lucent.category.others": "その他",
-	"lucent.category.qol": "QOL"
+	"lucent.category.qol": "QOL",
+	"lucent.preferences.render_hats": "帽子の描画",
+	"lucent.preferences.render_hats.desc": "帽子装飾品の描画を切り替えます。",
+	"lucent.preferences.render_wings": "翼の描画",
+	"lucent.preferences.render_wings.desc": "翼装飾品の描画を切り替えます。",
+	"lucent.preferences.render_capes": "マントの描画",
+	"lucent.preferences.render_capes.desc": "マント装飾品の描画を切り替えます。"
 }

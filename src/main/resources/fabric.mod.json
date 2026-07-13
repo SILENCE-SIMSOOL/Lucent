@@ -4,10 +4,7 @@
 	"version": "${version}",
 	"name": "Lucent",
 	"description": "",
-	"authors": [
-		"SimSool",
-		"Daniel"
-	],
+	"authors": ["SimSool"],
 	"contact": {
 		"homepage": "",
 		"sources": ""
