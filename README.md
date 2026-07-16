@@ -164,7 +164,6 @@ dependencies {
 
 - Config screen UI design was inspired by **[OneConfig](https://github.com/Polyfrost/OneConfig)** by Polyfrost.
 - NanoVG rendering structures and utility drawing systems were inspired by **[Odin](https://github.com/odtheking/Odin)** by odtheking.
-- Some event features were inspired by **[Devonian](https://github.com/Synnerz/devonian)** by Synnerz.
 - Built for **[Minecraft](https://www.minecraft.net/)** using the **[Fabric Project](https://fabricmc.net/)** modding ecosystem.
 
 ---
