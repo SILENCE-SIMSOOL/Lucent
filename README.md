@@ -5,7 +5,7 @@
 <h1 align="center">Lucent</h1>
 
 <p align="center">
-	A modern config system, customizable HUD engine, and hardware-accelerated vector UI toolkit for Minecraft Fabric mods.
+	A modern config library & High-performance visual toolkit for Fabric. Features NanoVG hardware acceleration, profile isolation, and dynamic HUD systems.
 </p>
 
 <p align="center">
