@@ -23,6 +23,7 @@ import silence.simsool.lucent.general.utils.LucentUtils;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
 import silence.simsool.lucent.general.utils.useful.UMouse;
 import silence.simsool.lucent.general.utils.useful.UScreen;
+import silence.simsool.lucent.init.PremiumCosmetics;
 import silence.simsool.lucent.ui.manager.LucentResourceManager;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UIColors;
@@ -74,6 +75,7 @@ public class EditHUDScreen extends Screen {
 		this.parentManager = parentManager;
 		this.showModsButton = true;
 		LucentHUD.isEditHudOpen = true;
+		PremiumCosmetics.isPreviewActive = false;
 	}
 
 	@Override

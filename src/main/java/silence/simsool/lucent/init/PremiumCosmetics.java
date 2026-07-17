@@ -73,6 +73,7 @@ public class PremiumCosmetics {
 			idToUuidMap.clear();
 			nameTagCache.clear();
 			tabListCache.clear();
+			PremiumCosmetics.isPreviewActive = false;
 		});
 
 		EntityEvent.ENTITY_JOIN_EVENT.register(event -> {
@@ -374,7 +375,7 @@ public class PremiumCosmetics {
 
 	public static Component getFormattedDisplayName(Map<UUID, CachedDisplayName> cacheMap, UUID uuid, Component original) {
 		CachedDisplayName cached = cacheMap.get(uuid);
-		if (cached != null) {
+		if (cached != null && cached.original.getString().equals(original.getString())) {
 			return cached.formatted;
 		}
 		MutableComponent formatted = original.copy().append(" §d+§r");
