@@ -13,6 +13,7 @@ import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -21,6 +22,8 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
+
+import net.minecraft.util.Util;
 
 public class UDesktop {
 	private static boolean isLinux;
@@ -85,13 +88,33 @@ public class UDesktop {
 		return isWindows;
 	}
 
-	public static boolean browse(URI uri) {
-		return browseDesktop(uri) || openSystemSpecific(uri.toString());
+	public static void openBrowse(URI uri) {
+		Util.getPlatform().openUri(uri);
 	}
 
-	public static boolean open(File file) {
-		return openDesktop(file) || openSystemSpecific(file.getPath());
+	public static void openBrowse(String uri) {
+		Util.getPlatform().openUri(uri);
 	}
+
+	public static void openPath(Path path) {
+		Util.getPlatform().openPath(path);
+	}
+
+	public static void openPath(String path) {
+		Util.getPlatform().openPath(Path.of(path));
+	}
+
+	public static void openFile(File file) {
+		Util.getPlatform().openFile(file);
+	}
+
+	public static void openFile(String file) {
+		Util.getPlatform().openFile(new File(file));
+	}
+
+//	public static boolean open(File file) {
+//		return openDesktop(file) || openSystemSpecific(file.getPath());
+//	}
 
 	public static boolean edit(File file) {
 		return editDesktop(file) || openSystemSpecific(file.getPath());
@@ -110,29 +133,29 @@ public class UDesktop {
 		return false;
 	}
 
-	private static boolean browseDesktop(URI uri) {
-		if (!Desktop.isDesktopSupported()) return false;
-		try {
-			Desktop desktop = Desktop.getDesktop();
-			if (!desktop.isSupported(Desktop.Action.BROWSE)) return false;
-			desktop.browse(uri);
-			return true;
-		} catch (Throwable e) {
-			return false;
-		}
-	}
-
-	private static boolean openDesktop(File file) {
-		if (!Desktop.isDesktopSupported()) return false;
-		try {
-			Desktop desktop = Desktop.getDesktop();
-			if (!desktop.isSupported(Desktop.Action.OPEN)) return false;
-			desktop.open(file);
-			return true;
-		} catch (Throwable e) {
-			return false;
-		}
-	}
+//	private static boolean browseDesktop(URI uri) {
+//		if (!Desktop.isDesktopSupported()) return false;
+//		try {
+//			Desktop desktop = Desktop.getDesktop();
+//			if (!desktop.isSupported(Desktop.Action.BROWSE)) return false;
+//			desktop.browse(uri);
+//			return true;
+//		} catch (Throwable e) {
+//			return false;
+//		}
+//	}
+//
+//	private static boolean openDesktop(File file) {
+//		if (!Desktop.isDesktopSupported()) return false;
+//		try {
+//			Desktop desktop = Desktop.getDesktop();
+//			if (!desktop.isSupported(Desktop.Action.OPEN)) return false;
+//			desktop.open(file);
+//			return true;
+//		} catch (Throwable e) {
+//			return false;
+//		}
+//	}
 
 	private static boolean editDesktop(File file) {
 		if (!Desktop.isDesktopSupported()) return false;

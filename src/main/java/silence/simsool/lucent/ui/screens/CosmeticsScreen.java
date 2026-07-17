@@ -19,11 +19,11 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Util;
 import silence.simsool.lucent.config.LucentConfig;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.general.models.data.nvg.NVGImageEntry;
 import silence.simsool.lucent.general.utils.MinecraftColor;
+import silence.simsool.lucent.general.utils.useful.UDesktop;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
 import silence.simsool.lucent.general.utils.useful.UMouse;
 import silence.simsool.lucent.general.utils.useful.UScreen;
@@ -480,7 +480,7 @@ public class CosmeticsScreen extends Screen {
 		int bx = winX + LEFT_W + PAD + ((RIGHT_W - PAD * 2) - btnW) / 2;
 		int by = winY + PAD + (WINDOW_H - PAD * 2) - 110;
 		if (mx >= bx && mx <= bx + btnW && my >= by && my <= by + 46) {
-			Util.getPlatform().openUri(LucentConfig.DISCORD_LINK);
+			UDesktop.openBrowse(LucentConfig.DISCORD_LINK);
 			return true;
 		}
 
@@ -491,7 +491,7 @@ public class CosmeticsScreen extends Screen {
 		int bY = winY + PAD + (WINDOW_H - PAD * 2) - 46;
 		if (my >= bY && my <= bY + 36) {
 			if (mx >= backX && mx <= backX + bW) {
-				UScreen.setScreen(new EditHUDScreen(moduleManager));
+				UScreen.setScreenMC(new EditHUDScreen(moduleManager));
 				return true;
 			}
 			if (mx >= closeX && mx <= closeX + bW) {
