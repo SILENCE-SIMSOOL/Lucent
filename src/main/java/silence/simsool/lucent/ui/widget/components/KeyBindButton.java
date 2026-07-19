@@ -19,6 +19,7 @@ public class KeyBindButton extends UIWidget {
 	private boolean waiting = false; // 키 입력 대기 중
 	private Consumer<KeyBind> onChange;
 	private KeyMode keymode = KeyMode.ALL;
+	private float radius = 8f;
 
 	private float hoverAnim = 0f;
 	private float waitAnim = 0f; // waiting 상태 펄스 (0→1 루프)
@@ -43,7 +44,6 @@ public class KeyBindButton extends UIWidget {
 		if (waiting) waitAnim = (float) ((System.currentTimeMillis() - waitStart) % 1500) / 1500f;
 		else waitAnim = 0f;
 
-		float radius = 8f;
 		int bgColor = UColor.withAlpha(UIColors.PURE_BLACK, 100);
 		int borderColor = waiting ? UIColors.ACCENT_BLUE : (hovered ? UIColors.withAlpha(UIColors.ACCENT_BLUE, 180) : UIColors.ITEM_BORDER);
 
@@ -212,6 +212,14 @@ public class KeyBindButton extends UIWidget {
 			this.waiting = false;
 			if (onChange != null) onChange.accept(bind);
 		}
+	}
+
+	public float getRadius() {
+		return radius;
+	}
+
+	public void setRadius(float radius) {
+		this.radius = radius;
 	}
 
 	private static boolean isModifierOnly(int keyCode) {
