@@ -29,8 +29,10 @@ public class MixinClientPacketListener {
 	private void onHandleOpenScreen(ClientboundOpenScreenPacket packet, CallbackInfo ci) {
 		GUIEvent.GUIOpenPreEvent event = new GUIEvent.GUIOpenPreEvent(packet);
 		GUIEvent.OPEN_PRE.EVENT.invoker().onOpenPre(event);
-		if (event.isCanceled()) {
+		if (event.isClosed()) {
 			((ClientPacketListener) (Object) this).send(new ServerboundContainerClosePacket(packet.getContainerId()));
+			ci.cancel();
+		} else if (event.isCanceled()) {
 			ci.cancel();
 		}
 	}

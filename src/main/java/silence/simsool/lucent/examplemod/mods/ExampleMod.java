@@ -277,6 +277,15 @@ public class ExampleMod extends Mod {
 	)
 	public static String ExtraText = "";
 
+	@ModConfigExtra(
+		type = ConfigType.SLIDER,
+		name = "Extra Slider",
+		description = "",
+		category = "Extra Example",
+		min = 0.0f, max = 2.0f, step = 0.1f
+	)
+	public static float ExtraSlider = 1f;
+
 	@Override
 	public void onTick() {
 		// You can easily use event functions through overrides.

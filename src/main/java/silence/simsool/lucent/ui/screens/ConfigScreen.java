@@ -1427,7 +1427,7 @@ public class ConfigScreen extends Screen {
 						else if (fType == int.class || fType == Integer.class) sType = Slider.SliderType.INT;
 					}
 
-					Slider slider = new Slider(ux - 290, controlYBase, 290, 24, cfg.min(), cfg.max(), cfg.step(), dVal, sType);
+					Slider slider = new Slider(ux - 320, controlYBase, 320, 24, cfg.min(), cfg.max(), cfg.step(), dVal, sType);
 					slider.setOnChange(v -> {
 						try {
 							double old = dVal;
@@ -1659,7 +1659,7 @@ public class ConfigScreen extends Screen {
 			int widgetW, widgetH;
 			switch (cfg.type()) {
 				case SWITCH  -> { widgetW = 40; widgetH = 20; }
-				case SLIDER  -> { widgetW = Math.min(240, colW - pad * 2 - 40); widgetH = 18; }
+				case SLIDER  -> { widgetW = Math.min(260, colW - pad * 2 - 40); widgetH = 18; }
 				case SELECTOR-> { widgetW = Math.min(128, colW - pad * 2 - 20); widgetH = 32; }
 				case COLOR   -> { widgetW = 52;  widgetH = 28; }
 				case BUTTON  -> { String bt = cfg.display(); widgetW = (bt == null || bt.isEmpty()) ? 36 : Math.min(80, colW - pad * 2 - 20); widgetH = 26; }
