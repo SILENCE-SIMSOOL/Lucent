@@ -42,7 +42,7 @@ public final class GUIEvent {
 			IGUIOpenPreEvent.class, listeners -> event -> {
 				for (IGUIOpenPreEvent l : listeners) {
 					l.onOpenPre(event);
-					if (event.isCanceled()) break;
+					if (event.isCanceled() || event.isClosed()) break;
 				}
 			}
 		);
@@ -346,6 +346,7 @@ public final class GUIEvent {
 		public final ClientboundOpenScreenPacket packet;
 		public final String title;
 		private boolean canceled = false;
+		private boolean closed = false;
 
 		public GUIOpenPreEvent(ClientboundOpenScreenPacket packet) {
 			this.packet = packet;
@@ -358,6 +359,14 @@ public final class GUIEvent {
 
 		public boolean isCanceled() {
 			return canceled;
+		}
+
+		public void close() {
+			this.closed = true;
+		}
+
+		public boolean isClosed() {
+			return closed;
 		}
 	}
 
