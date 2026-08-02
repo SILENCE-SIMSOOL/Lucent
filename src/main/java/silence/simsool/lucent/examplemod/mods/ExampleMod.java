@@ -27,7 +27,7 @@ public class ExampleMod extends Mod {
 				"Example Mod", "Enhances your chat experience with various QOL features.", // Name, Description
 				"QOL", // Category
 				"minecraft, chat", // Search Tags
-				"/assets/lucent/textures/modicons/chatmod.png" // Icon Path
+				"\uE8D0" // "/assets/lucent/textures/modicons/chatmod.png" ('Font Icon' or 'PNG Icon Path')
 		);
 	}
 

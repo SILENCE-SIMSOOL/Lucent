@@ -10,7 +10,7 @@
 	"lucent.preferences.load_config": "Load Config",
 	"lucent.preferences.open_animation": "Open Animation",
 	"lucent.preferences.open_animation.desc": "Toggles the opening animation of the config screen.",
-	"lucent.preferences.open_config": "Open Config Folder",
+	"lucent.preferences.open_config": "Open Config",
 	"lucent.preferences.ui_blur": "UI Blur",
 	"lucent.preferences.ui_blur.desc": "Enables a blur effect behind the UI.",
 	"lucent.preferences.ui_blur_strength": "UI Blur Strength",

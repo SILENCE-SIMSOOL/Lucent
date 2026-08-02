@@ -14,6 +14,7 @@ public abstract class Mod {
 	public final String searchTags;
 	public final String icon;
 	public boolean isEnabled = false;
+	public boolean isFavorite = false;
 
 	public Mod(String name, String description, String category, String searchTags, String icon) {
 		this.name = name;

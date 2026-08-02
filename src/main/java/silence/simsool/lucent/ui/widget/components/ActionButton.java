@@ -5,7 +5,6 @@ import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UColor;
 import silence.simsool.lucent.ui.utils.UIColors;
 import silence.simsool.lucent.ui.utils.nvg.Fonts;
-import silence.simsool.lucent.ui.utils.nvg.Image;
 import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 import silence.simsool.lucent.ui.widget.UIWidget;
 
@@ -13,7 +12,7 @@ public class ActionButton extends UIWidget {
 	private final String label;
 	private Runnable onClick;
 	private float hoverAnim = 0.0f;
-	private static Image fallbackIcon;
+	private static final String DEFAULT_ICON = "\uEB9B"; // rocket_launch
 
 	public ActionButton(int x, int y, int width, int height, String label) {
 		super(x, y, width, height);
@@ -37,12 +36,8 @@ public class ActionButton extends UIWidget {
 		NVGRenderer.outlineRect(x, y, width, height, 1, borderColor, 8f);
 
 		if (label == null || label.isEmpty()) {
-			if (fallbackIcon == null) {
-				try {
-					fallbackIcon = NVGRenderer.createImage("/assets/lucent/textures/icons/run.png");
-				} catch (Exception e) {}
-			}
-			if (fallbackIcon != null) NVGRenderer.image(fallbackIcon, x + (width - 16f) / 2f, y + (height - 16f) / 2f, 16f, 16f);
+			float is = 18f;
+			NVGRenderer.text(DEFAULT_ICON, x + (width - is) / 2f, y + (height - is) / 2f + 1f, Fonts.MATERIAL_ICONS_ROUND, textColor, is);
 		} else {
 			float tw = NVGRenderer.textWidth(label, Fonts.PRETENDARD_MEDIUM, 14f);
 			float ty = y + (height - 14f) / 2f;

@@ -19,7 +19,6 @@ import silence.simsool.lucent.general.enums.Align;
 import silence.simsool.lucent.general.enums.RenderType;
 import silence.simsool.lucent.general.models.abstracts.LucentHUD;
 import silence.simsool.lucent.general.models.abstracts.Mod;
-import silence.simsool.lucent.general.utils.LucentUtils;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
 import silence.simsool.lucent.general.utils.useful.UMouse;
 import silence.simsool.lucent.general.utils.useful.UScreen;
@@ -28,24 +27,26 @@ import silence.simsool.lucent.ui.manager.LucentResourceManager;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UIColors;
 import silence.simsool.lucent.ui.utils.nvg.Fonts;
-import silence.simsool.lucent.ui.utils.nvg.Image;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 
 public class EditHUDScreen extends Screen {
 
-	private static final int SNAP_PX	    = 10; // Detection range for magnetic snapping
-	private static final int GRID_PX	    = 2; // Movement step increment (Grid size)
-	private static final int C_DIM          = 0x88000000;
-	private static final int C_BORDER       = 0x4DFFFFFF;
-	private static final int C_BORDER_HOV   = 0x80FFFFFF;
-	private static final int C_SCALE_BORDER = 0xCCFFFFFF;
-	private static final int C_FILL         = 0x1AFFFFFF;
-	private static final int C_TOOLTIP_BG   = 0xF01A1A1E;
-	private static final int C_TEXT         = 0xFFFFFFFF;
-	private static final int C_TEXT_DIM     = 0xFF9CA3AF;
-	private static final int C_TEXT_ACCENT  = 0xFF60A5FA;
-	private static final int C_MENU_BG      = 0xF01A1A1E;
+	private final static int SNAP_PX	    = 10; // Detection range for magnetic snapping
+	private final static int GRID_PX	    = 2; // Movement step increment (Grid size)
+	private final static int C_DIM          = 0x88000000;
+	private final static int C_BORDER       = 0x4DFFFFFF;
+	private final static int C_BORDER_HOV   = 0x80FFFFFF;
+	private final static int C_SCALE_BORDER = 0xCCFFFFFF;
+	private final static int C_FILL         = 0x1AFFFFFF;
+	private final static int C_TOOLTIP_BG   = 0xF01A1A1E;
+	private final static int C_TEXT         = 0xFFFFFFFF;
+	private final static int C_TEXT_DIM     = 0xFF9CA3AF;
+	private final static int C_TEXT_ACCENT  = 0xFF60A5FA;
+	private final static int C_MENU_BG      = 0xF01A1A1E;
+
+	private final static String ICON_MOSAIC   = "\uE660";
+	private final static String ICON_IDENTITY = "\uF19E";
 
 	private LucentHUD draggingMove  = null;
 	private LucentHUD draggingScale = null;
@@ -57,8 +58,8 @@ public class EditHUDScreen extends Screen {
 	private float contextMenuX, contextMenuY;
 
 	private final boolean showModsButton;
-	private boolean iconsLoaded = false;
-	private Image iconProfiles, iconEditHud;
+	//private boolean iconsLoaded = false;
+	//private Image iconProfiles, iconEditHud;
 
 	private long startTime = -1L;
 	private long closeStartTime = -1L;
@@ -423,13 +424,13 @@ public class EditHUDScreen extends Screen {
 	}
 
 	private void drawModsButton(float vw, float vh, float mx, float my, float animP) {
-		if (!iconsLoaded) {
-			try {
-				iconProfiles = LucentUtils.createIcon("profiles");
-				iconEditHud  = LucentUtils.createIcon("edithud");
-				iconsLoaded = true;
-			} catch (Exception ignored) {}
-		}
+//		if (!iconsLoaded) {
+//			try {
+//				iconProfiles = LucentUtils.createIcon("profiles");
+//				iconEditHud  = LucentUtils.createIcon("edithud");
+//				iconsLoaded = true;
+//			} catch (Exception ignored) {}
+//		}
 
 		float bw = 164f, bh = 48f;
 		float bx = (vw - bw) / 2f, by = ((vh - bh) / 2f);
@@ -457,11 +458,11 @@ public class EditHUDScreen extends Screen {
 		// 2. Buttons Staggered Slide
 		if (btn1P > 0) {
 			float e = UAnimation.Easing.spring(btn1P);
-			drawIconButton(bx - sideS - gap - (1f - e) * 60f, by, sideS, sideS, iconEditHud, mx, my, btn1P);
+			drawIconButton(bx - sideS - gap - (1f - e) * 60f, by, sideS, sideS, ICON_MOSAIC, mx, my, btn1P);
 		}
 		if (btn3P > 0) {
 			float e = UAnimation.Easing.spring(btn3P);
-			drawIconButton(bx + bw + gap + (1f - e) * 60f, by, sideS, sideS, iconProfiles, mx, my, btn3P);
+			drawIconButton(bx + bw + gap + (1f - e) * 60f, by, sideS, sideS, ICON_IDENTITY, mx, my, btn3P);
 		}
 		if (btn2P > 0) {
 			float e = UAnimation.Easing.spring(btn2P);
@@ -479,17 +480,15 @@ public class EditHUDScreen extends Screen {
 		}
 	}
 
-	private void drawIconButton(float x, float y, float w, float h, Image icon, float mx, float my, float alpha) {
+	private void drawIconButton(float x, float y, float w, float h, String iconText, float mx, float my, float alpha) {
 		boolean hov = mx >= x && mx <= x + w && my >= y && my <= y + h;
 		int bg = UIColors.withAlpha(hov ? UIColors.CARD_HOVER : UIColors.CARD_BG, (int) (180 * alpha));
 
 		NVGRenderer.rect(x, y, w, h, bg, 8f);
 		NVGRenderer.outlineRect(x, y, w, h, 1.5f, UIColors.withAlpha(0xFFFFFFFF, (int) ((hov ? 60 : 30) * alpha)), 8f);
 
-		if (icon != null) {
-			float is = 20f;
-			NVGRenderer.image(icon, x + (w - is) / 2f, y + (h - is) / 2f, is, is, alpha);
-		}
+		float is = 24f;
+		NVGRenderer.text(iconText, x + (w - is) / 2f + 1f, y + (h - is) / 2f + 1f, Fonts.MATERIAL_ICONS_ROUND, UIColors.withAlpha(UIColors.PURE_WHITE, (int) (255 * alpha)), is);
 	}
 
 	private void drawBrandLogo(float cx, float cy, float alpha) {

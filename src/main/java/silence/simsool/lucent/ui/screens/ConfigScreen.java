@@ -21,10 +21,12 @@ import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Util;
 import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.config.LucentConfig;
 import silence.simsool.lucent.config.ModManager;
+import silence.simsool.lucent.events.impl.ConfigEvent;
 import silence.simsool.lucent.general.enums.Align;
 import silence.simsool.lucent.general.models.abstracts.Mod;
 import silence.simsool.lucent.general.models.data.KeyBind;
@@ -32,10 +34,13 @@ import silence.simsool.lucent.general.models.data.LucentTheme;
 import silence.simsool.lucent.general.models.data.NavState;
 import silence.simsool.lucent.general.models.interfaces.annotations.ModConfig;
 import silence.simsool.lucent.general.models.interfaces.annotations.ModConfigExtra;
+import silence.simsool.lucent.general.utils.ClientHandler;
 import silence.simsool.lucent.general.utils.L10n;
 import silence.simsool.lucent.general.utils.LucentCategory;
 import silence.simsool.lucent.general.utils.LucentUtils;
 import silence.simsool.lucent.general.utils.OSUtils;
+import silence.simsool.lucent.general.utils.useful.UChat;
+import silence.simsool.lucent.general.utils.useful.UDesktop;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
 import silence.simsool.lucent.general.utils.useful.UMouse;
 import silence.simsool.lucent.ui.manager.LucentResourceManager;
@@ -55,9 +60,25 @@ import silence.simsool.lucent.ui.widget.components.Slider;
 import silence.simsool.lucent.ui.widget.components.TextBox;
 import silence.simsool.lucent.ui.widget.components.ToggleButton;
 import silence.simsool.lucent.ui.widget.components.color.ColorPickerButton;
-import silence.simsool.lucent.events.impl.ConfigEvent;
 
 public class ConfigScreen extends Screen {
+
+	private static final String ICON_HOME            = "\uE88A";
+	private static final String ICON_ACCOUNT         = "\uE853";
+	private static final String ICON_PALETTE         = "\uE40A";
+	private static final String ICON_SETTINGS        = "\uE8B8";
+	private static final String ICON_MOSAIC          = "\uE660";
+	private static final String ICON_LOGOUT          = "\uE9BA";
+	private static final String ICON_SEARCH          = "\uE8B6";
+	private static final String ICON_EDIT            = "\uE3C9";
+	private static final String ICON_DELETE          = "\uE872";
+	private static final String ICON_FAVORITE        = "\uE87D";
+	private static final String ICON_FAVORITE_BORDER = "\uE87E";
+	private static final String ICON_REFRESH         = "\uE5D5";
+	private static final String ICON_FOLDER          = "\uE2C8";
+	private static final String ICON_INFO            = "\uE88F";
+	private static final String ICON_COPYRIGHT       = "\uE90C";
+	private static final String ICON_CODE            = "\uE86F";
 
 	private static final int WINDOW_W  = 1100;
 	private static final int WINDOW_H  = 680;
@@ -92,6 +113,14 @@ public class ConfigScreen extends Screen {
 
 	private double scrollOffset = 0;
 	private double maxScroll    = 0;
+	private final Map<String, Double> categoryScrollMap = new HashMap<>();
+
+	private String getNavKey() {
+		if (currentModSettings != null) {
+			return "ModSettings:" + currentModSettings.name;
+		}
+		return currentSidebarPage + ":" + currentCategory;
+	}
 
 	private float uiScale = 1.0f;
 	private float openAnimationProgress = 0f;
@@ -170,10 +199,18 @@ public class ConfigScreen extends Screen {
 			float topH = height - BAR_H;
 
 			Image iconImg = null;
-			if (mod.icon != null && !mod.icon.isEmpty()) iconImg = LucentResourceManager.modIconsMap.get(mod.name);
+			if (mod.icon != null && !mod.icon.isEmpty()) {
+				if (mod.icon.startsWith("/") || mod.icon.startsWith("assets/") || mod.icon.endsWith(".png")) {
+					iconImg = LucentResourceManager.modIconsMap.get(mod.name);
+				}
+			}
 
-			if (iconImg != null) NVGRenderer.image(iconImg, midX - 22f, y + (topH - 44f) / 2f, 44f, 44f);
-			else {
+			if (iconImg != null) {
+				NVGRenderer.image(iconImg, midX - 22f, y + (topH - 44f) / 2f, 44f, 44f);
+			} else if (mod.icon != null && !mod.icon.isEmpty() && !mod.icon.startsWith("/") && !mod.icon.startsWith("assets/") && !mod.icon.endsWith(".png")) {
+				float is = 48f;
+				NVGRenderer.text(mod.icon, midX - is / 2f, y + (topH - is) / 2f + 2f, Fonts.MATERIAL_ICONS_ROUND, UIColors.PURE_WHITE, is);
+			} else {
 				String translatedName = L10n.translate(mod.name);
 				float initialW = NVGRenderer.textWidth(translatedName, Fonts.PRETENDARD_SEMIBOLD, 20f);
 				NVGRenderer.text(translatedName, midX - initialW/2, y + (topH - 20) / 2, Fonts.PRETENDARD_SEMIBOLD, 0xFFFFFFFF, 20);
@@ -186,12 +223,24 @@ public class ConfigScreen extends Screen {
 			float divX = x + width - 36f;
 			NVGRenderer.rect(divX, barTop + 6f, 1, BAR_H - 12f, 0x55FFFFFF, 0f); // 약간 투명한 선
 			
-			if (LucentResourceManager.iconSettings != null) NVGRenderer.image(LucentResourceManager.iconSettings, divX + 10f, barTop + (BAR_H - 16f) / 2f, 16f, 16f);
+			NVGRenderer.text(ICON_SETTINGS, divX + 10f, barTop + 7f, Fonts.MATERIAL_ICONS_ROUND, UIColors.PURE_WHITE, 16f);
+
+			// Favorite Heart Icon (top-right)
+			String heartIcon = mod.isFavorite ? ICON_FAVORITE : ICON_FAVORITE_BORDER;
+			int heartColor = mod.isFavorite ? 0xFFFF4B4B : (hov ? UIColors.withAlpha(UIColors.PURE_WHITE, 200) : UIColors.withAlpha(UIColors.PURE_WHITE, 100));
+			float is = 18f;
+			NVGRenderer.text(heartIcon, x + width - is - (is * 0.5f), y + (is * 0.5f), Fonts.MATERIAL_ICONS_ROUND, heartColor, is);
 		}
 
 		@Override
 		public boolean mouseClicked(double mx, double my, int btn) {
 			if (btn == 0 && mx >= x && mx <= x + width && my >= y && my <= y + height) {
+				if (mx >= x + width - 30 && my <= y + 30) {
+					mod.isFavorite = !mod.isFavorite;
+					moduleManager.saveConfigs();
+					refreshUI(true);
+					return true;
+				}
 				if (mx >= x + width - 36 && my >= y + height - BAR_H) pushNav("Mods", mod, currentCategory);
 				else mod.isEnabled = !mod.isEnabled;
 				return true;
@@ -292,18 +341,21 @@ public class ConfigScreen extends Screen {
 				if (profileName.equals("default")) {
 					// No divider, center Edit icon
 					boolean hovEdit = mx > x && mx < x + width && my > barTop && my < barTop + BAR_H;
-					NVGRenderer.image(LucentResourceManager.iconEdit, midX - (iconS/2f), barTop + (BAR_H - iconS) / 2f, iconS, iconS, 0f, hovEdit ? 1.0f : 0.6f);
+					int col = hovEdit ? UIColors.PURE_WHITE : UIColors.withAlpha(UIColors.PURE_WHITE, 160);
+					NVGRenderer.text(ICON_EDIT, midX - (iconS / 2f), barTop + 9f, Fonts.MATERIAL_ICONS_ROUND, col, iconS);
 				} else {
 					// Divider line
 					NVGRenderer.rect(midX - 0.5f, barTop + 6f, 1f, BAR_H - 12f, 0x33FFFFFF, 0f);
 
 					// Left Half: Edit
 					boolean hovEdit = mx > x && mx < midX && my > barTop && my < barTop + BAR_H;
-					NVGRenderer.image(LucentResourceManager.iconEdit, x + (width/4f) - (iconS/2f), barTop + (BAR_H - iconS) / 2f, iconS, iconS, 0f, hovEdit ? 1.0f : 0.6f);
+					int colEdit = hovEdit ? UIColors.PURE_WHITE : UIColors.withAlpha(UIColors.PURE_WHITE, 160);
+					NVGRenderer.text(ICON_EDIT, x + (width / 4f) - (iconS / 2f), barTop + 9f, Fonts.MATERIAL_ICONS_ROUND, colEdit, iconS);
 
 					// Right Half: Delete
 					boolean hovDel = mx > midX && mx < x + width && my > barTop && my < barTop + BAR_H;
-					NVGRenderer.image(LucentResourceManager.iconDelete, x + (3*width/4f) - (iconS/2f), barTop + (BAR_H - iconS) / 2f, iconS, iconS, 0f, hovDel ? 1.0f : 0.6f);
+					int colDel = hovDel ? UIColors.PURE_WHITE : UIColors.withAlpha(UIColors.PURE_WHITE, 160);
+					NVGRenderer.text(ICON_DELETE, x + (3 * width / 4f) - (iconS / 2f), barTop + 9f, Fonts.MATERIAL_ICONS_ROUND, colDel, iconS);
 				}
 			}
 
@@ -615,7 +667,8 @@ public class ConfigScreen extends Screen {
 		searchField.setFocused(false);
 		searchField.visible = false;
 
-		refreshUI();
+		refreshUI(true);
+		scrollOffset = UAnimation.clamp(scrollOffset, 0, maxScroll);
 
 		// initialMod가 있으면 해당 모듈 세부설정으로 바로 진입
 		if (initialMod != null) {
@@ -761,6 +814,7 @@ public class ConfigScreen extends Screen {
 		if (btn == 0 && isScrollbarHit(mx, my)) {
 			scrollbarDragging = true;
 			scrollOffset = scrollbarThumbOffset(my);
+			categoryScrollMap.put(getNavKey(), scrollOffset);
 			return true;
 		}
 
@@ -815,8 +869,12 @@ public class ConfigScreen extends Screen {
 				float tw = NVGRenderer.textWidth(L10n.translate(cat), Fonts.PRETENDARD_MEDIUM, 13f);
 				int tabW = (int)(tw + 32);
 				if (mx >= catX && mx <= catX + tabW && my >= catY && my <= catY + 28f) {
-					currentCategory = cat;
-					refreshUI();
+					if (!currentCategory.equals(cat)) {
+						categoryScrollMap.put(getNavKey(), scrollOffset);
+						currentCategory = cat;
+						scrollOffset = categoryScrollMap.getOrDefault(getNavKey(), 0.0);
+						refreshUI(true);
+					}
 					return true;
 				}
 				catX += tabW + 8;
@@ -864,6 +922,7 @@ public class ConfigScreen extends Screen {
 
 		if (scrollbarDragging && btn == 0) {
 			scrollOffset = scrollbarThumbOffset(my);
+			categoryScrollMap.put(getNavKey(), scrollOffset);
 			return true;
 		}
 
@@ -925,6 +984,7 @@ public class ConfigScreen extends Screen {
 
 			scrollOffset -= vAmt * 36;
 			scrollOffset  = UAnimation.clamp(scrollOffset, 0, maxScroll);
+			categoryScrollMap.put(getNavKey(), scrollOffset);
 			return true;
 		}
 		return super.mouseScrolled(mouseX, mouseY, hAmt, vAmt);
@@ -1044,6 +1104,8 @@ public class ConfigScreen extends Screen {
 	private void pushNav(String page, Mod mod, String cat) {
 		if (currentSidebarPage.equals("Mods")) moduleManager.saveConfigs();
 
+		categoryScrollMap.put(getNavKey(), scrollOffset);
+
 		NavState current = new NavState(currentSidebarPage, currentModSettings, currentCategory, scrollOffset);
 		if (history.isEmpty() || !isSameState(history.peek(), current)) history.push(current);
 
@@ -1055,11 +1117,11 @@ public class ConfigScreen extends Screen {
 			lastSearchQuery = "";
 		}
 		currentCategory = cat;
-		scrollOffset = 0; // New page starts at top
+		scrollOffset = categoryScrollMap.getOrDefault(getNavKey(), 0.0);
 
 		if (page.equals("Mods")) moduleManager.loadConfigs();
 
-		refreshUI();
+		refreshUI(true);
 	}
 
 	private boolean isSameState(NavState a, NavState b) {
@@ -1072,12 +1134,14 @@ public class ConfigScreen extends Screen {
 
 		if (currentSidebarPage.equals("Mods")) moduleManager.saveConfigs();
 
+		categoryScrollMap.put(getNavKey(), scrollOffset);
 		forwardHistory.push(new NavState(currentSidebarPage, currentModSettings, currentCategory, scrollOffset));
 		NavState prev = history.pop();
 		currentSidebarPage = prev.page;
 		currentModSettings = prev.mod;
 		currentCategory = prev.category;
 		scrollOffset = prev.scrollOffset;
+		categoryScrollMap.put(getNavKey(), scrollOffset);
 
 		if (currentSidebarPage.equals("Mods")) moduleManager.loadConfigs();
 
@@ -1089,12 +1153,14 @@ public class ConfigScreen extends Screen {
 
 		if (currentSidebarPage.equals("Mods")) moduleManager.saveConfigs();
 
+		categoryScrollMap.put(getNavKey(), scrollOffset);
 		history.push(new NavState(currentSidebarPage, currentModSettings, currentCategory, scrollOffset));
 		NavState next = forwardHistory.pop();
 		currentSidebarPage = next.page;
 		currentModSettings = next.mod;
 		currentCategory = next.category;
 		scrollOffset = next.scrollOffset;
+		categoryScrollMap.put(getNavKey(), scrollOffset);
 
 		if (currentSidebarPage.equals("Mods")) moduleManager.loadConfigs();
 
@@ -1185,7 +1251,7 @@ public class ConfigScreen extends Screen {
 
 		// 3. UI Blur Strength
 		widgets.add(new SettingRowWidget(sx, currentY, itemW, 74, L10n.translate("lucent.preferences.ui_blur_strength"), L10n.translate("lucent.preferences.ui_blur_strength.desc")));
-		Slider blurSlider = new Slider(sx + itemW - PAD - 200, currentY + 25, 200, 24, 0, 20, 1, LucentConfig.uiBlurStrength);
+		Slider blurSlider = new Slider(sx + itemW - PAD - 320, currentY + 25, 320, 24, 0, 20, 1, LucentConfig.uiBlurStrength);
 		blurSlider.setOnChange(v -> { LucentConfig.uiBlurStrength = (float)(double)v; Lucent.config.saveGlobalConfig(); });
 		widgets.add(blurSlider);
 		currentY += 84;
@@ -1205,7 +1271,7 @@ public class ConfigScreen extends Screen {
 
 		// 5. UI Scale
 		widgets.add(new SettingRowWidget(sx, currentY, itemW, 74, L10n.translate("lucent.preferences.ui_scale"), L10n.translate("lucent.preferences.ui_scale.desc")));
-		Slider scaleSlider = new Slider(sx + itemW - PAD - 200, currentY + 25, 200, 24, 1.0, 2.0, 0.1, (double) LucentConfig.uiScale);
+		Slider scaleSlider = new Slider(sx + itemW - PAD - 320, currentY + 25, 320, 24, 1.0, 2.0, 0.1, (double) LucentConfig.uiScale);
 		scaleSlider.setOnRelease(v -> { 
 			LucentConfig.uiScale = (float)(double)v; 
 			Lucent.config.saveGlobalConfig();
@@ -1245,43 +1311,54 @@ public class ConfigScreen extends Screen {
 		});
 		widgets.add(updateBtn);
 
-		// Action Buttons
-		int rowY = currentY + 74 + 20;
+		// Action Buttons (Icon Buttons Grid)
+		int iconBtnSize = 42;
+		int gap = 16;
 
-		ActionButton openConfig = new ActionButton(sx, rowY, btnW, 36, L10n.translate("lucent.preferences.open_config"));
-		openConfig.setOnClick(() -> {
-			Util.getPlatform().openPath(OSUtils.getLucentDir().toPath());
-		});
-		widgets.add(openConfig);
+		// Row 1: load config, open config folder, info, license
+		int row1W = 4 * iconBtnSize + 3 * gap;
+		int row1X = sx + (itemW - row1W) / 2;
+		int row1Y = currentY + 74 + 20;
 
-		ActionButton loadConfig = new ActionButton(sx + btnW + 12, rowY, btnW, 36, L10n.translate("lucent.preferences.load_config"));
-		loadConfig.setOnClick(() -> {
-			Lucent.config.loadConfigs();
-			refreshUI();
+		IconButtonWidget loadConfigBtn = new IconButtonWidget(row1X, row1Y, iconBtnSize, ICON_REFRESH, () -> {
+			moduleManager.loadConfigs();
+			refreshUI(true);
+			UChat.chat("§aConfig data has been reloaded!");
+			ClientHandler.playSound(SoundEvents.PLAYER_LEVELUP, 2.0f, 0.85f);
 		});
-		widgets.add(loadConfig);
+		widgets.add(loadConfigBtn);
 
-		ActionButton discord = new ActionButton(sx + (btnW + 12) * 2, rowY, btnW, 36, L10n.translate("lucent.preferences.discord"));
-		discord.setOnClick(() -> {
-			Util.getPlatform().openUri(LucentConfig.DISCORD_LINK);
+		IconButtonWidget openConfigBtn = new IconButtonWidget(row1X + (iconBtnSize + gap), row1Y, iconBtnSize, ICON_FOLDER, () -> {
+			UDesktop.openPath(OSUtils.getLucentDir().toPath());
 		});
-		widgets.add(discord);
+		widgets.add(openConfigBtn);
 
-		// Next row of buttons
-		rowY += 48;
-		ActionButton github = new ActionButton(sx, rowY, btnW, 36, L10n.translate("lucent.preferences.github"));
-		github.setOnClick(() -> {
-			Util.getPlatform().openUri(LucentConfig.GITHUB_LINK);
+		IconButtonWidget infoBtn = new IconButtonWidget(row1X + (iconBtnSize + gap) * 2, row1Y, iconBtnSize, ICON_INFO, () -> {
+			UDesktop.openBrowse("https://silencedev.kro.kr/en/products/lucent");
 		});
-		widgets.add(github);
+		widgets.add(infoBtn);
 
-		ActionButton license = new ActionButton(sx + btnW + 12, rowY, btnW, 36, L10n.translate("lucent.preferences.license"));
-		license.setOnClick(() -> {
-			Util.getPlatform().openUri(LucentConfig.LICENSE_LINK);
+		IconButtonWidget licenseBtn = new IconButtonWidget(row1X + (iconBtnSize + gap) * 3, row1Y, iconBtnSize, ICON_COPYRIGHT, () -> {
+			UDesktop.openBrowse(LucentConfig.LICENSE_LINK);
 		});
-		widgets.add(license);
-		
-		maxScroll = Math.max(0, rowY + 60 - scissorY - scissorH);
+		widgets.add(licenseBtn);
+
+		// Row 2: discord, github
+		int row2W = 2 * iconBtnSize + gap;
+		int row2X = sx + (itemW - row2W) / 2;
+		int row2Y = row1Y + iconBtnSize + 14;
+
+		IconButtonWidget discordBtn = new IconButtonWidget(row2X, row2Y, iconBtnSize, LucentResourceManager.iconDiscord, () -> {
+			UDesktop.openBrowse(LucentConfig.DISCORD_LINK);
+		});
+		widgets.add(discordBtn);
+
+		IconButtonWidget githubBtn = new IconButtonWidget(row2X + iconBtnSize + gap, row2Y, iconBtnSize, ICON_CODE, () -> {
+			UDesktop.openBrowse(LucentConfig.GITHUB_LINK);
+		});
+		widgets.add(githubBtn);
+
+		maxScroll = Math.max(0, row2Y + iconBtnSize + 30 - scissorY - scissorH);
 	}
 
 	private void buildPlaceholderWidgets(String pageName) {
@@ -1328,6 +1405,7 @@ public class ConfigScreen extends Screen {
 				|| (m.searchTags != null && m.searchTags.toLowerCase().contains(q));
 			if (catOk && qOk) out.add(m);
 		}
+		out.sort((m1, m2) -> Boolean.compare(m2.isFavorite, m1.isFavorite));
 		return out;
 	}
 
@@ -2039,35 +2117,47 @@ public class ConfigScreen extends Screen {
 		NVGRenderer.text(moduleManager.getTitle(), ix, winY + 26f, moduleManager.getTitleFont(), titleColor, moduleManager.getTitleSize());
 
 		int sy = winY + 44;
-
+		
 		sy += 36;
 		NVGRenderer.text("MOD CONFIG", ix, sy, Fonts.PRETENDARD_SEMIBOLD, UIColors.MUTED, 10f);
 		sy += 16;
-		sy = sidebarItem(ix, sy, LucentResourceManager.iconMods, L10n.translate("lucent.sidebar.mods"), currentSidebarPage.equals("Mods"));
-		sy = sidebarItem(ix, sy, LucentResourceManager.iconProfiles, L10n.translate("lucent.sidebar.profiles"), currentSidebarPage.equals("Profiles"));
+		sy = sidebarItem(ix, sy, ICON_HOME, L10n.translate("lucent.sidebar.mods"), currentSidebarPage.equals("Mods"));
+		sy = sidebarItem(ix, sy, ICON_ACCOUNT, L10n.translate("lucent.sidebar.profiles"), currentSidebarPage.equals("Profiles"));
 
 		sy += 16;
 		NVGRenderer.text("PERSONALIZATION", ix, sy, Fonts.PRETENDARD_SEMIBOLD, UIColors.MUTED, 10f);
 		sy += 16;
-		sy = sidebarItem(ix, sy, LucentResourceManager.iconThemes, L10n.translate("lucent.sidebar.themes"), currentSidebarPage.equals("Themes"));
-		sy = sidebarItem(ix, sy, LucentResourceManager.iconPreferences, L10n.translate("lucent.sidebar.preferences"), currentSidebarPage.equals("Preferences"));
+		sy = sidebarItem(ix, sy, ICON_PALETTE, L10n.translate("lucent.sidebar.themes"), currentSidebarPage.equals("Themes"));
+		sy = sidebarItem(ix, sy, ICON_SETTINGS, L10n.translate("lucent.sidebar.preferences"), currentSidebarPage.equals("Preferences"));
 
 		int bY = winY + WINDOW_H - 100;
-		sidebarItem(ix, bY, LucentResourceManager.iconEditHud, L10n.translate("lucent.sidebar.edithud"), false);
-		sidebarItem(ix, bY + 38, LucentResourceManager.iconClose, L10n.translate("lucent.sidebar.close"), false);
+		sidebarItem(ix, bY, ICON_MOSAIC, L10n.translate("lucent.sidebar.edithud"), false);
+		sidebarItem(ix, bY + 38, ICON_LOGOUT, L10n.translate("lucent.sidebar.close"), false);
 	}
 
-	private int sidebarItem(int x, int y, Image icon, String label, boolean active) {
+	private int sidebarItem(int x, int y, String iconText, String label, boolean active) {
 		final int itemH = 34;
 		if (active) {
 			NVGRenderer.rect(winX + 12, y, SIDEBAR_W - 24, itemH, UIColors.SIDEBAR_SEL, 8f);
 			NVGRenderer.rect(winX + 12, y + 6, 3, itemH - 12, UIColors.ACCENT_BLUE, 1.5f);
 		}
 		int fg = active ? UIColors.TEXT_PRIMARY : UIColors.TEXT_SECONDARY;
-		NVGRenderer.image(icon, x + 4, y + (itemH - 16) / 2f, 16);
+		NVGRenderer.text(iconText, x + 4, y + 8f, Fonts.MATERIAL_ICONS_ROUND, fg, 18f);
 		NVGRenderer.text(label, x + 30, y + 10f, Fonts.PRETENDARD_MEDIUM, fg, 14f);
 		return y + itemH + 2;
 	}
+
+//	private int sidebarItem(int x, int y, Image icon, String label, boolean active) {
+//		final int itemH = 34;
+//		if (active) {
+//			NVGRenderer.rect(winX + 12, y, SIDEBAR_W - 24, itemH, UIColors.SIDEBAR_SEL, 8f);
+//			NVGRenderer.rect(winX + 12, y + 6, 3, itemH - 12, UIColors.ACCENT_BLUE, 1.5f);
+//		}
+//		int fg = active ? UIColors.TEXT_PRIMARY : UIColors.TEXT_SECONDARY;
+//		NVGRenderer.image(icon, x + 4, y + (itemH - 16) / 2f, 16);
+//		NVGRenderer.text(label, x + 30, y + 10f, Fonts.PRETENDARD_MEDIUM, fg, 14f);
+//		return y + itemH + 2;
+//	}
 
 	private void renderTopBar() {
 		int cx = contentX + PAD;
@@ -2094,7 +2184,7 @@ public class ConfigScreen extends Screen {
 
 		NVGRenderer.rect(bx, by, bw, bh, UIColors.SEARCHBAR_BG, 8f);
 		NVGRenderer.outlineRect(bx, by, bw, bh, 1, searchFocused ? UIColors.ACCENT_BLUE : UIColors.ITEM_BORDER, 8f);
-		NVGRenderer.image(LucentResourceManager.iconSearch, bx + 10, by + (bh - 16) / 2f, 16);
+		NVGRenderer.text(ICON_SEARCH, bx + 10, by + 8f, Fonts.MATERIAL_ICONS_ROUND, UIColors.TEXT_SECONDARY, 18f);
 
 		if (searchField != null) {
 			String txt = searchField.getValue();
@@ -2207,6 +2297,52 @@ public class ConfigScreen extends Screen {
 		}
 		if (widget instanceof ColorPickerButton colorPickerButton && !colorPickerButton.isPickerOpen()) return true;
 		return false;
+	}
+
+	private class IconButtonWidget extends UIWidget {
+		private final String iconText;
+		private final Image iconImage;
+		private final Runnable onClick;
+		private float hoverAnim = 0.0f;
+
+		public IconButtonWidget(int x, int y, int size, String iconText, Runnable onClick) {
+			super(x, y, size, size);
+			this.iconText = iconText;
+			this.iconImage = null;
+			this.onClick = onClick;
+		}
+
+		public IconButtonWidget(int x, int y, int size, Image iconImage, Runnable onClick) {
+			super(x, y, size, size);
+			this.iconText = null;
+			this.iconImage = iconImage;
+			this.onClick = onClick;
+		}
+
+		@Override
+		protected void renderWidget(GuiGraphicsExtractor ctx, int mx, int my, float delta) {
+			hoverAnim = UAnimation.stepProgress(hoverAnim, isMouseOver(mx, my), 12.0f, delta);
+
+			if (iconImage != null) {
+				float is = 26f + hoverAnim * 2f;
+				//NVGRenderer.image(iconImage, x + (width - is) / 2f, y + (height - is) / 2f, is, is, 0.85f + hoverAnim * 0.15f);
+				NVGRenderer.image(iconImage, x + (width - is) / 2f, y + (height - is) / 2f, is, is, 0f, 0.85f + hoverAnim * 0.15f);
+
+			} else if (iconText != null) {
+				float is = 28f + hoverAnim * 2f;
+				int color = hoverAnim > 0 ? UIColors.PURE_WHITE : UIColors.withAlpha(UIColors.PURE_WHITE, 190);
+				NVGRenderer.text(iconText, x + (width - is) / 2f, y + (height - is) / 2f + 2f, Fonts.MATERIAL_ICONS_ROUND, color, is);
+			}
+		}
+
+		@Override
+		public boolean mouseClicked(double mx, double my, int btn) {
+			if (btn == 0 && isMouseOver(mx, my)) {
+				if (onClick != null) onClick.run();
+				return true;
+			}
+			return false;
+		}
 	}
 
 }

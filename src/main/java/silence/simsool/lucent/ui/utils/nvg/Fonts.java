@@ -17,9 +17,11 @@ public class Fonts {
 	public static LucentFont PRETENDARD;
 	public static LucentFont PRETENDARD_MEDIUM;
 	public static LucentFont PRETENDARD_SEMIBOLD;
+	public static LucentFont MATERIAL_ICONS;
+	public static LucentFont MATERIAL_ICONS_ROUND;
 
 	private static final File FONT_DIR = new File(OSUtils.getLucentDir(), "resources/fonts");
-	private static final String GITHUB_RAW_URL = "https://raw.githubusercontent.com/SILENCE-SIMSOOL/FontManager/main/pretendard/";
+	private static final String GITHUB_RAW_BASE_URL = "https://raw.githubusercontent.com/SILENCE-SIMSOOL/FontManager/main/";
 
 	private static boolean initialized = false;
 
@@ -45,22 +47,24 @@ public class Fonts {
 			FontList.PRETENDARD_LIGHT,
 			FontList.PRETENDARD,
 			FontList.PRETENDARD_MEDIUM,
-			FontList.PRETENDARD_SEMIBOLD
+			FontList.PRETENDARD_SEMIBOLD,
+			FontList.MATERIAL_ICONS,
+			FontList.MATERIAL_ICONS_ROUND
 		};
 
 		for (FontList font : fontsToLoad) {
-			String fileName = font.getName() + ".ttf";
+			String fileName = font.getFileName();
 			File fontFile = new File(FONT_DIR, fileName);
 
 			if (!fontFile.exists()) {
 				Lucent.LOG.info("Font missing: " + fileName + ". Starting download...");
-				downloadFont(fileName, fontFile);
+				downloadFont(font.getRelativePath(), fontFile);
 			}
 		}
 	}
 
 	private static LucentFont getFontFromList(FontList font) throws Exception {
-		String fileName = font.getName() + ".ttf";
+		String fileName = font.getFileName();
 		File fontFile = new File(FONT_DIR, fileName);
 
 		if (!fontFile.exists()) {
@@ -70,15 +74,15 @@ public class Fonts {
 		return new LucentFont(font.toString(), new FileInputStream(fontFile));
 	}
 
-	private static void downloadFont(String fileName, File dest) {
+	private static void downloadFont(String relativePath, File dest) {
 		try {
-			String url = GITHUB_RAW_URL + fileName;
+			String url = GITHUB_RAW_BASE_URL + relativePath;
 			byte[] data = UFile.fetchUrl(url);
 			if (data != null && data.length > 0) {
 				Files.write(dest.toPath(), data);
 			}
 		} catch (Exception e) {
-			Lucent.LOG.error("Failed to download font: " + fileName + " " + e.getMessage());
+			Lucent.LOG.error("Failed to download font: " + relativePath + " " + e.getMessage());
 		}
 	}
 
@@ -88,6 +92,8 @@ public class Fonts {
 			PRETENDARD            = getFontFromList(FontList.PRETENDARD);
 			PRETENDARD_MEDIUM     = getFontFromList(FontList.PRETENDARD_MEDIUM);
 			PRETENDARD_SEMIBOLD   = getFontFromList(FontList.PRETENDARD_SEMIBOLD);
+			MATERIAL_ICONS        = getFontFromList(FontList.MATERIAL_ICONS);
+			MATERIAL_ICONS_ROUND  = getFontFromList(FontList.MATERIAL_ICONS_ROUND);
 		} catch (Exception e) {
 			Lucent.LOG.error("Critical error during font loading: " + e.getMessage());
 		}
