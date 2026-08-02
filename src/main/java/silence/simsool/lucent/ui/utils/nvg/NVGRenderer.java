@@ -60,6 +60,8 @@ import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+
 import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.general.enums.Direction;
 import silence.simsool.lucent.general.enums.GradientType;
@@ -87,7 +89,7 @@ public class NVGRenderer {
 
 	private static void checkInit() {
 		if (vg == -1L) {
-			if (!com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) {
+			if (!RenderSystem.isOnRenderThread()) {
 				Lucent.LOG.error("NanoVG initialization attempted from wrong thread: " + Thread.currentThread().getName());
 				return;
 			}
@@ -1011,7 +1013,7 @@ public class NVGRenderer {
 			try {
 				id = img.isSVG ? loadSVG(img) : loadImage(img);
 			} catch (Exception e) {
-				// e.printStackTrace();
+				e.printStackTrace();
 			}
 			return new NVGImage(0, id);
 		});

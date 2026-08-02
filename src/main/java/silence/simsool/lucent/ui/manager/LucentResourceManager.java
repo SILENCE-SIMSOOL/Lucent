@@ -13,26 +13,16 @@ import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 
 public class LucentResourceManager {
 
-	public static Image iconMods, iconProfiles, iconThemes, iconPreferences, iconEditHud, iconClose, iconSearch, iconSettings, iconDelete, iconEdit;
+	public static Image iconDiscord;
 	public static final Map<String, Image> modIconsMap = new HashMap<>();
 
 	private static boolean onemoretry = true;
 
 	public static void loadLucentIcons() {
 		try {
-			if (iconMods == null) iconMods = LucentUtils.createIcon("mods");
-			if (iconProfiles == null) iconProfiles = LucentUtils.createIcon("profiles");
-			if (iconThemes == null) iconThemes = LucentUtils.createIcon("themes");
-			if (iconPreferences == null) iconPreferences = LucentUtils.createIcon("preferences");
-			if (iconEditHud == null) iconEditHud = LucentUtils.createIcon("edithud");
-			if (iconClose == null) iconClose = LucentUtils.createIcon("close");
-			if (iconSearch == null) iconSearch = LucentUtils.createIcon("search");
-			if (iconSettings == null) iconSettings = LucentUtils.createIcon("settings");
-			if (iconDelete == null) iconDelete = LucentUtils.createIcon("delete");
-			if (iconEdit == null) iconEdit = LucentUtils.createIcon("edit");
+			if (iconDiscord == null) iconDiscord = LucentUtils.createIcon("discord");
 		} catch (Exception e) {
 			if (onemoretry) {
-				e.printStackTrace();
 				onemoretry = false;
 				Lucent.LOG.info("Retrying to load icons..");
 				UThread.EXECUTOR.execute(() -> {
@@ -41,10 +31,6 @@ public class LucentResourceManager {
 						loadLucentIcons();
 					} catch (InterruptedException ex) {}
 				});
-			}
-			else {
-				Lucent.LOG.error("Failed to load icons after retrying. Some icons may not display correctly.");
-				//UDesktop.createSystemNotification("Lucent", "Failed to load icons.", MessageType.ERROR, 1500);
 			}
 		}
 	}

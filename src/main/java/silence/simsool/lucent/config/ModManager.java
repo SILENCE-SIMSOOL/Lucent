@@ -594,6 +594,11 @@ public class ModManager {
 					module.isEnabled = false;
 					needsResave = true;
 				}
+				if (json.has("isFavorite")) {
+					module.isFavorite = json.get("isFavorite").getAsBoolean();
+				} else {
+					module.isFavorite = false;
+				}
 
 				for (Field field : module.getClass().getDeclaredFields()) {
 					if (field.isAnnotationPresent(ModConfig.class) || field.isAnnotationPresent(ModConfigExtra.class)) {
@@ -641,6 +646,7 @@ public class ModManager {
 		for (Mod module : modules) {
 			JsonObject json = new JsonObject();
 			json.addProperty("isEnabled", module.isEnabled);
+			json.addProperty("isFavorite", module.isFavorite);
 			for (Field field : module.getClass().getDeclaredFields()) {
 				if (field.isAnnotationPresent(ModConfig.class) || field.isAnnotationPresent(ModConfigExtra.class)) {
 					field.setAccessible(true);

@@ -10,7 +10,7 @@
 	"lucent.preferences.load_config": "טעינת הגדרות",
 	"lucent.preferences.open_animation": "אנימציית פתיחה",
 	"lucent.preferences.open_animation.desc": "מפעיל או מכבה את אנימציית פתיחה של מסך ההגדרות.",
-	"lucent.preferences.open_config": "פתיחת תיקיית הגדרות",
+	"lucent.preferences.open_config": "Open Config",
 	"lucent.preferences.ui_blur": "טשטוש ממשק",
 	"lucent.preferences.ui_blur.desc": "מפעיל אפקט טשטוש מאחורי הממשק.",
 	"lucent.preferences.ui_blur_strength": "עוצמת טשטוש ממשק",
