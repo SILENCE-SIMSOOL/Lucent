@@ -61,7 +61,7 @@ public class Lucent implements ClientModInitializer {
 			KEYBINDING_CATEGORY
 	));
 
-	public static boolean devMode = true;
+	public static boolean devMode = false;
 	public static boolean warningVulkan = false;
 
 	static {
