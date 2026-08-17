@@ -9,6 +9,7 @@ import java.util.Objects;
 public class LucentFont {
 	private final String name;
 	private final byte[] cachedBytes;
+	private ByteBuffer directBuffer;
 
 	public LucentFont(String name, InputStream inputStream) throws IOException {
 		this.name = name;
@@ -21,16 +22,19 @@ public class LucentFont {
 		return name;
 	}
 
-	public ByteBuffer buffer() {
+	public synchronized ByteBuffer buffer() {
 		if (cachedBytes == null) {
 			throw new IllegalStateException("Font bytes not cached for font: " + name);
 		}
 
-		ByteBuffer buffer = ByteBuffer.allocateDirect(cachedBytes.length)
-			.order(ByteOrder.nativeOrder())
-			.put(cachedBytes);
-		
-		return (ByteBuffer) buffer.flip();
+		if (directBuffer == null) {
+			directBuffer = ByteBuffer.allocateDirect(cachedBytes.length)
+				.order(ByteOrder.nativeOrder())
+				.put(cachedBytes);
+			directBuffer.flip();
+		}
+
+		return directBuffer.duplicate();
 	}
 
 	@Override

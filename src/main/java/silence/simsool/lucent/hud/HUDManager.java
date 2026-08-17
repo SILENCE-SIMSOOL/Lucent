@@ -1,8 +1,10 @@
 package silence.simsool.lucent.hud;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -47,7 +49,7 @@ public class HUDManager {
 		File file = manager.getHudConfigFile();
 		if (!file.exists()) return;
 
-		try (FileReader reader = new FileReader(file)) {
+		try (BufferedReader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
 			JsonObject root = GSON.fromJson(reader, JsonObject.class);
 			if (root == null || !root.has("huds")) return;
 
@@ -161,7 +163,7 @@ public class HUDManager {
 
 			root.add("huds", hudsJson);
 
-			try (FileWriter writer = new FileWriter(file)) {
+			try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)) {
 				GSON.toJson(root, writer);
 			} catch (Exception e) {
 				Lucent.LOG.warn("Failed to save hud configs for " + manager + ": " + e.getMessage());

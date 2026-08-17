@@ -1,12 +1,14 @@
 package silence.simsool.lucent.init;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -313,7 +315,7 @@ public class PremiumCosmetics {
 					needDownload = true;
 				} else {
 					String localVersion = null;
-					try (FileReader reader = new FileReader(managerFile)) {
+					try (BufferedReader reader = Files.newBufferedReader(managerFile.toPath(), StandardCharsets.UTF_8)) {
 						JsonObject localJson = JsonParser.parseReader(reader).getAsJsonObject();
 						if (localJson.has("version")) {
 							localVersion = localJson.get("version").getAsString();
