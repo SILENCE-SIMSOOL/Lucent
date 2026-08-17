@@ -45,4 +45,20 @@ public class UIColors {
 		return withAlpha(color, alpha);
 	}
 
+	public static boolean isLightColor(int color) {
+		int r = (color >> 16) & 0xFF;
+		int g = (color >> 8) & 0xFF;
+		int b = color & 0xFF;
+		double luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255.0;
+		return luminance > 0.55;
+	}
+
+	public static int getContrastText(int bgColor) {
+		return isLightColor(bgColor) ? 0xFF121215 : 0xFFFFFFFF;
+	}
+
+	public static int getContrastDivider(int bgColor) {
+		return isLightColor(bgColor) ? 0x33000000 : 0x55FFFFFF;
+	}
+
 }

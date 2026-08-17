@@ -1,11 +1,13 @@
 package silence.simsool.lucent.config;
 
 import java.awt.Color;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -575,7 +577,7 @@ public class ModManager {
 			return;
 		}
 
-		try (FileReader reader = new FileReader(configFile)) {
+		try (BufferedReader reader = Files.newBufferedReader(configFile.toPath(), StandardCharsets.UTF_8)) {
 			JsonObject root = GSON.fromJson(reader, JsonObject.class);
 			if (root == null) return;
 			JsonObject modulesJson = root.has("modules") ? root.getAsJsonObject("modules") : new JsonObject();
@@ -633,7 +635,7 @@ public class ModManager {
 		JsonObject root = null;
 
 		if (configFile.exists()) {
-			try (FileReader reader = new FileReader(configFile)) {
+			try (BufferedReader reader = Files.newBufferedReader(configFile.toPath(), StandardCharsets.UTF_8)) {
 				root = GSON.fromJson(reader, JsonObject.class);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -663,7 +665,7 @@ public class ModManager {
 
 		root.add("modules", modulesJson);
 
-		try (FileWriter writer = new FileWriter(configFile)) {
+		try (BufferedWriter writer = Files.newBufferedWriter(configFile.toPath(), StandardCharsets.UTF_8)) {
 			GSON.toJson(root, writer);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -677,7 +679,7 @@ public class ModManager {
 			return;
 		}
 
-		try (FileReader reader = new FileReader(file)) {
+		try (BufferedReader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
 			JsonObject json = GSON.fromJson(reader, JsonObject.class); if (json == null) return;
 
 			if (json.has("currentProfile")) currentProfile = json.get("currentProfile").getAsString();
@@ -706,7 +708,7 @@ public class ModManager {
 		
 		JsonObject json = null;
 		if (file.exists()) {
-			try (FileReader reader = new FileReader(file)) {
+			try (BufferedReader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
 				json = GSON.fromJson(reader, JsonObject.class);
 			} catch (Exception e) {}
 		}
@@ -725,7 +727,7 @@ public class ModManager {
 		json.addProperty("renderPremiumWings", LucentConfig.renderPremiumWings);
 		json.addProperty("renderPremiumCapes", LucentConfig.renderPremiumCapes);
 
-		try (FileWriter writer = new FileWriter(file)) {
+		try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)) {
 			GSON.toJson(json, writer);
 		} catch (Exception e) {}
 	}

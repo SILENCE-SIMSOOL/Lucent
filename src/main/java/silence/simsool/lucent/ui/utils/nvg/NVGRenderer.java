@@ -47,6 +47,7 @@ import static org.lwjgl.nanovg.NanoVGGL3.NVG_IMAGE_NODELETE;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -1022,6 +1023,18 @@ public class NVGRenderer {
 	}
 
 	/**
+	 * Cleans up native NanoVG image and font caches.
+	 */
+	public static void cleanup() {
+		if (vg != -1L) {
+			for (int imgId : checkerCache.values()) {
+				nvgDeleteImage(vg, imgId);
+			}
+			checkerCache.clear();
+		}
+	}
+
+	/**
 	 * Decrements the reference count of the given image and releases its GPU resources if it reaches zero.
 	 * Should always be called when an image created with {@link #createImage} is no longer needed.
 	 *
@@ -1124,7 +1137,7 @@ public class NVGRenderer {
 		checkInit();
 		String vec;
 		try (InputStream s = image.stream) {
-			vec = new String(s.readAllBytes());
+			vec = new String(s.readAllBytes(), StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

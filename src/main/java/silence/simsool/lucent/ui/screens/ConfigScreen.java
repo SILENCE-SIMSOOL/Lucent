@@ -187,8 +187,18 @@ public class ConfigScreen extends Screen {
 		protected void renderWidget(GuiGraphics ctx, int mx, int my, float delta) {
 			boolean hov = mx >= x && mx <= x + width && my >= y && my <= y + height;
 			int topBg   = hov ? UIColors.CARD_HOVER : UIColors.CARD_BG;
-			int barBg   = mod.isEnabled ? UIColors.ACCENT_BLUE : UIColors.TAB_BG; 
-			if (hov && !mod.isEnabled) barBg = UIColors.withAlphaFloat(UIColors.TAB_BG, 0.6f);
+			int barBg;
+			if (mod.isEnabled) {
+				barBg = UIColors.ACCENT_BLUE;
+			} else {
+				if (hov) {
+					int curAlpha = UColor.getAlpha(UIColors.TAB_BG);
+					int newAlpha = Math.min(255, Math.max(curAlpha + 20, (int)(curAlpha * 1.3f)));
+					barBg = UColor.withAlpha(UIColors.TAB_BG, newAlpha);
+				} else {
+					barBg = UIColors.TAB_BG;
+				}
+			}
 
 			NVGRenderer.rect(x, y, width, height - BAR_H, topBg, 12, 12, 0, 0);
 			NVGRenderer.rect(x, y + height - BAR_H, width, BAR_H, barBg, 0, 0, 12, 12);
@@ -215,13 +225,15 @@ public class ConfigScreen extends Screen {
 			}
 
 			float barTop  = y + height - BAR_H;
+			int barFg = mod.isEnabled ? UIColors.getContrastText(barBg) : UIColors.PURE_WHITE;
+			int barDiv = mod.isEnabled ? UIColors.getContrastDivider(barBg) : 0x33FFFFFF;
 
-			NVGRenderer.text(L10n.translate(mod.name), x + 12f, barTop + 8f, Fonts.PRETENDARD_MEDIUM, UIColors.PURE_WHITE, 14f);
+			NVGRenderer.text(L10n.translate(mod.name), x + 12f, barTop + 8f, Fonts.PRETENDARD_MEDIUM, barFg, 14f);
 
 			float divX = x + width - 36f;
-			NVGRenderer.rect(divX, barTop + 6f, 1, BAR_H - 12f, 0x55FFFFFF, 0f); // 약간 투명한 선
+			NVGRenderer.rect(divX, barTop + 6f, 1, BAR_H - 12f, barDiv, 0f);
 			
-			NVGRenderer.text(ICON_SETTINGS, divX + 10f, barTop + 7f, Fonts.MATERIAL_ICONS_ROUND, UIColors.PURE_WHITE, 16f);
+			NVGRenderer.text(ICON_SETTINGS, divX + 10f, barTop + 7f, Fonts.MATERIAL_ICONS_ROUND, barFg, 16f);
 
 			// Favorite Heart Icon (top-right)
 			String heartIcon = mod.isFavorite ? ICON_FAVORITE : ICON_FAVORITE_BORDER;
@@ -315,8 +327,18 @@ public class ConfigScreen extends Screen {
 			boolean hov = isMouseOver(mx, my);
 			
 			int topBg = hov ? UIColors.CARD_HOVER : UIColors.CARD_BG;
-			int barBg = active ? UIColors.ACCENT_BLUE : UIColors.TAB_BG;
-			if (hov && !active) barBg = UIColors.withAlphaFloat(UIColors.TAB_BG, 0.75f);
+			int barBg;
+			if (active) {
+				barBg = UIColors.ACCENT_BLUE;
+			} else {
+				if (hov) {
+					int curAlpha = UColor.getAlpha(UIColors.TAB_BG);
+					int newAlpha = Math.min(255, Math.max(curAlpha + 20, (int)(curAlpha * 1.3f)));
+					barBg = UColor.withAlpha(UIColors.TAB_BG, newAlpha);
+				} else {
+					barBg = UIColors.TAB_BG;
+				}
+			}
 
 			// Backgrounds
 			NVGRenderer.rect(x, y, width, height - BAR_H, topBg, 12, 12, 0, 0);
@@ -336,23 +358,26 @@ public class ConfigScreen extends Screen {
 			float iconS = 16f;
 
 			if (!editing) {
+				int barFg = active ? UIColors.getContrastText(barBg) : UIColors.PURE_WHITE;
+				int barDiv = active ? UIColors.getContrastDivider(barBg) : 0x33FFFFFF;
+
 				if (profileName.equals("default")) {
 					// No divider, center Edit icon
 					boolean hovEdit = mx > x && mx < x + width && my > barTop && my < barTop + BAR_H;
-					int col = hovEdit ? UIColors.PURE_WHITE : UIColors.withAlpha(UIColors.PURE_WHITE, 160);
+					int col = hovEdit ? barFg : UIColors.withAlpha(barFg, 160);
 					NVGRenderer.text(ICON_EDIT, midX - (iconS / 2f), barTop + 9f, Fonts.MATERIAL_ICONS_ROUND, col, iconS);
 				} else {
 					// Divider line
-					NVGRenderer.rect(midX - 0.5f, barTop + 6f, 1f, BAR_H - 12f, 0x33FFFFFF, 0f);
+					NVGRenderer.rect(midX - 0.5f, barTop + 6f, 1f, BAR_H - 12f, barDiv, 0f);
 
 					// Left Half: Edit
 					boolean hovEdit = mx > x && mx < midX && my > barTop && my < barTop + BAR_H;
-					int colEdit = hovEdit ? UIColors.PURE_WHITE : UIColors.withAlpha(UIColors.PURE_WHITE, 160);
+					int colEdit = hovEdit ? barFg : UIColors.withAlpha(barFg, 160);
 					NVGRenderer.text(ICON_EDIT, x + (width / 4f) - (iconS / 2f), barTop + 9f, Fonts.MATERIAL_ICONS_ROUND, colEdit, iconS);
 
 					// Right Half: Delete
 					boolean hovDel = mx > midX && mx < x + width && my > barTop && my < barTop + BAR_H;
-					int colDel = hovDel ? UIColors.PURE_WHITE : UIColors.withAlpha(UIColors.PURE_WHITE, 160);
+					int colDel = hovDel ? barFg : UIColors.withAlpha(barFg, 160);
 					NVGRenderer.text(ICON_DELETE, x + (3 * width / 4f) - (iconS / 2f), barTop + 9f, Fonts.MATERIAL_ICONS_ROUND, colDel, iconS);
 				}
 			}
@@ -2220,7 +2245,7 @@ public class ConfigScreen extends Screen {
 			boolean active = cat.equals(currentCategory);
 			
 			int bg = active ? UIColors.ACCENT_BLUE : UIColors.TAB_BG;
-			int fg = active ? UIColors.TEXT_PRIMARY : 0xFFCCCCCC;
+			int fg = active ? UIColors.getContrastText(bg) : 0xFFCCCCCC;
 			
 			int padX = 16;
 			int tabW = (int)(tw + padX * 2);
