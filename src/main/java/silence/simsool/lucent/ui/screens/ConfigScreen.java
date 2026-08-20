@@ -646,12 +646,14 @@ public class ConfigScreen extends Screen {
 	public void removed() {
 		super.removed();
 		if (moduleManager != null) moduleManager.saveConfigs();
+		Lucent.config.saveGlobalConfig();
 	}
 
 	@Override
 	protected void init() {
 		super.init();
 
+		Lucent.config.loadGlobalConfig();
 		LucentResourceManager.loadLucentIcons();
 
 		float standardScale = NVGRenderer.getStandardGuiScale();
@@ -1117,6 +1119,7 @@ public class ConfigScreen extends Screen {
 
 	private void pushNav(String page, Mod mod, String cat) {
 		if (currentSidebarPage.equals("Mods")) moduleManager.saveConfigs();
+		Lucent.config.saveGlobalConfig();
 
 		categoryScrollMap.put(getNavKey(), scrollOffset);
 
@@ -1134,6 +1137,7 @@ public class ConfigScreen extends Screen {
 		scrollOffset = categoryScrollMap.getOrDefault(getNavKey(), 0.0);
 
 		if (page.equals("Mods")) moduleManager.loadConfigs();
+		if (page.equals("Preferences")) Lucent.config.loadGlobalConfig();
 
 		refreshUI(true);
 	}
@@ -1147,6 +1151,7 @@ public class ConfigScreen extends Screen {
 		if (history.isEmpty()) return;
 
 		if (currentSidebarPage.equals("Mods")) moduleManager.saveConfigs();
+		Lucent.config.saveGlobalConfig();
 
 		categoryScrollMap.put(getNavKey(), scrollOffset);
 		forwardHistory.push(new NavState(currentSidebarPage, currentModSettings, currentCategory, scrollOffset));
@@ -1158,6 +1163,7 @@ public class ConfigScreen extends Screen {
 		categoryScrollMap.put(getNavKey(), scrollOffset);
 
 		if (currentSidebarPage.equals("Mods")) moduleManager.loadConfigs();
+		if (currentSidebarPage.equals("Preferences")) Lucent.config.loadGlobalConfig();
 
 		refreshUI(true);
 	}
@@ -1166,6 +1172,7 @@ public class ConfigScreen extends Screen {
 		if (forwardHistory.isEmpty()) return;
 
 		if (currentSidebarPage.equals("Mods")) moduleManager.saveConfigs();
+		Lucent.config.saveGlobalConfig();
 
 		categoryScrollMap.put(getNavKey(), scrollOffset);
 		history.push(new NavState(currentSidebarPage, currentModSettings, currentCategory, scrollOffset));
@@ -1177,6 +1184,7 @@ public class ConfigScreen extends Screen {
 		categoryScrollMap.put(getNavKey(), scrollOffset);
 
 		if (currentSidebarPage.equals("Mods")) moduleManager.loadConfigs();
+		if (currentSidebarPage.equals("Preferences")) Lucent.config.loadGlobalConfig();
 
 		refreshUI(true);
 	}
@@ -1336,6 +1344,7 @@ public class ConfigScreen extends Screen {
 
 		IconButtonWidget loadConfigBtn = new IconButtonWidget(row1X, row1Y, iconBtnSize, ICON_REFRESH, () -> {
 			moduleManager.loadConfigs();
+			Lucent.config.loadGlobalConfig();
 			refreshUI(true);
 			UChat.chat("§aConfig data has been reloaded!");
 			ClientHandler.playSound(SoundEvents.PLAYER_LEVELUP, 2.0f, 0.85f);
