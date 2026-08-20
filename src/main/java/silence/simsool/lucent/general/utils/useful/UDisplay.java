@@ -100,7 +100,7 @@ public class UDisplay {
 	}
 
 	public static boolean isDebugScreen() {
-		return mc.gui.getDebugOverlay().showDebugScreen();
+		return mc.debugEntries.isOverlayVisible(); // mc.gui.getDebugOverlay().showDebugScreen();
 	}
 
 }

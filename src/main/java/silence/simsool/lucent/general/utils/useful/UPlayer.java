@@ -3,6 +3,7 @@ package silence.simsool.lucent.general.utils.useful;
 import static silence.simsool.lucent.Lucent.mc;
 
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 public class UPlayer {
@@ -29,6 +30,11 @@ public class UPlayer {
 	public static ItemStack getSubItem() {
 		if (isNull()) return null;
 		return mc.player.getOffhandItem();
+	}
+
+	public static Inventory getInventory() {
+		if (isNull()) return null;
+		return mc.player.getInventory();
 	}
 
 	public static float getPitch() {
