@@ -190,8 +190,11 @@ public class ConfigScreen extends Screen {
 			boolean hov = mx >= x && mx <= x + width && my >= y && my <= y + height;
 			int topBg   = hov ? UIColors.CARD_HOVER : UIColors.CARD_BG;
 			int barBg;
-			if (mod.isEnabled) {
-				barBg = UIColors.ACCENT_BLUE;
+			int activeColor = UIColors.BAR_ON;
+			if (mod.isLocked) {
+				barBg = UColor.darken(activeColor, 0.25f);
+			} else if (mod.isEnabled) {
+				barBg = activeColor;
 			} else {
 				if (hov) {
 					int curAlpha = UColor.getAlpha(UIColors.TAB_BG);
@@ -253,8 +256,12 @@ public class ConfigScreen extends Screen {
 					refreshUI(true);
 					return true;
 				}
-				if (mx >= x + width - 36 && my >= y + height - BAR_H) pushNav("Mods", mod, currentCategory);
-				else mod.isEnabled = !mod.isEnabled;
+				if (mod.isLocked || (mx >= x + width - 36 && my >= y + height - BAR_H)) {
+					pushNav("Mods", mod, currentCategory);
+				} else {
+					mod.isEnabled = !mod.isEnabled;
+					moduleManager.saveConfigs();
+				}
 				return true;
 			}
 			return false;

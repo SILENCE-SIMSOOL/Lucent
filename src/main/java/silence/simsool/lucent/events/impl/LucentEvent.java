@@ -51,8 +51,32 @@ import silence.simsool.lucent.general.models.interfaces.events.lucentevent.ITick
 import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IUseItemEvent;
 import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IUseItemOnEvent;
 import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IWorldLoadEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.ITablistUpdateEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IScoreboardUpdateEvent;
+import silence.simsool.lucent.general.utils.ScoreboardUtils;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundSetScorePacket;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Optional;
 
 public class LucentEvent {
+
+	public static final Event<ITablistUpdateEvent> TABLIST_UPDATE_EVENT = createArrayBacked(
+		ITablistUpdateEvent.class, listeners -> event -> {
+			for (ITablistUpdateEvent listener : listeners) {
+				listener.onTablistUpdate(event);
+			}
+		}
+	);
+
+	public static final Event<IScoreboardUpdateEvent> SCOREBOARD_UPDATE_EVENT = createArrayBacked(
+		IScoreboardUpdateEvent.class, listeners -> event -> {
+			for (IScoreboardUpdateEvent listener : listeners) {
+				listener.onScoreboardUpdate(event);
+			}
+		}
+	);
 
 	public static final Event<IInitFinishedEvent> INIT_FINISHED_EVENT = createArrayBacked(
 		IInitFinishedEvent.class, listeners -> () -> {
@@ -676,6 +700,46 @@ public class LucentEvent {
 
 		public boolean isCanceled() {
 			return canceled;
+		}
+	}
+
+	public static class TablistUpdateEvent {
+		public final ClientboundPlayerInfoUpdatePacket packet;
+		public final EnumSet<ClientboundPlayerInfoUpdatePacket.Action> actions;
+		public final List<ClientboundPlayerInfoUpdatePacket.Entry> entries;
+		public final List<String> lines;
+
+		public TablistUpdateEvent(ClientboundPlayerInfoUpdatePacket packet) {
+			this.packet = packet;
+			this.actions = packet.actions();
+			this.entries = packet.entries();
+			this.lines = new ArrayList<>();
+			if (packet.actions().contains(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME)) {
+				for (ClientboundPlayerInfoUpdatePacket.Entry entry : packet.entries()) {
+					Component displayName = entry.displayName();
+					if (displayName != null) {
+						this.lines.add(displayName.getString());
+					}
+				}
+			}
+		}
+	}
+
+	public static class ScoreboardUpdateEvent {
+		public final ClientboundSetScorePacket packet;
+		public final String owner;
+		public final String objectiveName;
+		public final int score;
+		public final Optional<Component> display;
+		public final String cleanObjective;
+
+		public ScoreboardUpdateEvent(ClientboundSetScorePacket packet) {
+			this.packet = packet;
+			this.owner = packet.owner();
+			this.objectiveName = packet.objectiveName();
+			this.score = packet.score();
+			this.display = packet.display();
+			this.cleanObjective = ScoreboardUtils.cleanSB(packet.objectiveName());
 		}
 	}
 

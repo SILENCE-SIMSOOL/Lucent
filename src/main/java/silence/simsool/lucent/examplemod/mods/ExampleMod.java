@@ -28,6 +28,7 @@ public class ExampleMod extends Mod {
 				"QOL", // Category
 				"minecraft, chat", // Search Tags
 				"\uE8D0" // "/assets/lucent/textures/modicons/chatmod.png" ('Font Icon' or 'PNG Icon Path')
+				// ,true
 		);
 	}
 

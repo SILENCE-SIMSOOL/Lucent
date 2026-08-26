@@ -117,7 +117,9 @@ public class ThemeManager {
 		currentTheme = t;
 		UIColors.WIN_BG         = t.winBg;
 		UIColors.SIDEBAR_BG     = t.sidebarBg;
+		UIColors.ACCENT         = t.accent;
 		UIColors.ACCENT_BLUE    = t.accent;
+		UIColors.BAR_ON         = t.barOn;
 		UIColors.TEXT_PRIMARY   = t.textPrimary;
 		UIColors.TEXT_SECONDARY = t.textSecondary;
 		UIColors.MUTED          = t.textLabel;

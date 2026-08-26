@@ -363,6 +363,14 @@ public class ModManager {
 			if (module.isEnabled) module.onScoreboard(event);
 		});
 
+		LucentEvent.TABLIST_UPDATE_EVENT.register(event -> {
+			if (module.isEnabled) module.onTablistUpdate(event);
+		});
+
+		LucentEvent.SCOREBOARD_UPDATE_EVENT.register(event -> {
+			if (module.isEnabled) module.onScoreboardUpdate(event);
+		});
+
 		LucentEvent.USE_ITEM_ON_EVENT.register(event -> {
 			if (module.isEnabled) module.onUseItemOn(event);
 		});
@@ -558,6 +566,7 @@ public class ModManager {
 	public void setModuleEnabled(Class<? extends Mod> moduleClass, boolean enabled) {
 		Mod mod = getModule(moduleClass);
 		if (mod != null) {
+			if (mod.isLocked) return;
 			mod.isEnabled = enabled;
 			saveConfigs();
 		}
@@ -590,7 +599,9 @@ public class ModManager {
 				}
 				
 				JsonObject json = modulesJson.getAsJsonObject(key);
-				if (json.has("isEnabled")) {
+				if (module.isLocked) {
+					module.isEnabled = true;
+				} else if (json.has("isEnabled")) {
 					module.isEnabled = json.get("isEnabled").getAsBoolean();
 				} else {
 					module.isEnabled = false;
