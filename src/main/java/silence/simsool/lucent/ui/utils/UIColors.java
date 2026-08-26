@@ -30,7 +30,9 @@ public class UIColors {
 	public static int TEXT_SECONDARY         = 0xFF9CA3AF;
 	public static int MUTED                  = 0xFF6B7280;
 	public static int DARK                   = 0xFF2A2A2D;  
+	public static int ACCENT                 = 0xFF3B82F6;
 	public static int ACCENT_BLUE            = 0xFF3B82F6;
+	public static int BAR_ON                 = 0xFF3B82F6;
 
 	// ----------- Transparent -----------
 	public static int TRANSPARENT            = 0x00000000;

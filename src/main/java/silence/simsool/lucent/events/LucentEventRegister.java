@@ -23,9 +23,11 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
 import net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket;
+import net.minecraft.network.protocol.game.ClientboundSetScorePacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemPacket;
@@ -236,6 +238,18 @@ public class LucentEventRegister {
 						}
 					});
 				});
+				return;
+			}
+
+			if (event.packet instanceof ClientboundPlayerInfoUpdatePacket packet) {
+				if (packet.actions().contains(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME)) {
+					LucentEvent.TABLIST_UPDATE_EVENT.invoker().onTablistUpdate(new LucentEvent.TablistUpdateEvent(packet));
+				}
+				return;
+			}
+
+			if (event.packet instanceof ClientboundSetScorePacket packet) {
+				LucentEvent.SCOREBOARD_UPDATE_EVENT.invoker().onScoreboardUpdate(new LucentEvent.ScoreboardUpdateEvent(packet));
 				return;
 			}
 		});
