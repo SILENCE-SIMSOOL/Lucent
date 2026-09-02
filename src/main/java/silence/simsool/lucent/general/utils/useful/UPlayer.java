@@ -23,12 +23,12 @@ public class UPlayer {
 	}
 
 	public static ItemStack getItem() {
-		if (isNull()) return null;
+		if (isNull()) return ItemStack.EMPTY;
 		return mc.player.getMainHandItem();
 	}
 
 	public static ItemStack getSubItem() {
-		if (isNull()) return null;
+		if (isNull()) return ItemStack.EMPTY;
 		return mc.player.getOffhandItem();
 	}
 
