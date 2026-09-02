@@ -65,6 +65,11 @@ public abstract class Mod {
 	public void onSound(LucentEvent.SoundEvent event) {}
 	public void onScoreboard(LucentEvent.ScoreboardEvent event) {}
 	public void onTablistUpdate(LucentEvent.TablistUpdateEvent event) {}
+	public void onTabAdd(LucentEvent.TabAddEvent event) {}
+	public void onTabUpdate(LucentEvent.TabUpdateEvent event) {}
+	public void onTabFooter(LucentEvent.TabFooterEvent event) {}
+	public void onTabHeader(LucentEvent.TabHeaderEvent event) {}
+	public void onActionbar(LucentEvent.ActionbarEvent event) {}
 	public void onScoreboardUpdate(LucentEvent.ScoreboardUpdateEvent event) {}
 	public void onUseItemOn(LucentEvent.UseItemOnEvent event) {}
 	public void onUseItem(LucentEvent.UseItemEvent event) {}

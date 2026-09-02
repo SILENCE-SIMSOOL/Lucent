@@ -367,6 +367,26 @@ public class ModManager {
 			if (module.isEnabled) module.onTablistUpdate(event);
 		});
 
+		LucentEvent.TAB_ADD_EVENT.register(event -> {
+			if (module.isEnabled) module.onTabAdd(event);
+		});
+
+		LucentEvent.TAB_UPDATE_EVENT.register(event -> {
+			if (module.isEnabled) module.onTabUpdate(event);
+		});
+
+		LucentEvent.TAB_FOOTER_EVENT.register(event -> {
+			if (module.isEnabled) module.onTabFooter(event);
+		});
+
+		LucentEvent.TAB_HEADER_EVENT.register(event -> {
+			if (module.isEnabled) module.onTabHeader(event);
+		});
+
+		LucentEvent.ACTIONBAR_TEXT_EVENT.register(event -> {
+			if (module.isEnabled) module.onActionbar(event);
+		});
+
 		LucentEvent.SCOREBOARD_UPDATE_EVENT.register(event -> {
 			if (module.isEnabled) module.onScoreboardUpdate(event);
 		});

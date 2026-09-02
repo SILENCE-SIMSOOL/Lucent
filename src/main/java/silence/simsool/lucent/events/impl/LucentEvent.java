@@ -53,10 +53,16 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.InteractionHand;
 
 import silence.simsool.lucent.general.models.interfaces.events.lucentevent.ITablistUpdateEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.ITabAddEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.ITabUpdateEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.ITabFooterEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.ITabHeaderEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IActionbarTextEvent;
 import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IScoreboardUpdateEvent;
 import silence.simsool.lucent.general.utils.ScoreboardUtils;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundSetScorePacket;
+import net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
@@ -67,6 +73,46 @@ public class LucentEvent {
 		ITablistUpdateEvent.class, listeners -> event -> {
 			for (ITablistUpdateEvent listener : listeners) {
 				listener.onTablistUpdate(event);
+			}
+		}
+	);
+
+	public static final Event<ITabAddEvent> TAB_ADD_EVENT = createArrayBacked(
+		ITabAddEvent.class, listeners -> event -> {
+			for (ITabAddEvent listener : listeners) {
+				listener.onTabAdd(event);
+			}
+		}
+	);
+
+	public static final Event<ITabUpdateEvent> TAB_UPDATE_EVENT = createArrayBacked(
+		ITabUpdateEvent.class, listeners -> event -> {
+			for (ITabUpdateEvent listener : listeners) {
+				listener.onTabUpdate(event);
+			}
+		}
+	);
+
+	public static final Event<ITabFooterEvent> TAB_FOOTER_EVENT = createArrayBacked(
+		ITabFooterEvent.class, listeners -> event -> {
+			for (ITabFooterEvent listener : listeners) {
+				listener.onTabFooter(event);
+			}
+		}
+	);
+
+	public static final Event<ITabHeaderEvent> TAB_HEADER_EVENT = createArrayBacked(
+		ITabHeaderEvent.class, listeners -> event -> {
+			for (ITabHeaderEvent listener : listeners) {
+				listener.onTabHeader(event);
+			}
+		}
+	);
+
+	public static final Event<IActionbarTextEvent> ACTIONBAR_TEXT_EVENT = createArrayBacked(
+		IActionbarTextEvent.class, listeners -> event -> {
+			for (IActionbarTextEvent listener : listeners) {
+				listener.onActionbar(event);
 			}
 		}
 	);
@@ -605,9 +651,65 @@ public class LucentEvent {
 
 	public static class ScoreboardEvent {
 		public final String message;
+		public final ClientboundSetPlayerTeamPacket packet;
 
 		public ScoreboardEvent(String message) {
+			this(message, null);
+		}
+
+		public ScoreboardEvent(String message, ClientboundSetPlayerTeamPacket packet) {
 			this.message = message;
+			this.packet = packet;
+		}
+	}
+
+	public static class TabAddEvent {
+		public final String message;
+		public final Component component;
+
+		public TabAddEvent(String message, Component component) {
+			this.message = message;
+			this.component = component;
+		}
+	}
+
+	public static class TabUpdateEvent {
+		public final String message;
+		public final Component component;
+
+		public TabUpdateEvent(String message, Component component) {
+			this.message = message;
+			this.component = component;
+		}
+	}
+
+	public static class TabFooterEvent {
+		public final String message;
+		public final Component component;
+
+		public TabFooterEvent(String message, Component component) {
+			this.message = message;
+			this.component = component;
+		}
+	}
+
+	public static class TabHeaderEvent {
+		public final String message;
+		public final Component component;
+
+		public TabHeaderEvent(String message, Component component) {
+			this.message = message;
+			this.component = component;
+		}
+	}
+
+	public static class ActionbarEvent {
+		public final String message;
+		public final Component component;
+
+		public ActionbarEvent(String message, Component component) {
+			this.message = message;
+			this.component = component;
 		}
 	}
 
