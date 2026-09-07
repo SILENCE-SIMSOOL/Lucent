@@ -3,8 +3,10 @@ package silence.simsool.lucent.general.utils.useful;
 import static silence.simsool.lucent.Lucent.mc;
 
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 public class UPlayer {
 
@@ -55,6 +57,16 @@ public class UPlayer {
 	public static void setYaw(float yaw) {
 		if (isNull()) return;
 		mc.player.setYRot(yaw);
+	}
+
+	public static BlockPos getPosotion() {
+		if (isNull()) return null;
+		return mc.player.blockPosition();
+	}
+
+	public static Vec3 getPosotionVec() {
+		if (isNull()) return null;
+		return mc.player.position();
 	}
 
 }
