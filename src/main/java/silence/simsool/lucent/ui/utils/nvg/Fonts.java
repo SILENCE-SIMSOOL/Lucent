@@ -17,6 +17,8 @@ public class Fonts {
 	public static LucentFont PRETENDARD;
 	public static LucentFont PRETENDARD_MEDIUM;
 	public static LucentFont PRETENDARD_SEMIBOLD;
+	public static LucentFont PRETENDARD_BOLD;
+	public static LucentFont PRETENDARD_EXTRABOLD;
 	public static LucentFont MATERIAL_ICONS;
 	public static LucentFont MATERIAL_ICONS_ROUND;
 
@@ -48,6 +50,8 @@ public class Fonts {
 			FontList.PRETENDARD,
 			FontList.PRETENDARD_MEDIUM,
 			FontList.PRETENDARD_SEMIBOLD,
+			FontList.PRETENDARD_BOLD,
+			FontList.PRETENDARD_EXTRABOLD,
 			FontList.MATERIAL_ICONS,
 			FontList.MATERIAL_ICONS_ROUND
 		};
@@ -92,6 +96,8 @@ public class Fonts {
 			PRETENDARD            = getFontFromList(FontList.PRETENDARD);
 			PRETENDARD_MEDIUM     = getFontFromList(FontList.PRETENDARD_MEDIUM);
 			PRETENDARD_SEMIBOLD   = getFontFromList(FontList.PRETENDARD_SEMIBOLD);
+			PRETENDARD_BOLD       = getFontFromList(FontList.PRETENDARD_BOLD);
+			PRETENDARD_EXTRABOLD  = getFontFromList(FontList.PRETENDARD_EXTRABOLD);
 			MATERIAL_ICONS        = getFontFromList(FontList.MATERIAL_ICONS);
 			MATERIAL_ICONS_ROUND  = getFontFromList(FontList.MATERIAL_ICONS_ROUND);
 		} catch (Exception e) {
