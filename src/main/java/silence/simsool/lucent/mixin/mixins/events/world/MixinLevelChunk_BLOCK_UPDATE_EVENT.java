@@ -18,7 +18,7 @@ public abstract class MixinLevelChunk_BLOCK_UPDATE_EVENT {
 	public abstract BlockState getBlockState(BlockPos pos);
 
 	@Inject(method = "setBlockState", at = @At("HEAD"))
-	private void onSetBlockState(BlockPos pos, BlockState state, int flags, CallbackInfoReturnable<BlockState> cir) {
+	private void lucent$onSetBlockState(BlockPos pos, BlockState state, int flags, CallbackInfoReturnable<BlockState> cir) {
 		BlockState old = this.getBlockState(pos);
 		if (old != state) LucentEvent.BLOCK_UPDATE_EVENT.invoker().onBlockUpdate(new LucentEvent.BlockUpdateEvent(pos, old, state));
 	}

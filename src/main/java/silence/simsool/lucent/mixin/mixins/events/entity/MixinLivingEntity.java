@@ -21,7 +21,7 @@ public abstract class MixinLivingEntity extends Entity {
 	}
 
 	@Inject(method = "die", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;setPose(Lnet/minecraft/world/entity/Pose;)V"))
-	private void onDeath(DamageSource damageSource, CallbackInfo ci) {
+	private void lucent$onDeath(DamageSource damageSource, CallbackInfo ci) {
 		Level world = this.level();
 		if (!world.isClientSide()) return;
 		EntityEvent.EntityDeathEvent event = new EntityEvent.EntityDeathEvent(this, (ClientLevel) world);

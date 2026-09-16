@@ -20,13 +20,13 @@ import silence.simsool.lucent.events.impl.EntityEvent;
 public class MixinEntityRenderDispatcher_ExtractRenderStatePre {
 
 	@Inject(method = "submit", at = @At("HEAD"))
-	private <S extends EntityRenderState> void preRenderEntity(S entityRenderState, CameraRenderState cameraRenderState, double d, double e, double f, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CallbackInfo ci) {
+	private <S extends EntityRenderState> void lucent$preRenderEntity(S entityRenderState, CameraRenderState cameraRenderState, double d, double e, double f, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CallbackInfo ci) {
 		EntityEvent.RenderEntityPreEvent event = new EntityEvent.RenderEntityPreEvent(entityRenderState, cameraRenderState, poseStack, submitNodeCollector);
 		EntityEvent.RENDER_ENTITY_PRE_EVENT.invoker().onRenderEntity(event);
 	}
 
 	@Inject(method = "extractEntity", at = @At("HEAD"), cancellable = true)
-	private void preExtractRenderEntity(Entity entity, float f, CallbackInfoReturnable<EntityRenderState> cir) {
+	private void lucent$preExtractRenderEntity(Entity entity, float f, CallbackInfoReturnable<EntityRenderState> cir) {
 		if (entity == null) return;
 		EntityEvent.ExtractRenderStatePre event = new EntityEvent.ExtractRenderStatePre(entity, f);
 		EntityEvent.EXTRACT_RENDER_STATE_PRE.invoker().onExtractRenderStatePre(event);

@@ -83,6 +83,8 @@ public class SkijaCompositor {
 	private final Target overlayTarget = new Target("lucent ui");
 	private int hudSplit = -1;
 	private boolean warmed = false;
+	private boolean inHud = false;
+	private boolean screenBlitted = false;
 
 	private final List<Consumer<Canvas>> batch = new ArrayList<>();
 
@@ -102,7 +104,12 @@ public class SkijaCompositor {
 		batch.clear();
 	}
 
+	public void beginHud() {
+		this.inHud = true;
+	}
+
 	public void markHudLayer(GuiRenderState guiRenderState) {
+		this.inHud = false;
 		if (!SkijaNatives.isReady()) return;
 		SkijaBackend backend = SkijaBackends.getActive(); if (backend == null) return;
 
@@ -118,6 +125,27 @@ public class SkijaCompositor {
 
 		hudSplit = queued;
 		addBlit(guiRenderState, backend, blitView, window.getGuiScaledWidth(), window.getGuiScaledHeight());
+	}
+
+	public void markScreenLayer(GuiRenderState guiRenderState) {
+		if (inHud) return;
+		if (screenBlitted) return;
+		if (!SkijaNatives.isReady()) return;
+		SkijaBackend backend = SkijaBackends.getActive(); if (backend == null) return;
+
+		int queued = batch.size(); if (queued == 0) return;
+
+		Window window = UDisplay.getWindow();
+		int w = window.getWidth();
+		int h = window.getHeight();
+		if (window.isIconified() || w <= 0 || h <= 0) return;
+
+		overlayTarget.ensure(backend, w, h);
+		GpuTextureView blitView = overlayTarget.view; if (blitView == null) return;
+
+		screenBlitted = true;
+		addBlit(guiRenderState, backend, blitView, window.getGuiScaledWidth(), window.getGuiScaledHeight());
+		guiRenderState.up();
 	}
 
 	public void composite(GuiRenderState guiRenderState) {
@@ -150,19 +178,18 @@ public class SkijaCompositor {
 			int h = window.getHeight();
 			if (window.isIconified() || w <= 0 || h <= 0) return;
 
-			hudTarget.ensure(backend, w, h);
-			overlayTarget.ensure(backend, w, h);
-
 			Matrix3x2f pose = new Matrix3x2f();
 
 			if (hudSplit > 0) {
+				hudTarget.ensure(backend, w, h);
 				render(backend, hudTarget, pose, 0, hudSplit);
 			}
 
 			int overlayFrom = Math.max(0, hudSplit);
 			if (batch.size() > overlayFrom) {
+				overlayTarget.ensure(backend, w, h);
 				render(backend, overlayTarget, pose, overlayFrom, Integer.MAX_VALUE);
-				if (overlayTarget.view != null) {
+				if (!screenBlitted && overlayTarget.view != null) {
 					addTopmostBlit(guiRenderState, backend, overlayTarget.view, window.getGuiScaledWidth(), window.getGuiScaledHeight());
 				}
 			}
@@ -171,6 +198,8 @@ public class SkijaCompositor {
 		} finally {
 			discard();
 			hudSplit = -1;
+			screenBlitted = false;
+			inHud = false;
 			backend.restoreState();
 		}
 	}

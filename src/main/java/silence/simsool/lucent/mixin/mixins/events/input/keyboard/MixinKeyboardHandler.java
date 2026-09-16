@@ -17,7 +17,7 @@ import silence.simsool.lucent.general.utils.useful.UScreen;
 public class MixinKeyboardHandler {
 
 	@Inject(method = "keyPress", at = @At("HEAD"), cancellable = true)
-	private void onKey(long window, int action, KeyEvent event, CallbackInfo ci) {
+	private void lucent$onKey(long window, int action, KeyEvent event, CallbackInfo ci) {
 		if (mc.player == null || mc.level == null) return;
 		if (UScreen.isScreenClose()) {
 			ModManager.handleKeyInput(event.key(), action);

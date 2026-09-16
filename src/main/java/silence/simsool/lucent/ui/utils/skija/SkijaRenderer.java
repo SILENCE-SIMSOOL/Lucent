@@ -40,7 +40,7 @@ import silence.simsool.lucent.ui.utils.UIColors;
 public class SkijaRenderer {
 
 	private static final Map<String, Image> imageCache = new ConcurrentHashMap<>();
-	private static final Map<String, Font> fontCache = new ConcurrentHashMap<>();
+	private static final Map<Long, Font> fontCache = new ConcurrentHashMap<>();
 	private static final Map<Float, MaskFilter> blurMaskCache = new ConcurrentHashMap<>();
 
 	private static final ThreadLocal<Paint> RENDER_PAINT = ThreadLocal.withInitial(Paint::new);
@@ -52,6 +52,9 @@ public class SkijaRenderer {
 	public static void draw(GuiGraphicsExtractor graphics, int x, int y, int width, int height, Runnable renderContent) {
 		if (renderContent == null) return;
 		renderContent.run();
+		if (graphics != null && graphics.guiRenderState != null) {
+			SkijaCompositor.INSTANCE.markScreenLayer(graphics.guiRenderState);
+		}
 	}
 
 	private static void enqueue(Consumer<Canvas> op) {
@@ -589,7 +592,7 @@ public class SkijaRenderer {
 		if (typeface == null) {
 			typeface = FontMgr.getDefault().matchFamilyStyle(null, FontStyle.NORMAL);
 		}
-		String key = typeface.hashCode() + ":" + size;
+		long key = (((long) typeface.hashCode()) << 32) | (Float.floatToIntBits(size) & 0xFFFFFFFFL);
 		Typeface finalTf = typeface;
 
 		return fontCache.computeIfAbsent(key, k -> {

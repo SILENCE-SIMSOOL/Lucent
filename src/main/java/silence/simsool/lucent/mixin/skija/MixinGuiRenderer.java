@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.state.gui.GuiRenderState;
 import silence.simsool.lucent.skija.compositor.SkijaCompositor;
 
 @Mixin(GuiRenderer.class)
-public class GuiRendererMixin {
+public class MixinGuiRenderer {
 
 	@Shadow
 	@Final
@@ -22,4 +22,5 @@ public class GuiRendererMixin {
 	private void lucent$composite(CallbackInfo ci) {
 		SkijaCompositor.INSTANCE.composite(this.renderState);
 	}
+
 }
