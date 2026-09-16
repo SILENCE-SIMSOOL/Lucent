@@ -16,7 +16,7 @@ import silence.simsool.lucent.init.PremiumCosmetics;
 public abstract class MixinPlayerInfo {
 
 	@Inject(method = "getTabListDisplayName", at = @At("RETURN"), cancellable = true)
-	private void onGetTabListDisplayName(CallbackInfoReturnable<Component> cir) {
+	private void lucent$onGetTabListDisplayName(CallbackInfoReturnable<Component> cir) {
 		PlayerInfo info = (PlayerInfo) (Object) this;
 		UUID uuid = info.getProfile().id();
 		if (PremiumCosmetics.isPremium(uuid)) {

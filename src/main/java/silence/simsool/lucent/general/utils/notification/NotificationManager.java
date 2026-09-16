@@ -6,12 +6,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import silence.simsool.lucent.general.utils.useful.UChat;
 
-public final class NotificationManager {
+public class NotificationManager {
 
 	private static final long DEFAULT_DURATION = 4500L;
 	private static final List<Notification> notifications = new CopyOnWriteArrayList<>();
-
-	private NotificationManager() {}
 
 	public static Notification show(String title, String message, Notification.Type type, long durationMs) {
 		Notification notification = new Notification(title, message, type, durationMs);

@@ -14,7 +14,7 @@ import silence.simsool.lucent.general.enums.DropType;
 public abstract class MixinLocalPlayer {
 
 	@Inject(method = "drop", at = @At("HEAD"), cancellable = true)
-	private void onDrop(boolean all, CallbackInfoReturnable<Boolean> cir) {
+	private void lucent$onDrop(boolean all, CallbackInfoReturnable<Boolean> cir) {
 		LocalPlayer player = (LocalPlayer) (Object) this;
 		ItemStack stack = player.getInventory().getSelectedItem();
 

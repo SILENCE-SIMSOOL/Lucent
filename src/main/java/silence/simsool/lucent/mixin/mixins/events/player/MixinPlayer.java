@@ -15,7 +15,7 @@ import silence.simsool.lucent.init.PremiumCosmetics;
 public abstract class MixinPlayer {
 
 	@Inject(method = "getDisplayName", at = @At("RETURN"), cancellable = true)
-	private void onGetDisplayName(CallbackInfoReturnable<Component> cir) {
+	private void lucent$onGetDisplayName(CallbackInfoReturnable<Component> cir) {
 		Player player = (Player) (Object) this;
 		UUID uuid = player.getUUID();
 		if (PremiumCosmetics.isPremium(uuid)) {

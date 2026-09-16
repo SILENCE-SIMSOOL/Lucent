@@ -16,7 +16,7 @@ import silence.simsool.lucent.events.impl.GUIEvent;
 public class MixinGui {
 
 	@Inject(method = "renderSlot", at = @At("HEAD"), cancellable = true)
-	private void onRenderHotbarSlot(GuiGraphics guiGraphics, int i, int j, DeltaTracker deltaTracker, Player player, ItemStack itemStack, int k, CallbackInfo ci) {
+	private void lucent$onRenderHotbarSlot(GuiGraphics guiGraphics, int i, int j, DeltaTracker deltaTracker, Player player, ItemStack itemStack, int k, CallbackInfo ci) {
 		GUIEvent.RenderHotbarPreEvent event = new GUIEvent.RenderHotbarPreEvent(itemStack, i, j, guiGraphics);
 		GUIEvent.SLOT.RenderHotbarPre.EVENT.invoker().onHotbarRenderPre(event);
 		if (event.isCanceled())
@@ -24,7 +24,7 @@ public class MixinGui {
 	}
 
 	@Inject(method = "renderSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;renderItemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;II)V", shift = At.Shift.AFTER))
-	private void onPostRenderHotbarSlot(GuiGraphics guiGraphics, int i, int j, DeltaTracker deltaTracker, Player player, ItemStack itemStack, int k, CallbackInfo ci) {
+	private void lucent$onPostRenderHotbarSlot(GuiGraphics guiGraphics, int i, int j, DeltaTracker deltaTracker, Player player, ItemStack itemStack, int k, CallbackInfo ci) {
 		GUIEvent.RenderHotbarPostEvent event = new GUIEvent.RenderHotbarPostEvent(itemStack, i, j, guiGraphics);
 		GUIEvent.SLOT.RenderHotbarPost.EVENT.invoker().onHotbarRenderPost(event);
 	}

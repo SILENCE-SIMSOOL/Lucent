@@ -14,7 +14,7 @@ import silence.simsool.lucent.general.utils.useful.UChat;
 public class MixinChatComponent {
 
 	@Inject(method = "addMessage(Lnet/minecraft/network/chat/Component;)V", at = @At("HEAD"), cancellable = true)
-	private void onAddMessage(Component component, CallbackInfo ci) {
+	private void lucent$onAddMessage(Component component, CallbackInfo ci) {
 		if (component != null) {
 			String chat = component.getString();
 			String format = UChat.componentToLegacy(component);
