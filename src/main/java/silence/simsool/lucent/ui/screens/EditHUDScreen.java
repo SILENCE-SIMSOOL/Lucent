@@ -107,6 +107,7 @@ public class EditHUDScreen extends Screen {
 	protected void init() {
 		super.init();
 
+		ModManager.cleanupUnusedProfiles();
 		LucentResourceManager.loadLucentIcons();
 
 		this.startTime = System.currentTimeMillis();

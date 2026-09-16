@@ -141,6 +141,44 @@ public class ModManager {
 		return list;
 	}
 
+	public static void cleanupUnusedProfiles() {
+		File globalProfilesDir = new File(OSUtils.getLucentDir(), "profiles");
+		if (!globalProfilesDir.exists()) globalProfilesDir.mkdirs();
+
+		File defaultProfile = new File(globalProfilesDir, "default");
+		if (!defaultProfile.exists()) defaultProfile.mkdirs();
+
+		File[] globalProfileDirs = globalProfilesDir.listFiles(File::isDirectory);
+		java.util.Set<String> validProfiles = new java.util.HashSet<>();
+		if (globalProfileDirs != null) {
+			for (File f : globalProfileDirs) {
+				validProfiles.add(f.getName());
+			}
+		}
+		validProfiles.add("default");
+
+		File configBaseDir = new File(OSUtils.getLucentDir(), "config");
+		if (!configBaseDir.exists()) return;
+
+		File[] configDirs = configBaseDir.listFiles(File::isDirectory);
+		if (configDirs == null) return;
+
+		for (File configDir : configDirs) {
+			File profilesDir = new File(configDir, "profiles");
+			if (!profilesDir.exists() || !profilesDir.isDirectory()) continue;
+
+			File[] profileSubDirs = profilesDir.listFiles(File::isDirectory);
+			if (profileSubDirs == null) continue;
+
+			for (File profileSubDir : profileSubDirs) {
+				String profileName = profileSubDir.getName();
+				if (!validProfiles.contains(profileName)) {
+					deleteDirectory(profileSubDir);
+				}
+			}
+		}
+	}
+
 	public void createProfile(String name) {
 		File profilesDir = getGlobalProfilesDir();
 		File profileDir = new File(profilesDir, name);
@@ -149,9 +187,24 @@ public class ModManager {
 
 	public void deleteProfile(String name) {
 		if (name.equals("default")) return;
+
 		File profilesDir = getGlobalProfilesDir();
 		File profileDir = new File(profilesDir, name);
 		if (profileDir.exists()) deleteDirectory(profileDir);
+
+		File configBaseDir = new File(getGlobalLucentDir(), "config");
+		if (configBaseDir.exists()) {
+			File[] configDirs = configBaseDir.listFiles(File::isDirectory);
+			if (configDirs != null) {
+				for (File cDir : configDirs) {
+					File targetDir = new File(cDir, "profiles/" + name);
+					if (targetDir.exists()) {
+						deleteDirectory(targetDir);
+					}
+				}
+			}
+		}
+
 		if (currentProfile.equals(name)) setCurrentProfile("default");
 	}
 
@@ -162,13 +215,28 @@ public class ModManager {
 		File newDir = new File(profilesDir, newName);
 
 		if (oldDir.exists() && !newDir.exists()) oldDir.renameTo(newDir);
+
+		File configBaseDir = new File(getGlobalLucentDir(), "config");
+		if (configBaseDir.exists()) {
+			File[] configDirs = configBaseDir.listFiles(File::isDirectory);
+			if (configDirs != null) {
+				for (File cDir : configDirs) {
+					File cOldDir = new File(cDir, "profiles/" + oldName);
+					File cNewDir = new File(cDir, "profiles/" + newName);
+					if (cOldDir.exists() && !cNewDir.exists()) {
+						cOldDir.renameTo(cNewDir);
+					}
+				}
+			}
+		}
+
 		if (currentProfile.equals(oldName)) {
 			currentProfile = newName;
 			saveGlobalConfig();
 		}
 	}
 
-	private void deleteDirectory(File dir) {
+	private static void deleteDirectory(File dir) {
 		File[] children = dir.listFiles();
 		if (children != null) {
 			for (File child : children) {
@@ -701,6 +769,8 @@ public class ModManager {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
+		LucentAPI.getHUDManager().save(this);
 	}
 
 	public void loadGlobalConfig() {

@@ -145,29 +145,42 @@ public class HUDManager {
 		for (LucentHUD hud : huds) managers.add(hud.getParentManager());
 
 		for (ModManager manager : managers) {
-			File file = manager.getHudConfigFile();
-			file.getParentFile().mkdirs();
+			save(manager);
+		}
+	}
 
-			JsonObject root = new JsonObject();
-			JsonObject hudsJson = new JsonObject();
+	public void save(ModManager manager) {
+		File file = manager.getHudConfigFile();
+		if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
 
-			for (LucentHUD hud : huds) {
-				if (hud.getParentManager() != manager) continue;
-				JsonObject entry = new JsonObject();
-				entry.addProperty("x", hud.x);
-				entry.addProperty("y", hud.y);
-				entry.addProperty("scale", hud.scale);
-				entry.addProperty("alignment", hud.alignment.name());
-				hudsJson.add(hud.id, entry);
-			}
-
-			root.add("huds", hudsJson);
-
-			try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)) {
-				GSON.toJson(root, writer);
+		JsonObject root = null;
+		if (file.exists()) {
+			try (BufferedReader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
+				root = GSON.fromJson(reader, JsonObject.class);
 			} catch (Exception e) {
-				Lucent.LOG.warn("Failed to save hud configs for " + manager + ": " + e.getMessage());
+				Lucent.LOG.warn("Failed to read existing hud config for " + manager + ": " + e.getMessage());
 			}
+		}
+
+		if (root == null) root = new JsonObject();
+		JsonObject hudsJson = root.has("huds") && root.get("huds").isJsonObject() ? root.getAsJsonObject("huds") : new JsonObject();
+
+		for (LucentHUD hud : huds) {
+			if (hud.getParentManager() != manager) continue;
+			JsonObject entry = new JsonObject();
+			entry.addProperty("x", hud.x);
+			entry.addProperty("y", hud.y);
+			entry.addProperty("scale", hud.scale);
+			entry.addProperty("alignment", hud.alignment.name());
+			hudsJson.add(hud.id, entry);
+		}
+
+		root.add("huds", hudsJson);
+
+		try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)) {
+			GSON.toJson(root, writer);
+		} catch (Exception e) {
+			Lucent.LOG.warn("Failed to save hud configs for " + manager + ": " + e.getMessage());
 		}
 	}
 

@@ -660,6 +660,7 @@ public class ConfigScreen extends Screen {
 	protected void init() {
 		super.init();
 
+		ModManager.cleanupUnusedProfiles();
 		Lucent.config.loadGlobalConfig();
 		LucentResourceManager.loadLucentIcons();
 

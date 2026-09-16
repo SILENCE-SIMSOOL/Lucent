@@ -14,7 +14,7 @@ public class ExampleHUD extends LucentHUD {
 
 	public ExampleHUD() {
 		super(
-				"chatting", // (Required): Name to be saved in the config
+				"lucent_examplehud", // (Required): Name to be saved in the config
 				ExampleMod.class, // (Optional): Depends on the activation status of the specified mod class. If no class is specified, isEnabled() and disable() must be overridden.
 				0.01f, 0.05f, // (Required): Initial position
 				1.0f, // (Required): Initial scale
