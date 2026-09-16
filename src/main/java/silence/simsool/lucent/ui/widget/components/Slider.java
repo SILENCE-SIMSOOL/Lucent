@@ -9,8 +9,8 @@ import silence.simsool.lucent.general.utils.useful.UDesktop;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UIColors;
 import silence.simsool.lucent.ui.utils.ULayout;
-import silence.simsool.lucent.ui.utils.nvg.Fonts;
-import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
+import silence.simsool.lucent.ui.utils.skija.Fonts;
+import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 import silence.simsool.lucent.ui.widget.UIWidget;
 
 public class Slider extends UIWidget {
@@ -79,9 +79,9 @@ public class Slider extends UIWidget {
 	@Override
 	protected void renderWidget(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
 		String currentValText = inputMode ? inputBuffer : formatValue(value);
-		int VALUE_BOX_W = (int) NVGRenderer.textWidth(currentValText, Fonts.PRETENDARD_MEDIUM, VALUE_FONT) + VALUE_BOX_PAD * 2;
-		int minLabelW = (int) NVGRenderer.textWidth(formatValue(min), Fonts.PRETENDARD, LABEL_FONT);
-		int maxLabelW = (int) NVGRenderer.textWidth(formatValue(max), Fonts.PRETENDARD, LABEL_FONT);
+		int VALUE_BOX_W = (int) SkijaRenderer.textWidth(currentValText, Fonts.PRETENDARD_MEDIUM, VALUE_FONT) + VALUE_BOX_PAD * 2;
+		int minLabelW = (int) SkijaRenderer.textWidth(formatValue(min), Fonts.PRETENDARD, LABEL_FONT);
+		int maxLabelW = (int) SkijaRenderer.textWidth(formatValue(max), Fonts.PRETENDARD, LABEL_FONT);
 
 		// 좌→우:
 		// [minLabel][LABEL_TO_TRACK][track][TRACK_TO_LABEL][maxLabel][LABEL_TO_BOX][valueBox]
@@ -102,55 +102,55 @@ public class Slider extends UIWidget {
 		float currentRadius = UAnimation.lerp(THUMB_R, THUMB_HOVER_R, thumbScale);
 
 		// ── 트랙 ─────────────────────────────────────────────────────
-		NVGRenderer.rect(trackX, trackY, trackW, TRACK_H, UIColors.MUTED, TRACK_H / 2f);
+		SkijaRenderer.rect(trackX, trackY, trackW, TRACK_H, UIColors.MUTED, TRACK_H / 2f);
 		int fillW = (int) (displayX - trackX);
-		if (fillW > 0) NVGRenderer.rect(trackX, trackY, fillW, TRACK_H, UIColors.ACCENT_BLUE, TRACK_H / 2);
+		if (fillW > 0) SkijaRenderer.rect(trackX, trackY, fillW, TRACK_H, UIColors.ACCENT_BLUE, TRACK_H / 2);
 
 		// ── 원 ───────────────────────────────────────────────────────
 		int thumbCy = y + height / 2;
-		NVGRenderer.circle(displayX, thumbCy, currentRadius, UIColors.PURE_WHITE);
+		SkijaRenderer.circle(displayX, thumbCy, currentRadius, UIColors.PURE_WHITE);
 
 		// ── 드래그 중 현재값 말풍선 ──────────────────────────────────
 		if (isDragging || thumbScale > 0.1f) {
 			String curValText = formatValue(value);
-			int curValW = (int) NVGRenderer.textWidth(curValText, Fonts.PRETENDARD_MEDIUM, LABEL_FONT);
+			int curValW = (int) SkijaRenderer.textWidth(curValText, Fonts.PRETENDARD_MEDIUM, LABEL_FONT);
 			int curValX = (int) displayX - curValW / 2;
 			int curValY = thumbCy - (int) currentRadius - (int) LABEL_FONT - 4;
 			int bgPad = 4;
-			NVGRenderer.rect(curValX - bgPad, curValY - bgPad / 2, curValW + bgPad * 2, LABEL_FONT + bgPad - 1, 0xB2000000, 4);
-			NVGRenderer.text(curValText, curValX, curValY, Fonts.PRETENDARD_MEDIUM, UIColors.LIGHT_GRAY, LABEL_FONT);
+			SkijaRenderer.rect(curValX - bgPad, curValY - bgPad / 2, curValW + bgPad * 2, LABEL_FONT + bgPad - 1, 0xB2000000, 4);
+			SkijaRenderer.text(curValText, curValX, curValY, Fonts.PRETENDARD_MEDIUM, UIColors.LIGHT_GRAY, LABEL_FONT);
 		}
 
 		// ── min / max 라벨 ───────────────────────────────────────────
-		NVGRenderer.text(formatValue(min), x, labelY, Fonts.PRETENDARD, UIColors.MUTED, LABEL_FONT);
-		NVGRenderer.text(formatValue(max), trackX + trackW + TRACK_TO_LABEL, labelY, Fonts.PRETENDARD, UIColors.MUTED, LABEL_FONT);
+		SkijaRenderer.text(formatValue(min), x, labelY, Fonts.PRETENDARD, UIColors.MUTED, LABEL_FONT);
+		SkijaRenderer.text(formatValue(max), trackX + trackW + TRACK_TO_LABEL, labelY, Fonts.PRETENDARD, UIColors.MUTED, LABEL_FONT);
 
 		// ── 값 상자 ──────────────────────────────────────────────────
 		renderValueBox(valueBoxX, valueBoxY, VALUE_BOX_W, VALUE_BOX_H, VALUE_FONT);
 	}
 
 	private void renderValueBox(int bx, int by, int bw, int bh, float fontSize) {
-		NVGRenderer.outlineRect(bx, by, bw, bh, 1, inputMode ? UIColors.ACCENT_BLUE : UIColors.DARK, 8f);
+		SkijaRenderer.outlineRect(bx, by, bw, bh, 1, inputMode ? UIColors.ACCENT_BLUE : UIColors.DARK, 8f);
 
 		String displayText = inputMode ? inputBuffer : formatValue(value);
-		int tx = bx + (bw - (int) NVGRenderer.textWidth(displayText, Fonts.PRETENDARD_MEDIUM, fontSize)) / 2;
+		int tx = bx + (bw - (int) SkijaRenderer.textWidth(displayText, Fonts.PRETENDARD_MEDIUM, fontSize)) / 2;
 		int ty = by + (bh - (int) fontSize) / 2;
 
 		if (inputMode) {
 			int selMin = Math.min(inputCursor, highlightCursor);
 			int selMax = Math.max(inputCursor, highlightCursor);
 			if (selMin != selMax) {
-				float selectionMinX = NVGRenderer.textWidth(inputBuffer.substring(0, Math.min(selMin, inputBuffer.length())), Fonts.PRETENDARD_MEDIUM, fontSize);
-				float selectionMaxX = NVGRenderer.textWidth(inputBuffer.substring(0, Math.min(selMax, inputBuffer.length())), Fonts.PRETENDARD_MEDIUM, fontSize);
-				NVGRenderer.rect(tx + selectionMinX, ty - 1f, selectionMaxX - selectionMinX, fontSize + 2f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100), 0f);
+				float selectionMinX = SkijaRenderer.textWidth(inputBuffer.substring(0, Math.min(selMin, inputBuffer.length())), Fonts.PRETENDARD_MEDIUM, fontSize);
+				float selectionMaxX = SkijaRenderer.textWidth(inputBuffer.substring(0, Math.min(selMax, inputBuffer.length())), Fonts.PRETENDARD_MEDIUM, fontSize);
+				SkijaRenderer.rect(tx + selectionMinX, ty - 1f, selectionMaxX - selectionMinX, fontSize + 2f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100), 0f);
 			}
 		}
 
-		NVGRenderer.text(displayText, tx, ty, Fonts.PRETENDARD_MEDIUM, UIColors.GRAY, fontSize);
+		SkijaRenderer.text(displayText, tx, ty, Fonts.PRETENDARD_MEDIUM, UIColors.GRAY, fontSize);
 
 		if (inputMode && (System.currentTimeMillis() / 500) % 2 == 0) {
-			int cursorX = tx + (int) NVGRenderer.textWidth(inputBuffer.substring(0, Math.min(inputCursor, inputBuffer.length())), Fonts.PRETENDARD_MEDIUM, fontSize);
-			NVGRenderer.rect(cursorX, ty - 1f, 1.5f, fontSize + 2f, UIColors.PURE_WHITE, 0f);
+			int cursorX = tx + (int) SkijaRenderer.textWidth(inputBuffer.substring(0, Math.min(inputCursor, inputBuffer.length())), Fonts.PRETENDARD_MEDIUM, fontSize);
+			SkijaRenderer.rect(cursorX, ty - 1f, 1.5f, fontSize + 2f, UIColors.PURE_WHITE, 0f);
 		}
 	}
 
@@ -159,10 +159,10 @@ public class Slider extends UIWidget {
 		if (!enabled || !visible) return false;
 
 		String currentValText = inputMode ? inputBuffer : formatValue(value);
-		int vbw = (int) NVGRenderer.textWidth(currentValText, Fonts.PRETENDARD_MEDIUM, VALUE_FONT) + VALUE_BOX_PAD * 2;
+		int vbw = (int) SkijaRenderer.textWidth(currentValText, Fonts.PRETENDARD_MEDIUM, VALUE_FONT) + VALUE_BOX_PAD * 2;
 
-		int minLabelW = (int) NVGRenderer.textWidth(formatValue(min), Fonts.PRETENDARD, LABEL_FONT);
-		int maxLabelW = (int) NVGRenderer.textWidth(formatValue(max), Fonts.PRETENDARD, LABEL_FONT);
+		int minLabelW = (int) SkijaRenderer.textWidth(formatValue(min), Fonts.PRETENDARD, LABEL_FONT);
+		int maxLabelW = (int) SkijaRenderer.textWidth(formatValue(max), Fonts.PRETENDARD, LABEL_FONT);
 		int tX = x + minLabelW + LABEL_TO_TRACK;
 		int tW = width - minLabelW - LABEL_TO_TRACK - TRACK_TO_LABEL - maxLabelW - LABEL_TO_BOX - vbw;
 
@@ -173,12 +173,12 @@ public class Slider extends UIWidget {
 			if (!inputMode) {
 				startInputMode();
 			}
-			int tx = vbx + (vbw - (int) NVGRenderer.textWidth(inputBuffer, Fonts.PRETENDARD_MEDIUM, VALUE_FONT)) / 2;
+			int tx = vbx + (vbw - (int) SkijaRenderer.textWidth(inputBuffer, Fonts.PRETENDARD_MEDIUM, VALUE_FONT)) / 2;
 			float clickX = (float) mouseX - tx;
 			int bestPos = 0;
 			float minDiff = Float.MAX_VALUE;
 			for (int i = 0; i <= inputBuffer.length(); i++) {
-				float w = NVGRenderer.textWidth(inputBuffer.substring(0, i), Fonts.PRETENDARD_MEDIUM, VALUE_FONT);
+				float w = SkijaRenderer.textWidth(inputBuffer.substring(0, i), Fonts.PRETENDARD_MEDIUM, VALUE_FONT);
 				float diff = Math.abs(w - clickX);
 				if (diff < minDiff) {
 					minDiff = diff;
@@ -207,19 +207,19 @@ public class Slider extends UIWidget {
 	public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
 		if (inputMode && button == 0) {
 			String currentValText = inputBuffer;
-			int vbw = (int) NVGRenderer.textWidth(currentValText, Fonts.PRETENDARD_MEDIUM, VALUE_FONT) + VALUE_BOX_PAD * 2;
-			int minLabelW = (int) NVGRenderer.textWidth(formatValue(min), Fonts.PRETENDARD, LABEL_FONT);
-			int maxLabelW = (int) NVGRenderer.textWidth(formatValue(max), Fonts.PRETENDARD, LABEL_FONT);
+			int vbw = (int) SkijaRenderer.textWidth(currentValText, Fonts.PRETENDARD_MEDIUM, VALUE_FONT) + VALUE_BOX_PAD * 2;
+			int minLabelW = (int) SkijaRenderer.textWidth(formatValue(min), Fonts.PRETENDARD, LABEL_FONT);
+			int maxLabelW = (int) SkijaRenderer.textWidth(formatValue(max), Fonts.PRETENDARD, LABEL_FONT);
 			int tX = x + minLabelW + LABEL_TO_TRACK;
 			int tW = width - minLabelW - LABEL_TO_TRACK - TRACK_TO_LABEL - maxLabelW - LABEL_TO_BOX - vbw;
 			int vbx = tX + tW + TRACK_TO_LABEL + maxLabelW + LABEL_TO_BOX;
 
-			int tx = vbx + (vbw - (int) NVGRenderer.textWidth(inputBuffer, Fonts.PRETENDARD_MEDIUM, VALUE_FONT)) / 2;
+			int tx = vbx + (vbw - (int) SkijaRenderer.textWidth(inputBuffer, Fonts.PRETENDARD_MEDIUM, VALUE_FONT)) / 2;
 			float clickX = (float) mouseX - tx;
 			int bestPos = 0;
 			float minDiff = Float.MAX_VALUE;
 			for (int i = 0; i <= inputBuffer.length(); i++) {
-				float w = NVGRenderer.textWidth(inputBuffer.substring(0, i), Fonts.PRETENDARD_MEDIUM, VALUE_FONT);
+				float w = SkijaRenderer.textWidth(inputBuffer.substring(0, i), Fonts.PRETENDARD_MEDIUM, VALUE_FONT);
 				float diff = Math.abs(w - clickX);
 				if (diff < minDiff) {
 					minDiff = diff;

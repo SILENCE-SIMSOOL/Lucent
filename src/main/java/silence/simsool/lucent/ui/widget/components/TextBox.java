@@ -4,13 +4,12 @@ import java.util.Stack;
 import java.util.function.Consumer;
 
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.nanovg.NanoVG;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import silence.simsool.lucent.general.utils.useful.UDesktop;
 import silence.simsool.lucent.ui.utils.UIColors;
-import silence.simsool.lucent.ui.utils.nvg.Fonts;
-import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
+import silence.simsool.lucent.ui.utils.skija.Fonts;
+import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 import silence.simsool.lucent.ui.widget.UIWidget;
 
 public class TextBox extends UIWidget {
@@ -49,20 +48,19 @@ public class TextBox extends UIWidget {
 		int borderColor = focused ? UIColors.ACCENT_BLUE : UIColors.ITEM_BORDER;
 
 		// Focus glow
-		if (focused) NVGRenderer.rect(x - 2, y - 2, width + 4, height + 4, UIColors.withAlpha(UIColors.ACCENT_BLUE, 30), 10f);
+		if (focused) SkijaRenderer.rect(x - 2, y - 2, width + 4, height + 4, UIColors.withAlpha(UIColors.ACCENT_BLUE, 30), 10f);
 
-		NVGRenderer.rect(x, y, width, height, bgColor, 8f);
-		NVGRenderer.outlineRect(x, y, width, height, 1, borderColor, 8f);
+		SkijaRenderer.rect(x, y, width, height, bgColor, 8f);
+		SkijaRenderer.outlineRect(x, y, width, height, 1, borderColor, 8f);
 
 		float textAreaX = x + 10;
 		float textAreaW = width - 20;
 		float textY = y + (height - 14f) / 2f;
 
-		NVGRenderer.push();
-		NanoVG.nvgIntersectScissor(NVGRenderer.getVG(), (int) textAreaX, (int) y, (int) textAreaW, (int) height);
+		SkijaRenderer.pushScissor((int) textAreaX, (int) y, (int) textAreaW, (int) height);
 		
 		String visibleText = value;
-		float cursorX = NVGRenderer.textWidth(value.substring(0, Math.min(cursorPosition, value.length())), Fonts.PRETENDARD_MEDIUM, 14f);
+		float cursorX = SkijaRenderer.textWidth(value.substring(0, Math.min(cursorPosition, value.length())), Fonts.PRETENDARD_MEDIUM, 14f);
 		
 		if (cursorX - scrollOffset > textAreaW) scrollOffset = cursorX - textAreaW + 4f;
 		else if (cursorX - scrollOffset < 0) scrollOffset = cursorX;
@@ -71,21 +69,22 @@ public class TextBox extends UIWidget {
 		int selMin = Math.min(cursorPosition, highlightPosition);
 		int selMax = Math.max(cursorPosition, highlightPosition);
 		if (focused && selMin != selMax) {
-			float selectionMinX = NVGRenderer.textWidth(value.substring(0, Math.min(selMin, value.length())), Fonts.PRETENDARD_MEDIUM, 14f);
-			float selectionMaxX = NVGRenderer.textWidth(value.substring(0, Math.min(selMax, value.length())), Fonts.PRETENDARD_MEDIUM, 14f);
-			float x1 = textAreaX + selectionMinX - scrollOffset;
-			float x2 = textAreaX + selectionMaxX - scrollOffset;
-			NVGRenderer.rect(x1, textY - 1f, x2 - x1, 16f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100), 0f);
-		}
-
-		NVGRenderer.text(visibleText, textAreaX - scrollOffset, textY, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_PRIMARY, 14f);
-
-		if (focused && (System.currentTimeMillis() / 500) % 2 == 0) {
-			float cx = textAreaX + cursorX - scrollOffset;
-			NVGRenderer.rect(cx + 1f, textY - 1f, 1.5f, 16f, UIColors.ACCENT_BLUE, 0f);
+			float selectionMinX = SkijaRenderer.textWidth(value.substring(0, Math.min(selMin, value.length())), Fonts.PRETENDARD_MEDIUM, 14f);
+			float selectionMaxX = SkijaRenderer.textWidth(value.substring(0, Math.min(selMax, value.length())), Fonts.PRETENDARD_MEDIUM, 14f);
+			float x1 = textAreaX + Math.min(selectionMinX, selectionMaxX) - scrollOffset;
+			float x2 = textAreaX + Math.max(selectionMinX, selectionMaxX) - scrollOffset;
+			SkijaRenderer.rect(x1, textY - 1f, x2 - x1, 16f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100), 0f);
 		}
 		
-		NVGRenderer.pop();
+		SkijaRenderer.text(visibleText, textAreaX - scrollOffset, textY, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_PRIMARY, 14f);
+		
+		// Draw cursor
+		if (focused && (System.currentTimeMillis() / 500) % 2 == 0) {
+			float cx = textAreaX + cursorX - scrollOffset;
+			SkijaRenderer.rect(cx + 1f, textY - 1f, 1.5f, 16f, UIColors.ACCENT_BLUE, 0f);
+		}
+		
+		SkijaRenderer.popScissor();
 	}
 
 	@Override
@@ -98,7 +97,7 @@ public class TextBox extends UIWidget {
 			float minDiff = Float.MAX_VALUE;
 
 			for (int i = 0; i <= value.length(); i++) {
-				float w = NVGRenderer.textWidth(value.substring(0, i), Fonts.PRETENDARD_MEDIUM, 14f);
+				float w = SkijaRenderer.textWidth(value.substring(0, i), Fonts.PRETENDARD_MEDIUM, 14f);
 				float diff = Math.abs(w - clickX);
 				if (diff < minDiff) {
 					minDiff = diff;
@@ -123,7 +122,7 @@ public class TextBox extends UIWidget {
 			float minDiff = Float.MAX_VALUE;
 
 			for (int i = 0; i <= value.length(); i++) {
-				float w = NVGRenderer.textWidth(value.substring(0, i), Fonts.PRETENDARD_MEDIUM, 14f);
+				float w = SkijaRenderer.textWidth(value.substring(0, i), Fonts.PRETENDARD_MEDIUM, 14f);
 				float diff = Math.abs(w - clickX);
 				if (diff < minDiff) {
 					minDiff = diff;

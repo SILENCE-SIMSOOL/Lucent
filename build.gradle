@@ -40,20 +40,18 @@ dependencies {
 
 	runtimeOnly("me.djtheredstoner:DevAuth-fabric:${property("devauth_version")}")
 
-	def lwjglVersion = project.property("minecraft_lwjgl_version")
-	implementation "org.lwjgl:lwjgl-nanovg:${lwjglVersion}"
-	include "org.lwjgl:lwjgl-nanovg:${lwjglVersion}"
-	["windows", "linux", "macos", "macos-arm64"].each { os ->
-		implementation "org.lwjgl:lwjgl-nanovg:${lwjglVersion}:natives-${os}"
-		include "org.lwjgl:lwjgl-nanovg:${lwjglVersion}:natives-${os}"
-	}
+	implementation "io.github.humbleui:skija-shared:${project.skija_version}"
+	include "io.github.humbleui:skija-shared:${project.skija_version}"
+	implementation "io.github.humbleui:types:${project.types_version}"
+	include "io.github.humbleui:types:${project.types_version}"
 }
 
 processResources {
 	inputs.property "version", project.mod_version
+	inputs.property "skija_version", project.skija_version
 
-	filesMatching("fabric.mod.json") {
-		expand "version": project.mod_version
+	filesMatching(["fabric.mod.json", "lucent/skija.version"]) {
+		expand "version": project.mod_version, "skija_version": project.skija_version
 	}
 }
 

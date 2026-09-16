@@ -1,15 +1,21 @@
-package silence.simsool.lucent.ui.utils.nvg;
+package silence.simsool.lucent.ui.utils.skija;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.file.Files;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+import io.github.humbleui.skija.Data;
+import io.github.humbleui.skija.FontMgr;
+import io.github.humbleui.skija.Typeface;
+import io.github.humbleui.skija.paragraph.FontCollection;
+import io.github.humbleui.skija.paragraph.TypefaceFontProvider;
 import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.general.enums.FontList;
 import silence.simsool.lucent.general.utils.OSUtils;
 import silence.simsool.lucent.general.utils.useful.UFile;
 import silence.simsool.lucent.ui.font.LucentFont;
-
 
 public class Fonts {
 	//public static LucentFont PRETENDARD_EXTRALIGHT;
@@ -25,7 +31,28 @@ public class Fonts {
 	private static final File FONT_DIR = new File(OSUtils.getLucentDir(), "resources/fonts");
 	private static final String GITHUB_RAW_BASE_URL = "https://raw.githubusercontent.com/SILENCE-SIMSOOL/FontManager/main/";
 
+	private static final Map<LucentFont, Typeface> typefaceCache = new ConcurrentHashMap<>();
+	private static TypefaceFontProvider fontProvider;
+	private static FontCollection fontCollection;
+
 	private static boolean initialized = false;
+
+	public static synchronized TypefaceFontProvider getFontProvider() {
+		if (fontProvider == null) {
+			fontProvider = new TypefaceFontProvider();
+		}
+		return fontProvider;
+	}
+
+	public static synchronized FontCollection getFontCollection() {
+		if (fontCollection == null) {
+			fontCollection = new FontCollection();
+			fontCollection.setDefaultFontManager(FontMgr.getDefault());
+			fontCollection.setAssetFontManager(getFontProvider());
+			fontCollection.setEnableFallback(true);
+		}
+		return fontCollection;
+	}
 
 	public static void initAsync() {
 		if (initialized) return;
@@ -35,7 +62,6 @@ public class Fonts {
 			try {
 				if (!FONT_DIR.exists()) FONT_DIR.mkdirs();
 				prepareFontFiles();
-				// 다운로드 완료 후 로드
 				loadFont();
 				Lucent.LOG.info("All fonts initialized asynchronously.");
 			} catch (Exception e) {
@@ -103,6 +129,29 @@ public class Fonts {
 		} catch (Exception e) {
 			Lucent.LOG.error("Critical error during font loading: " + e.getMessage());
 		}
+	}
+
+	public static void registerTypeface(Typeface typeface, String family) {
+		if (typeface != null && family != null) {
+			getFontProvider().registerTypeface(typeface, family);
+		}
+	}
+
+	public static Typeface getTypeface(LucentFont font) {
+		if (font == null) return null;
+		return typefaceCache.computeIfAbsent(font, f -> {
+			try {
+				byte[] bytes = f.getBytes();
+				if (bytes == null || bytes.length == 0) return null;
+				Typeface tf = FontMgr.getDefault().makeFromData(Data.makeFromBytes(bytes));
+				if (tf != null) {
+					getFontProvider().registerTypeface(tf, f.getName());
+				}
+				return tf;
+			} catch (Exception e) {
+				return null;
+			}
+		});
 	}
 
 }

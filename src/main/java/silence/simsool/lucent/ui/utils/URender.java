@@ -20,7 +20,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import silence.simsool.lucent.mixin.accessors.InventoryScreenAccessor;
-import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
+import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 
 public class URender {
 
@@ -73,7 +73,7 @@ public class URender {
 		int bgColor = UAnimation.lerpColor(bgOff, bgOn, onProgress);
 
 		float radius = h / 2f;
-		NVGRenderer.rect(x, y, w, h, bgColor, radius);
+		SkijaRenderer.rect(x, y, w, h, bgColor, radius);
 
 		float padding = 2f;
 		float baseCircleRadius = (h - padding * 2) / 2f;
@@ -87,8 +87,8 @@ public class URender {
 		float circleY = y + h / 2f;
 
 		// 원에 그림자를 줘서 입체감 추가
-		NVGRenderer.dropShadow(circleX - currentCircleRadius, circleY - currentCircleRadius, currentCircleRadius * 2, currentCircleRadius * 2, 3f, 0f, currentCircleRadius);
-		NVGRenderer.circle(circleX, circleY, currentCircleRadius, UIColors.PURE_WHITE);
+		SkijaRenderer.dropShadow(circleX - currentCircleRadius, circleY - currentCircleRadius, currentCircleRadius * 2, currentCircleRadius * 2, 3f, 0f, currentCircleRadius);
+		SkijaRenderer.circle(circleX, circleY, currentCircleRadius, UIColors.PURE_WHITE);
 	}
 
 	public static Vec3 getRenderPos(Entity entity) {

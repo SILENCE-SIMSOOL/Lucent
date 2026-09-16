@@ -7,7 +7,7 @@ import silence.simsool.lucent.config.api.LucentAPI;
 import silence.simsool.lucent.general.enums.Align;
 import silence.simsool.lucent.general.enums.RenderType;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
-import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
+import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 
 public abstract class LucentHUD {
 
@@ -45,7 +45,7 @@ public abstract class LucentHUD {
 	 * Determines the rendering type for this HUD.
 	 * <ul>
 	 * <li>MINECRAFT: Uses standard Minecraft GUI rendering.</li>
-	 * <li>NANOVG: Uses high-fidelity rendering via NVGPIPRenderer.</li>
+	 * <li>SKIJA: Uses high-fidelity rendering via SkijaRenderer.</li>
 	 * </ul>
 	 */
 	public abstract RenderType getRenderType();
@@ -119,7 +119,7 @@ public abstract class LucentHUD {
 	 */
 	public float getRenderX() {
 		float sw = UDisplay.getWidth();
-		float gs = NVGRenderer.getStandardGuiScale();
+		float gs = SkijaRenderer.getStandardGuiScale();
 		float virtualW = sw / gs;
 
 		return switch (alignment) {
@@ -135,7 +135,7 @@ public abstract class LucentHUD {
 	 */
 	public float getRenderY() {
 		float sh = UDisplay.getHeight();
-		float gs = NVGRenderer.getStandardGuiScale();
+		float gs = SkijaRenderer.getStandardGuiScale();
 		float virtualH = sh / gs;
 
 		return y * virtualH;

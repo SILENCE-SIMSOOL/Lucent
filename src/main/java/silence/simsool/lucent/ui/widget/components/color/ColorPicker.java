@@ -13,8 +13,8 @@ import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UColor;
 import silence.simsool.lucent.ui.utils.UIColors;
 import silence.simsool.lucent.ui.utils.ULayout;
-import silence.simsool.lucent.ui.utils.nvg.Fonts;
-import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
+import silence.simsool.lucent.ui.utils.skija.Fonts;
+import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 import silence.simsool.lucent.ui.widget.UIWidget;
 
 public class ColorPicker extends UIWidget {
@@ -93,8 +93,8 @@ public class ColorPicker extends UIWidget {
 
 	@Override
 	protected void renderWidget(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
-		NVGRenderer.rect(x, y, width, height, panelBg, 18);
-		NVGRenderer.outlineRect(x, y, width, height, 1, UIColors.withAlpha(UIColors.PURE_BLACK, 100), 18);
+		SkijaRenderer.rect(x, y, width, height, panelBg, 18);
+		SkijaRenderer.outlineRect(x, y, width, height, 1, UIColors.withAlpha(UIColors.PURE_BLACK, 100), 18);
 		renderSVPanel();
 		renderHueBar();
 		renderAlphaBar();
@@ -107,19 +107,19 @@ public class ColorPicker extends UIWidget {
 		int hueColor = UColor.fromHSV(hue, 1f, 1f);
 		int transparentHue = UColor.withAlpha(hueColor, 0);
 
-		NVGRenderer.rect(svX, svY, SV_W, SV_H, 0xFFFFFFFF, round);
-		NVGRenderer.gradientRect(svX, svY, SV_W, SV_H, transparentHue, hueColor, GradientType.LEFT_TO_RIGHT, round);
-		NVGRenderer.gradientRect(svX, svY, SV_W, SV_H, 0x00000000, 0xFF000000, GradientType.TOP_TO_BOTTOM, round);
-		NVGRenderer.outlineRect(svX, svY, SV_W, SV_H, 1, UIColors.MUTED, round);
+		SkijaRenderer.rect(svX, svY, SV_W, SV_H, 0xFFFFFFFF, round);
+		SkijaRenderer.gradientRect(svX, svY, SV_W, SV_H, transparentHue, hueColor, GradientType.LEFT_TO_RIGHT, round);
+		SkijaRenderer.gradientRect(svX, svY, SV_W, SV_H, 0x00000000, 0xFF000000, GradientType.TOP_TO_BOTTOM, round);
+		SkijaRenderer.outlineRect(svX, svY, SV_W, SV_H, 1, UIColors.MUTED, round);
 
 		int cx = svX + (int)(saturation * SV_W);
 		int cy = svY + (int)((1f - value) * SV_H);
 		cx = UAnimation.clamp(cx, svX, svX + SV_W);
 		cy = UAnimation.clamp(cy, svY, svY + SV_H);
 
-		NVGRenderer.circle(cx, cy, 11, UIColors.withAlpha(UIColors.PURE_BLACK, 180));
-		NVGRenderer.circle(cx, cy, 10, UIColors.PURE_WHITE);
-		NVGRenderer.circle(cx, cy, 8, UColor.fromHSV(hue, saturation, value));
+		SkijaRenderer.circle(cx, cy, 11, UIColors.withAlpha(UIColors.PURE_BLACK, 180));
+		SkijaRenderer.circle(cx, cy, 10, UIColors.PURE_WHITE);
+		SkijaRenderer.circle(cx, cy, 8, UColor.fromHSV(hue, saturation, value));
 	}
 
 	private void renderHueBar() {
@@ -134,18 +134,18 @@ public class ColorPicker extends UIWidget {
 			float rTR = (i == 5) ? round : 0f;
 			float rBR = (i == 5) ? round : 0f;
 
-			NVGRenderer.gradientRect(hueX + i * segW, hueY, (float)Math.ceil(segW), BAR_H, c1, c2, GradientType.LEFT_TO_RIGHT, rTL, rTR, rBR, rBL);
+			SkijaRenderer.gradientRect(hueX + i * segW, hueY, (float)Math.ceil(segW), BAR_H, c1, c2, GradientType.LEFT_TO_RIGHT, rTL, rTR, rBR, rBL);
 		}
 
-		NVGRenderer.outlineRect(hueX, hueY, SV_W, BAR_H, 1, UIColors.MUTED, round);
+		SkijaRenderer.outlineRect(hueX, hueY, SV_W, BAR_H, 1, UIColors.MUTED, round);
 
 		int cx = hueX + (int)(hue / 360f * SV_W);
 		cx = UAnimation.clamp(cx, hueX, hueX + SV_W);
 		float cy = hueY + BAR_H / 2f;
 
-		NVGRenderer.circle(cx, cy, BAR_H / 2f + 4, UIColors.withAlpha(UIColors.PURE_BLACK, 180));
-		NVGRenderer.circle(cx, cy, BAR_H / 2f + 3, UIColors.PURE_WHITE);
-		NVGRenderer.circle(cx, cy, BAR_H / 2f, UColor.fromHSV(hue, 1f, 1f));
+		SkijaRenderer.circle(cx, cy, BAR_H / 2f + 4, UIColors.withAlpha(UIColors.PURE_BLACK, 180));
+		SkijaRenderer.circle(cx, cy, BAR_H / 2f + 3, UIColors.PURE_WHITE);
+		SkijaRenderer.circle(cx, cy, BAR_H / 2f, UColor.fromHSV(hue, 1f, 1f));
 	}
 
 	private void renderAlphaBar() {
@@ -153,31 +153,31 @@ public class ColorPicker extends UIWidget {
 		int colorOpaque = UColor.withAlpha(getCurrentARGB(), 255);
 		int colorTrans  = UColor.withAlpha(getCurrentARGB(), 0);
 
-		NVGRenderer.drawCheckerboard(alphaX, alphaY, SV_W, BAR_H, round);
-		NVGRenderer.gradientRect(alphaX, alphaY, SV_W, BAR_H, colorTrans, colorOpaque, GradientType.LEFT_TO_RIGHT, round);
-		NVGRenderer.outlineRect(alphaX, alphaY, SV_W, BAR_H, 1, UIColors.MUTED, round);
+		SkijaRenderer.drawCheckerboard(alphaX, alphaY, SV_W, BAR_H, round);
+		SkijaRenderer.gradientRect(alphaX, alphaY, SV_W, BAR_H, colorTrans, colorOpaque, GradientType.LEFT_TO_RIGHT, round);
+		SkijaRenderer.outlineRect(alphaX, alphaY, SV_W, BAR_H, 1, UIColors.MUTED, round);
 
 		int cx = alphaX + (int)(alpha * SV_W);
 		cx = UAnimation.clamp(cx, alphaX, alphaX + SV_W);
 		float cy = alphaY + BAR_H / 2f;
 
-		NVGRenderer.circle(cx, cy, BAR_H / 2f + 4, UIColors.withAlpha(UIColors.PURE_BLACK, 180));
-		NVGRenderer.circle(cx, cy, BAR_H / 2f + 3, UIColors.PURE_WHITE);
-		NVGRenderer.circle(cx, cy, BAR_H / 2f, UColor.withAlpha(colorOpaque, (int)(alpha * 255)));
+		SkijaRenderer.circle(cx, cy, BAR_H / 2f + 4, UIColors.withAlpha(UIColors.PURE_BLACK, 180));
+		SkijaRenderer.circle(cx, cy, BAR_H / 2f + 3, UIColors.PURE_WHITE);
+		SkijaRenderer.circle(cx, cy, BAR_H / 2f, UColor.withAlpha(colorOpaque, (int)(alpha * 255)));
 	}
 
 	private void renderPreview() {
 		int round = 10;
 		int prevY = alphaY + BAR_H + GAP;
 		int halfW = SV_W / 2;
-		NVGRenderer.drawCheckerboard(svX, prevY, SV_W, PREVIEW_H, round);
-		NVGRenderer.pushScissor(svX, prevY, halfW, PREVIEW_H);
-		NVGRenderer.rect(svX, prevY, SV_W, PREVIEW_H, originalColor, round);
-		NVGRenderer.popScissor();
-		NVGRenderer.pushScissor(svX + halfW, prevY, SV_W - halfW, PREVIEW_H);
-		NVGRenderer.rect(svX, prevY, SV_W, PREVIEW_H, getCurrentARGB(), round);
-		NVGRenderer.popScissor();
-		NVGRenderer.outlineRect(svX, prevY, SV_W, PREVIEW_H, 1, UIColors.MUTED, round);
+		SkijaRenderer.drawCheckerboard(svX, prevY, SV_W, PREVIEW_H, round);
+		SkijaRenderer.pushScissor(svX, prevY, halfW, PREVIEW_H);
+		SkijaRenderer.rect(svX, prevY, SV_W, PREVIEW_H, originalColor, round);
+		SkijaRenderer.popScissor();
+		SkijaRenderer.pushScissor(svX + halfW, prevY, SV_W - halfW, PREVIEW_H);
+		SkijaRenderer.rect(svX, prevY, SV_W, PREVIEW_H, getCurrentARGB(), round);
+		SkijaRenderer.popScissor();
+		SkijaRenderer.outlineRect(svX, prevY, SV_W, PREVIEW_H, 1, UIColors.MUTED, round);
 	}
 
 	private void renderInputFields() {
@@ -186,8 +186,8 @@ public class ColorPicker extends UIWidget {
 	    int boxW = SV_W;
 	    int boxH = getInputBoxH();
 
-	    NVGRenderer.rect(boxX, boxY, boxW, boxH, UIColors.withAlpha(UIColors.PURE_BLACK, 80), 12);
-	    NVGRenderer.outlineRect(boxX, boxY, boxW, boxH, 1, UIColors.withAlpha(UIColors.PURE_BLACK, 100), 12);
+	    SkijaRenderer.rect(boxX, boxY, boxW, boxH, UIColors.withAlpha(UIColors.PURE_BLACK, 80), 12);
+	    SkijaRenderer.outlineRect(boxX, boxY, boxW, boxH, 1, UIColors.withAlpha(UIColors.PURE_BLACK, 100), 12);
 
 	    int COL_GAP = 14;
 	    int INPUT_SHRINK = 8;
@@ -208,7 +208,7 @@ public class ColorPicker extends UIWidget {
 
 	private void renderLabeledInput(InputField field, int cellX, int cellY, int cellW, int shrink, String defaultValue, String label) {
 	    float labelTy = cellY + (INPUT_H - FONT_SIZE) / 2f;
-	    NVGRenderer.text(label, cellX, labelTy, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_SECONDARY, FONT_SIZE);
+	    SkijaRenderer.text(label, cellX, labelTy, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_SECONDARY, FONT_SIZE);
 
 	    int inputX = cellX + LABEL_W + LABEL_GAP;
 	    int inputW = cellW - LABEL_W - LABEL_GAP - shrink;
@@ -220,29 +220,29 @@ public class ColorPicker extends UIWidget {
 		String displayText = active ? inputBuffer : defaultValue;
 		int border = active ? (inputError ? inputErr : inputFocus) : inputBorder;
 
-		NVGRenderer.rect(ix, iy, iw, INPUT_H, UIColors.withAlpha(UIColors.PURE_BLACK, 120), 8);
-		if (active) NVGRenderer.outlineRect(ix, iy, iw, INPUT_H, 1, border, 8);
+		SkijaRenderer.rect(ix, iy, iw, INPUT_H, UIColors.withAlpha(UIColors.PURE_BLACK, 120), 8);
+		if (active) SkijaRenderer.outlineRect(ix, iy, iw, INPUT_H, 1, border, 8);
 
 		String clipped = fitText(displayText, iw - 6, Fonts.PRETENDARD_MEDIUM);
-		float tx = ix + (iw - NVGRenderer.textWidth(clipped, Fonts.PRETENDARD_MEDIUM, FONT_SIZE)) / 2f;
+		float tx = ix + (iw - SkijaRenderer.textWidth(clipped, Fonts.PRETENDARD_MEDIUM, FONT_SIZE)) / 2f;
 		float ty = iy + (INPUT_H - FONT_SIZE) / 2f;
 
-		NVGRenderer.text(clipped, tx, ty, Fonts.PRETENDARD_MEDIUM, UIColors.MUTED, FONT_SIZE);
+		SkijaRenderer.text(clipped, tx, ty, Fonts.PRETENDARD_MEDIUM, UIColors.MUTED, FONT_SIZE);
 
 		if (active && System.currentTimeMillis() % 1000 < 500) {
-			float curX = tx + NVGRenderer.textWidth(
+			float curX = tx + SkijaRenderer.textWidth(
 				inputBuffer.substring(0, Math.min(inputCursor, inputBuffer.length())),
 				Fonts.PRETENDARD_MEDIUM, FONT_SIZE
 			);
-			NVGRenderer.rect(curX, ty, 1, FONT_SIZE, UIColors.MUTED);
+			SkijaRenderer.rect(curX, ty, 1, FONT_SIZE, UIColors.MUTED);
 		}
 	}
 
 	private String fitText(String text, int maxWidth, LucentFont font) {
-		if (NVGRenderer.textWidth(text, font, FONT_SIZE) <= maxWidth) return text;
+		if (SkijaRenderer.textWidth(text, font, FONT_SIZE) <= maxWidth) return text;
 		String suffix  = "...";
 		String current = text;
-		while (current.length() > 0 && NVGRenderer.textWidth(current + suffix, font, FONT_SIZE) > maxWidth) {
+		while (current.length() > 0 && SkijaRenderer.textWidth(current + suffix, font, FONT_SIZE) > maxWidth) {
 			current = current.substring(0, current.length() - 1);
 		}
 		return current + suffix;

@@ -26,9 +26,8 @@ import silence.simsool.lucent.init.PremiumCosmetics;
 import silence.simsool.lucent.ui.manager.LucentResourceManager;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UIColors;
-import silence.simsool.lucent.ui.utils.nvg.Fonts;
-import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
-import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
+import silence.simsool.lucent.ui.utils.skija.Fonts;
+import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 
 public class EditHUDScreen extends Screen {
 
@@ -107,6 +106,7 @@ public class EditHUDScreen extends Screen {
 	protected void init() {
 		super.init();
 
+		ModManager.cleanupUnusedProfiles();
 		LucentResourceManager.loadLucentIcons();
 
 		this.startTime = System.currentTimeMillis();
@@ -148,23 +148,23 @@ public class EditHUDScreen extends Screen {
 				hud.preview(guiGraphics);
 			}
 		}
-		NVGPIPRenderer.draw(guiGraphics, 0, 0, width, height, () -> {
-			float gs = NVGRenderer.getStandardGuiScale();
-			NVGRenderer.push();
-			NVGRenderer.scale(gs, gs);
+		SkijaRenderer.draw(guiGraphics, 0, 0, width, height, () -> {
+			float gs = SkijaRenderer.getStandardGuiScale();
+			SkijaRenderer.push();
+			SkijaRenderer.scale(gs, gs);
 
 			if (LucentConfig.openAnimation) {
-				NVGRenderer.globalAlpha(UAnimation.clamp(animP * 1.5f, 0, 1));
+				SkijaRenderer.globalAlpha(UAnimation.clamp(animP * 1.5f, 0, 1));
 			}
 
 			for (LucentHUD hud : LucentAPI.getHUDManager().getHUDs()) {
-				if (hud.isEnabled() && hud.getRenderType() == RenderType.NANOVG) {
+				if (hud.isEnabled() && hud.getRenderType() == RenderType.SKIJA) {
 					hud.preview(guiGraphics);
 				}
 			}
 			renderOverlay(animP);
 
-			NVGRenderer.pop();
+			SkijaRenderer.pop();
 		});
 		super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
 	}
@@ -172,11 +172,11 @@ public class EditHUDScreen extends Screen {
 	@Override
 	public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick) {
 		int button = event.button();
-		float gs   = NVGRenderer.getStandardGuiScale();
+		float gs   = SkijaRenderer.getStandardGuiScale();
 		float vw   = UDisplay.getScreenWidth()  / gs;
 		float vh   = UDisplay.getScreenHeight() / gs;
-		float mx   = UMouse.getNvgScaledX(1f);
-		float my   = UMouse.getNvgScaledY(1f);
+		float mx   = UMouse.getSkijaScaledX(1f);
+		float my   = UMouse.getSkijaScaledY(1f);
 
 		// 컨텍스트 메뉴 처리
 		if (contextMenuHud != null) {
@@ -261,11 +261,11 @@ public class EditHUDScreen extends Screen {
 	public boolean mouseDragged(MouseButtonEvent event, double mouseX, double mouseY) {
 		if (event.button() != GLFW.GLFW_MOUSE_BUTTON_LEFT) return super.mouseDragged(event, mouseX, mouseY);
 
-		float gs = NVGRenderer.getStandardGuiScale();
+		float gs = SkijaRenderer.getStandardGuiScale();
 		float vw = UDisplay.getScreenWidth()  / gs;
 		float vh = UDisplay.getScreenHeight() / gs;
-		float mx = UMouse.getNvgScaledX(1f);
-		float my = UMouse.getNvgScaledY(1f);
+		float mx = UMouse.getSkijaScaledX(1f);
+		float my = UMouse.getSkijaScaledY(1f);
 
 		if (draggingMove != null) {
 			boolean shiftDown = GLFW.glfwGetKey(UDisplay.getWindow().handle(), GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS
@@ -394,13 +394,13 @@ public class EditHUDScreen extends Screen {
 	}
 
 	private void renderOverlay(float animP) {
-		float gs  = NVGRenderer.getStandardGuiScale();
+		float gs  = SkijaRenderer.getStandardGuiScale();
 		float vw  = UDisplay.getScreenWidth()  / gs;
 		float vh  = UDisplay.getScreenHeight() / gs;
-		float mx  = UMouse.getNvgScaledX(1f);
-		float my  = UMouse.getNvgScaledY(1f);
+		float mx  = UMouse.getSkijaScaledX(1f);
+		float my  = UMouse.getSkijaScaledY(1f);
 
-		NVGRenderer.rect(0, 0, vw, vh, C_DIM);
+		SkijaRenderer.rect(0, 0, vw, vh, C_DIM);
 
 		drawCrosshair(vw, vh);
 
@@ -449,11 +449,11 @@ public class EditHUDScreen extends Screen {
 		float alpha = UAnimation.clamp(logoP * 2f, 0f, 1f);
 
 		// 1. Logo Pop
-		NVGRenderer.push();
-		NVGRenderer.translate(vw / 2f, logoY);
-		NVGRenderer.scale(0.7f + 0.3f * logoEase, 0.7f + 0.3f * logoEase);
+		SkijaRenderer.push();
+		SkijaRenderer.translate(vw / 2f, logoY);
+		SkijaRenderer.scale(0.7f + 0.3f * logoEase, 0.7f + 0.3f * logoEase);
 		drawBrandLogo(0, 0, alpha);
-		NVGRenderer.pop();
+		SkijaRenderer.pop();
 
 		// 2. Buttons Staggered Slide
 		if (btn1P > 0) {
@@ -471,12 +471,12 @@ public class EditHUDScreen extends Screen {
 			boolean hov = mx >= bx && mx <= bx + bw && my >= curBy && my <= curBy + bh;
 			int bg = UIColors.withAlpha(hov ? UIColors.CARD_HOVER : UIColors.CARD_BG, (int) (180 * btn2P));
 
-			NVGRenderer.rect(bx, curBy, bw, bh, bg, round);
-			NVGRenderer.outlineRect(bx, curBy, bw, bh, 1.5f, UIColors.withAlpha(0xFFFFFFFF, (int) ((hov ? 60 : 30) * btn2P)), round);
+			SkijaRenderer.rect(bx, curBy, bw, bh, bg, round);
+			SkijaRenderer.outlineRect(bx, curBy, bw, bh, 1.5f, UIColors.withAlpha(0xFFFFFFFF, (int) ((hov ? 60 : 30) * btn2P)), round);
 
 			int size = 18;
-			float tw = NVGRenderer.textWidth("M O D S", Fonts.PRETENDARD_SEMIBOLD, size);
-			NVGRenderer.text("M O D S", bx + (bw - tw) / 2f, curBy + (bh - size) / 2f + 1, Fonts.PRETENDARD_SEMIBOLD, UIColors.withAlpha(UIColors.PURE_WHITE, (int) ((hov ? 255 : 185) * btn2P)), size);
+			float tw = SkijaRenderer.textWidth("M O D S", Fonts.PRETENDARD_SEMIBOLD, size);
+			SkijaRenderer.text("M O D S", bx + (bw - tw) / 2f, curBy + (bh - size) / 2f + 1, Fonts.PRETENDARD_SEMIBOLD, UIColors.withAlpha(UIColors.PURE_WHITE, (int) ((hov ? 255 : 185) * btn2P)), size);
 		}
 	}
 
@@ -484,26 +484,26 @@ public class EditHUDScreen extends Screen {
 		boolean hov = mx >= x && mx <= x + w && my >= y && my <= y + h;
 		int bg = UIColors.withAlpha(hov ? UIColors.CARD_HOVER : UIColors.CARD_BG, (int) (180 * alpha));
 
-		NVGRenderer.rect(x, y, w, h, bg, 8f);
-		NVGRenderer.outlineRect(x, y, w, h, 1.5f, UIColors.withAlpha(0xFFFFFFFF, (int) ((hov ? 60 : 30) * alpha)), 8f);
+		SkijaRenderer.rect(x, y, w, h, bg, 8f);
+		SkijaRenderer.outlineRect(x, y, w, h, 1.5f, UIColors.withAlpha(0xFFFFFFFF, (int) ((hov ? 60 : 30) * alpha)), 8f);
 
 		float is = 24f;
-		NVGRenderer.text(iconText, x + (w - is) / 2f + 1f, y + (h - is) / 2f + 1f, Fonts.MATERIAL_ICONS_ROUND, UIColors.withAlpha(UIColors.PURE_WHITE, (int) (255 * alpha)), is);
+		SkijaRenderer.text(iconText, x + (w - is) / 2f + 1f, y + (h - is) / 2f + 1f, Fonts.MATERIAL_ICONS_ROUND, UIColors.withAlpha(UIColors.PURE_WHITE, (int) (255 * alpha)), is);
 	}
 
 	private void drawBrandLogo(float cx, float cy, float alpha) {
 		float size = 50f;
 
-		NVGRenderer.outlineCircle(cx, cy, size / 2f + 5, 2.5f, UIColors.withAlpha(UIColors.ACCENT_BLUE, (int) (180 * alpha)));
-		NVGRenderer.circle(cx, cy, size / 2f - 2, UIColors.withAlpha(UIColors.ACCENT_BLUE, (int) (40 * alpha)));
+		SkijaRenderer.outlineCircle(cx, cy, size / 2f + 5, 2.5f, UIColors.withAlpha(UIColors.ACCENT_BLUE, (int) (180 * alpha)));
+		SkijaRenderer.circle(cx, cy, size / 2f - 2, UIColors.withAlpha(UIColors.ACCENT_BLUE, (int) (40 * alpha)));
 
 		float fs = 32f;
-		float tw = NVGRenderer.textWidth("LUCENT", Fonts.PRETENDARD_SEMIBOLD, fs);
-		NVGRenderer.text("LUCENT", cx - tw / 2f, cy + 44, Fonts.PRETENDARD_SEMIBOLD, UIColors.withAlpha(UIColors.PURE_WHITE, (int) (255 * alpha)), fs);
+		float tw = SkijaRenderer.textWidth("LUCENT", Fonts.PRETENDARD_SEMIBOLD, fs);
+		SkijaRenderer.text("LUCENT", cx - tw / 2f, cy + 44, Fonts.PRETENDARD_SEMIBOLD, UIColors.withAlpha(UIColors.PURE_WHITE, (int) (255 * alpha)), fs);
 
 		float sfs = 10f;
-		float stw = NVGRenderer.textWidth("U L T I M A T E   C O N F I G", Fonts.PRETENDARD_MEDIUM, sfs);
-		NVGRenderer.text("U L T I M A T E   C O N F I G", cx - stw / 2f, cy + 76, Fonts.PRETENDARD_MEDIUM, UIColors.withAlpha(UIColors.PURE_WHITE, (int) (120 * alpha)), sfs);
+		float stw = SkijaRenderer.textWidth("U L T I M A T E   C O N F I G", Fonts.PRETENDARD_MEDIUM, sfs);
+		SkijaRenderer.text("U L T I M A T E   C O N F I G", cx - stw / 2f, cy + 76, Fonts.PRETENDARD_MEDIUM, UIColors.withAlpha(UIColors.PURE_WHITE, (int) (120 * alpha)), sfs);
 	}
 
 	private void drawCrosshair(float vw, float vh) {
@@ -522,8 +522,8 @@ public class EditHUDScreen extends Screen {
 		boolean matchX = Math.abs(hcx - cx) < eps;
 		boolean matchY = Math.abs(hcy - cy) < eps;
 
-		if (matchY) NVGRenderer.line(0, cy, vw, cy, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 150));
-		if (matchX) NVGRenderer.line(cx, 0, cx, vh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 150));
+		if (matchY) SkijaRenderer.line(0, cy, vw, cy, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 150));
+		if (matchX) SkijaRenderer.line(cx, 0, cx, vh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 150));
 
 		// Requirement 2: Alignment with other HUDs
 		for (LucentHUD other : LucentAPI.getHUDManager().getHUDs()) {
@@ -535,17 +535,17 @@ public class EditHUDScreen extends Screen {
 			float ohcy = ory + orh / 2f;
 
 			// Match X (Left, Center, Right)
-			if (Math.abs(rx - orx) < eps) NVGRenderer.line(orx, 0, orx, vh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
-			else if (Math.abs(hcx - ohcx) < eps) NVGRenderer.line(ohcx, 0, ohcx, vh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
-			else if (Math.abs((rx + rw) - (orx + orw)) < eps) NVGRenderer.line(orx + orw, 0, orx + orw, vh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
+			if (Math.abs(rx - orx) < eps) SkijaRenderer.line(orx, 0, orx, vh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
+			else if (Math.abs(hcx - ohcx) < eps) SkijaRenderer.line(ohcx, 0, ohcx, vh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
+			else if (Math.abs((rx + rw) - (orx + orw)) < eps) SkijaRenderer.line(orx + orw, 0, orx + orw, vh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
 
 			// Match Y (Top, Center, Bottom)
-			if (Math.abs(ry - ory) < eps) NVGRenderer.line(0, ory, vw, ory, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
-			else if (Math.abs(hcy - ohcy) < eps) NVGRenderer.line(0, ohcy, vw, ohcy, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
-			else if (Math.abs((ry + rh) - (ory + orh)) < eps) NVGRenderer.line(0, ory + orh, vw, ory + orh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
+			if (Math.abs(ry - ory) < eps) SkijaRenderer.line(0, ory, vw, ory, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
+			else if (Math.abs(hcy - ohcy) < eps) SkijaRenderer.line(0, ohcy, vw, ohcy, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
+			else if (Math.abs((ry + rh) - (ory + orh)) < eps) SkijaRenderer.line(0, ory + orh, vw, ory + orh, 1f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100));
 		}
 
-		if (matchX && matchY) NVGRenderer.outlineCircle(cx, cy, 4f, 2f, UIColors.PURE_WHITE);
+		if (matchX && matchY) SkijaRenderer.outlineCircle(cx, cy, 4f, 2f, UIColors.PURE_WHITE);
 	}
 
 	private void drawHudBorder(LucentHUD hud, float mx, float my) {
@@ -556,7 +556,7 @@ public class EditHUDScreen extends Screen {
 		boolean scaleDrag = draggingScale == hud;
 		boolean moveDrag = draggingMove  == hud;
 
-		NVGRenderer.rect(rx, ry, rw, rh, C_FILL, 3f);
+		SkijaRenderer.rect(rx, ry, rw, rh, C_FILL, 3f);
 
 		int bc; float bt;
 		if (scaleDrag) {
@@ -573,7 +573,7 @@ public class EditHUDScreen extends Screen {
 			bt = 1.5f;
 		}
 
-		NVGRenderer.outlineRect(rx, ry, rw, rh, bt, bc, 3f);
+		SkijaRenderer.outlineRect(rx, ry, rw, rh, bt, bc, 3f);
 
 		boolean hl = (handleIndex != -1) || scaleDrag;
 		drawCornerHandles(rx, ry, rw, rh, hl);
@@ -582,10 +582,10 @@ public class EditHUDScreen extends Screen {
 	private void drawCornerHandles(float rx, float ry, float rw, float rh, boolean highlight) {
 		int c  = highlight ? C_BORDER_HOV : C_BORDER;
 		float hs = 7f, off = hs / 2f;
-		NVGRenderer.rect(rx - off,      ry - off,      hs, hs, c, 1.5f);
-		NVGRenderer.rect(rx + rw - off, ry - off,      hs, hs, c, 1.5f);
-		NVGRenderer.rect(rx - off,      ry + rh - off, hs, hs, c, 1.5f);
-		NVGRenderer.rect(rx + rw - off, ry + rh - off, hs, hs, c, 1.5f);
+		SkijaRenderer.rect(rx - off,      ry - off,      hs, hs, c, 1.5f);
+		SkijaRenderer.rect(rx + rw - off, ry - off,      hs, hs, c, 1.5f);
+		SkijaRenderer.rect(rx - off,      ry + rh - off, hs, hs, c, 1.5f);
+		SkijaRenderer.rect(rx + rw - off, ry + rh - off, hs, hs, c, 1.5f);
 	}
 
 	private void drawTooltip(LucentHUD hud, float mx, float my, float vw, float vh) {
@@ -600,19 +600,19 @@ public class EditHUDScreen extends Screen {
 
 		float fs = 12f, padX = 10f, padY = 7f, lineH = 15f;
 		float tw = 0;
-		for (String l : lines) tw = Math.max(tw, NVGRenderer.textWidth(l, Fonts.PRETENDARD, fs));
+		for (String l : lines) tw = Math.max(tw, SkijaRenderer.textWidth(l, Fonts.PRETENDARD, fs));
 		float bw = tw + padX * 2, bh = lineH * lines.length + padY * 2;
 
 		float tx = mx + 14, ty = my + 10;
 		if (tx + bw > vw - 4) tx = mx - bw - 6;
 		if (ty + bh > vh - 4) ty = vh - bh - 4;
 
-		NVGRenderer.rect(tx, ty, bw, bh, C_TOOLTIP_BG, 6f);
-		NVGRenderer.outlineRect(tx, ty, bw, bh, 1f, UIColors.withAlpha(0xFFFFFFFF, 18), 6f);
+		SkijaRenderer.rect(tx, ty, bw, bh, C_TOOLTIP_BG, 6f);
+		SkijaRenderer.outlineRect(tx, ty, bw, bh, 1f, UIColors.withAlpha(0xFFFFFFFF, 18), 6f);
 
 		for (int i = 0; i < lines.length; i++) {
 			int col = (i == 0) ? C_TEXT : (i == 2 ? C_TEXT_ACCENT : C_TEXT_DIM);
-			NVGRenderer.text(lines[i], tx + padX, ty + padY + i * lineH, Fonts.PRETENDARD, col, fs);
+			SkijaRenderer.text(lines[i], tx + padX, ty + padY + i * lineH, Fonts.PRETENDARD, col, fs);
 		}
 
 		// Shift 키 안내 텍스트
@@ -620,21 +620,21 @@ public class EditHUDScreen extends Screen {
 					 || GLFW.glfwGetKey(UDisplay.getWindow().handle(), GLFW.GLFW_KEY_RIGHT_SHIFT) == GLFW.GLFW_PRESS;
 		String hintText = shifting ? "[Shift] Snap OFF" : "[Shift] Snap ON";
 		int hintColor = shifting ? 0xFFFF1919 : 0xFF19FF05;
-		NVGRenderer.text(hintText, tx + padX, ty + bh + 4, Fonts.PRETENDARD, hintColor, 10f);
+		SkijaRenderer.text(hintText, tx + padX, ty + bh + 4, Fonts.PRETENDARD, hintColor, 10f);
 	}
 
 	private void drawScaleBadge(LucentHUD hud) {
 		String label = String.format("%.1f×", hud.scale);
 		float fs = 13f;
-		float tw = NVGRenderer.textWidth(label, Fonts.PRETENDARD, fs);
+		float tw = SkijaRenderer.textWidth(label, Fonts.PRETENDARD, fs);
 		float bw = tw + 20f, bh = 26f;
 		float bx = hud.getRenderX() + hud.getScaledWidth() / 2f - bw / 2f;
 		float by = hud.getRenderY() - bh - 8f;
 
-		NVGRenderer.rect(bx, by, bw, bh, C_TOOLTIP_BG, 6f);
-		NVGRenderer.rect(bx + 4, by + bh - 2.5f, bw - 8, 2.5f, C_SCALE_BORDER, 1.5f);
-		NVGRenderer.outlineRect(bx, by, bw, bh, 1f, UIColors.withAlpha(C_SCALE_BORDER, 80), 6f);
-		NVGRenderer.text(label, bx + 10, by + (bh - fs) / 2f, Fonts.PRETENDARD, C_TEXT, fs);
+		SkijaRenderer.rect(bx, by, bw, bh, C_TOOLTIP_BG, 6f);
+		SkijaRenderer.rect(bx + 4, by + bh - 2.5f, bw - 8, 2.5f, C_SCALE_BORDER, 1.5f);
+		SkijaRenderer.outlineRect(bx, by, bw, bh, 1f, UIColors.withAlpha(C_SCALE_BORDER, 80), 6f);
+		SkijaRenderer.text(label, bx + 10, by + (bh - fs) / 2f, Fonts.PRETENDARD, C_TEXT, fs);
 	}
 
 	private void drawContextMenu(float vw, float vh) {
@@ -646,36 +646,36 @@ public class EditHUDScreen extends Screen {
 		float cx = UAnimation.clamp(contextMenuX, 0, vw - iW - 4);
 		float cy = UAnimation.clamp(contextMenuY, 0, vh - totalH - 4);
 
-		NVGRenderer.rect(cx, cy, iW, totalH, C_MENU_BG, 8f);
-		NVGRenderer.outlineRect(cx, cy, iW, totalH, 1f, UIColors.withAlpha(0xFFFFFFFF, 15), 8f);
+		SkijaRenderer.rect(cx, cy, iW, totalH, C_MENU_BG, 8f);
+		SkijaRenderer.outlineRect(cx, cy, iW, totalH, 1f, UIColors.withAlpha(0xFFFFFFFF, 15), 8f);
 
 		for (int i = 0; i < opts.length; i++) {
 			Align opt = opts[i];
 			float iy  = cy + pad + i * iH;
 			boolean selected = contextMenuHud.alignment == opt;
 
-			if (selected) NVGRenderer.rect(cx + 6, iy + 2, iW - 12, iH - 4, UIColors.withAlpha(UIColors.ACCENT_BLUE, 50), 5f);
+			if (selected) SkijaRenderer.rect(cx + 6, iy + 2, iW - 12, iH - 4, UIColors.withAlpha(UIColors.ACCENT_BLUE, 50), 5f);
 
 			int tc = selected ? UIColors.ACCENT_BLUE : C_TEXT_DIM;
-			if (selected) NVGRenderer.circle(cx + 14, iy + iH / 2f, 3f, UIColors.ACCENT_BLUE);
-			NVGRenderer.text(opt.displayName(), cx + 24, iy + (iH - 11f) / 2f, Fonts.PRETENDARD, tc, 11f);
+			if (selected) SkijaRenderer.circle(cx + 14, iy + iH / 2f, 3f, UIColors.ACCENT_BLUE);
+			SkijaRenderer.text(opt.displayName(), cx + 24, iy + (iH - 11f) / 2f, Fonts.PRETENDARD, tc, 11f);
 		}
 
 		// Separator 1
 		float sepY = cy + pad + opts.length * iH + 2.5f;
-		NVGRenderer.rect(cx + 8, sepY, iW - 16, 1f, UIColors.withAlpha(UIColors.PURE_WHITE, 15));
+		SkijaRenderer.rect(cx + 8, sepY, iW - 16, 1f, UIColors.withAlpha(UIColors.PURE_WHITE, 15));
 
 		// Delete Option
 		float delY = sepY + 2.5f;
-		NVGRenderer.text("Delete", cx + 24, delY + (iH - 11f) / 2f, Fonts.PRETENDARD, UIColors.RED, 11f);
+		SkijaRenderer.text("Delete", cx + 24, delY + (iH - 11f) / 2f, Fonts.PRETENDARD, UIColors.RED, 11f);
 
 		// Separator 2
 		float sep2Y = delY + iH + 2.5f;
-		NVGRenderer.rect(cx + 8, sep2Y, iW - 16, 1f, UIColors.withAlpha(UIColors.PURE_WHITE, 15));
+		SkijaRenderer.rect(cx + 8, sep2Y, iW - 16, 1f, UIColors.withAlpha(UIColors.PURE_WHITE, 15));
 
 		// Settings Option
 		float setY = sep2Y + 2.5f;
-		NVGRenderer.text("Settings", cx + 24, setY + (iH - 11f) / 2f, Fonts.PRETENDARD, C_TEXT_ACCENT, 11f);
+		SkijaRenderer.text("Settings", cx + 24, setY + (iH - 11f) / 2f, Fonts.PRETENDARD, C_TEXT_ACCENT, 11f);
 	}
 
 	private boolean isInsideHud(LucentHUD h, float mx, float my) {
@@ -704,7 +704,7 @@ public class EditHUDScreen extends Screen {
 		float iH = 28f, iW = 130f, pad = 8f;
 		float totalH = iH * opts.length + 2 * (iH + 5f) + pad * 2;
 
-		float gs = NVGRenderer.getStandardGuiScale();
+		float gs = SkijaRenderer.getStandardGuiScale();
 		float vw = UDisplay.getScreenWidth() / gs;
 		float vh = UDisplay.getScreenHeight() / gs;
 		float cx = UAnimation.clamp(contextMenuX, 0, vw - iW - 4);

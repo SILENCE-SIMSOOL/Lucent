@@ -8,7 +8,7 @@ import silence.simsool.lucent.general.utils.useful.UScreen;
 import silence.simsool.lucent.ui.screens.ConfigScreen;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UColor;
-import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
+import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 import silence.simsool.lucent.ui.widget.UIWidget;
 
 public class ColorPickerButton extends UIWidget {
@@ -31,20 +31,20 @@ public class ColorPickerButton extends UIWidget {
 
 	@Override
 	protected void renderWidget(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
-		NVGRenderer.push();
+		SkijaRenderer.push();
 		hoverAnim = UAnimation.lerpSnap(hoverAnim, hovered ? 1f : 0f, HOVER_SPEED, delta);
 		int round = 8;
 		int border = pickerOpen ? borderFocusColor : UColor.lerpColor(borderColor, borderHoverColor, hoverAnim);
 
-		NVGRenderer.drawCheckerboard(x, y, width, height, 4, 0xFFCCCCCC, 0xFF999999, round);
-		NVGRenderer.rect(x, y, width, height, color, round);
-		NVGRenderer.outlineRect(x, y, width, height, 1, border, round);
+		SkijaRenderer.drawCheckerboard(x, y, width, height, 4, 0xFFCCCCCC, 0xFF999999, round);
+		SkijaRenderer.rect(x, y, width, height, color, round);
+		SkijaRenderer.outlineRect(x, y, width, height, 1, border, round);
 
 		if (hoverAnim > 0.01f) {
 			int overlayAlpha = (int)(hoverAnim * 30);
-			NVGRenderer.rect(x, y, width, height, UColor.withAlpha(0xFFFFFFFF, overlayAlpha), round);
+			SkijaRenderer.rect(x, y, width, height, UColor.withAlpha(0xFFFFFFFF, overlayAlpha), round);
 		}
-		NVGRenderer.pop();
+		SkijaRenderer.pop();
 	}
 
 	@Override
@@ -145,7 +145,7 @@ public class ColorPickerButton extends UIWidget {
 			}
 		}
 
-		float scale = NVGRenderer.getStandardGuiScale() * uiScale;
+		float scale = SkijaRenderer.getStandardGuiScale() * uiScale;
 		float screenW = UDisplay.getScreenWidth() / scale;
 		float screenH = UDisplay.getScreenHeight() / scale;
 

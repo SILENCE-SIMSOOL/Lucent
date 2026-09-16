@@ -9,13 +9,13 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.Connection;
 import net.minecraft.resources.Identifier;
 import silence.simsool.lucent.Lucent;
-import silence.simsool.lucent.ui.utils.nvg.Image;
-import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
+import silence.simsool.lucent.ui.utils.skija.Image;
+import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 
 public class LucentUtils {
 
 	public static Image createIcon(String name) throws Exception {
-		return NVGRenderer.createImage("/assets/lucent/textures/icons/" + name + ".png");
+		return SkijaRenderer.createImage("/assets/lucent/textures/icons/" + name + ".png");
 	}
 
 	public static Identifier id(String path) {

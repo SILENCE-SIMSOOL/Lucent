@@ -12,7 +12,6 @@ import java.util.Objects;
 import java.util.Stack;
 
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.nanovg.NanoVG;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
@@ -48,10 +47,9 @@ import silence.simsool.lucent.ui.theme.ThemeManager;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UColor;
 import silence.simsool.lucent.ui.utils.UIColors;
-import silence.simsool.lucent.ui.utils.nvg.Fonts;
-import silence.simsool.lucent.ui.utils.nvg.Image;
-import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
-import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
+import silence.simsool.lucent.ui.utils.skija.Fonts;
+import silence.simsool.lucent.ui.utils.skija.Image;
+import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 import silence.simsool.lucent.ui.widget.UIWidget;
 import silence.simsool.lucent.ui.widget.components.ActionButton;
 import silence.simsool.lucent.ui.widget.components.KeyBindButton;
@@ -167,12 +165,12 @@ public class ConfigScreen extends Screen {
 			int color = UIColors.MUTED; 
 			float indent = 8f;
 			
-			NVGRenderer.text(catName, x + indent, y + 14, Fonts.PRETENDARD_SEMIBOLD, color, fontSize);
+			SkijaRenderer.text(catName, x + indent, y + 14, Fonts.PRETENDARD_SEMIBOLD, color, fontSize);
 			
-			float textW = NVGRenderer.textWidth(catName, Fonts.PRETENDARD_SEMIBOLD, fontSize);
+			float textW = SkijaRenderer.textWidth(catName, Fonts.PRETENDARD_SEMIBOLD, fontSize);
 			float lineX = x + indent + textW + 16;
 			float lineW = (x + width - 6) - lineX;
-			if (lineW > 0) NVGRenderer.rect(lineX, y + 20, lineW, 1.5f, UIColors.withAlpha(color, 40));
+			if (lineW > 0) SkijaRenderer.rect(lineX, y + 20, lineW, 1.5f, UIColors.withAlpha(color, 40));
 		}
 	}
 
@@ -205,8 +203,8 @@ public class ConfigScreen extends Screen {
 				}
 			}
 
-			NVGRenderer.rect(x, y, width, height - BAR_H, topBg, 12, 12, 0, 0);
-			NVGRenderer.rect(x, y + height - BAR_H, width, BAR_H, barBg, 0, 0, 12, 12);
+			SkijaRenderer.rect(x, y, width, height - BAR_H, topBg, 12, 12, 0, 0);
+			SkijaRenderer.rect(x, y + height - BAR_H, width, BAR_H, barBg, 0, 0, 12, 12);
 
 			float midX = x + width / 2f;
 			float topH = height - BAR_H;
@@ -219,32 +217,32 @@ public class ConfigScreen extends Screen {
 			}
 
 			if (iconImg != null) {
-				NVGRenderer.image(iconImg, midX - 22f, y + (topH - 44f) / 2f, 44f, 44f);
+				SkijaRenderer.image(iconImg, midX - 22f, y + (topH - 44f) / 2f, 44f, 44f);
 			} else if (mod.icon != null && !mod.icon.isEmpty() && !mod.icon.startsWith("/") && !mod.icon.startsWith("assets/") && !mod.icon.endsWith(".png")) {
 				float is = 48f;
-				NVGRenderer.text(mod.icon, midX - is / 2f, y + (topH - is) / 2f + 2f, Fonts.MATERIAL_ICONS_ROUND, UIColors.PURE_WHITE, is);
+				SkijaRenderer.text(mod.icon, midX - is / 2f, y + (topH - is) / 2f + 2f, Fonts.MATERIAL_ICONS_ROUND, UIColors.PURE_WHITE, is);
 			} else {
 				String translatedName = L10n.translate(mod.name);
-				float initialW = NVGRenderer.textWidth(translatedName, Fonts.PRETENDARD_SEMIBOLD, 20f);
-				NVGRenderer.text(translatedName, midX - initialW/2, y + (topH - 20) / 2, Fonts.PRETENDARD_SEMIBOLD, 0xFFFFFFFF, 20);
+				float initialW = SkijaRenderer.textWidth(translatedName, Fonts.PRETENDARD_SEMIBOLD, 20f);
+				SkijaRenderer.text(translatedName, midX - initialW/2, y + (topH - 20) / 2, Fonts.PRETENDARD_SEMIBOLD, 0xFFFFFFFF, 20);
 			}
 
 			float barTop  = y + height - BAR_H;
 			int barFg = mod.isEnabled ? UIColors.getContrastText(barBg) : UIColors.PURE_WHITE;
 			int barDiv = mod.isEnabled ? UIColors.getContrastDivider(barBg) : 0x33FFFFFF;
 
-			NVGRenderer.text(L10n.translate(mod.name), x + 12f, barTop + 8f, Fonts.PRETENDARD_MEDIUM, barFg, 14f);
+			SkijaRenderer.text(L10n.translate(mod.name), x + 12f, barTop + 8f, Fonts.PRETENDARD_MEDIUM, barFg, 14f);
 
 			float divX = x + width - 36f;
-			NVGRenderer.rect(divX, barTop + 6f, 1, BAR_H - 12f, barDiv, 0f);
+			SkijaRenderer.rect(divX, barTop + 6f, 1, BAR_H - 12f, barDiv, 0f);
 			
-			NVGRenderer.text(ICON_SETTINGS, divX + 10f, barTop + 7f, Fonts.MATERIAL_ICONS_ROUND, barFg, 16f);
+			SkijaRenderer.text(ICON_SETTINGS, divX + 10f, barTop + 7f, Fonts.MATERIAL_ICONS_ROUND, barFg, 16f);
 
 			// Favorite Heart Icon (top-right)
 			String heartIcon = mod.isFavorite ? ICON_FAVORITE : ICON_FAVORITE_BORDER;
 			int heartColor = mod.isFavorite ? 0xFFFF4B4B : (hov ? UIColors.withAlpha(UIColors.PURE_WHITE, 200) : UIColors.withAlpha(UIColors.PURE_WHITE, 100));
 			float is = 18f;
-			NVGRenderer.text(heartIcon, x + width - is - (is * 0.5f), y + (is * 0.5f), Fonts.MATERIAL_ICONS_ROUND, heartColor, is);
+			SkijaRenderer.text(heartIcon, x + width - is - (is * 0.5f), y + (is * 0.5f), Fonts.MATERIAL_ICONS_ROUND, heartColor, is);
 		}
 
 		@Override
@@ -350,15 +348,15 @@ public class ConfigScreen extends Screen {
 			}
 
 			// Backgrounds
-			NVGRenderer.rect(x, y, width, height - BAR_H, topBg, 12, 12, 0, 0);
-			NVGRenderer.rect(x, y + height - BAR_H, width, BAR_H, barBg, 0, 0, 12, 12);
+			SkijaRenderer.rect(x, y, width, height - BAR_H, topBg, 12, 12, 0, 0);
+			SkijaRenderer.rect(x, y + height - BAR_H, width, BAR_H, barBg, 0, 0, 12, 12);
 
 			if (editing) {
 				renameBox.render(graphics, mx, my, delta);
 			} else {
 				float fontSize = 20f;
-				float tw = NVGRenderer.textWidth(profileName, Fonts.PRETENDARD_SEMIBOLD, fontSize);
-				NVGRenderer.text(profileName, x + (width - tw) / 2f, y + (height - BAR_H) / 2f - fontSize / 2f, Fonts.PRETENDARD_SEMIBOLD, UIColors.TEXT_PRIMARY, fontSize);
+				float tw = SkijaRenderer.textWidth(profileName, Fonts.PRETENDARD_SEMIBOLD, fontSize);
+				SkijaRenderer.text(profileName, x + (width - tw) / 2f, y + (height - BAR_H) / 2f - fontSize / 2f, Fonts.PRETENDARD_SEMIBOLD, UIColors.TEXT_PRIMARY, fontSize);
 			}
 
 			// Footer Content (Split into two halves)
@@ -374,24 +372,24 @@ public class ConfigScreen extends Screen {
 					// No divider, center Edit icon
 					boolean hovEdit = mx > x && mx < x + width && my > barTop && my < barTop + BAR_H;
 					int col = hovEdit ? barFg : UIColors.withAlpha(barFg, 160);
-					NVGRenderer.text(ICON_EDIT, midX - (iconS / 2f), barTop + 9f, Fonts.MATERIAL_ICONS_ROUND, col, iconS);
+					SkijaRenderer.text(ICON_EDIT, midX - (iconS / 2f), barTop + 9f, Fonts.MATERIAL_ICONS_ROUND, col, iconS);
 				} else {
 					// Divider line
-					NVGRenderer.rect(midX - 0.5f, barTop + 6f, 1f, BAR_H - 12f, barDiv, 0f);
+					SkijaRenderer.rect(midX - 0.5f, barTop + 6f, 1f, BAR_H - 12f, barDiv, 0f);
 
 					// Left Half: Edit
 					boolean hovEdit = mx > x && mx < midX && my > barTop && my < barTop + BAR_H;
 					int colEdit = hovEdit ? barFg : UIColors.withAlpha(barFg, 160);
-					NVGRenderer.text(ICON_EDIT, x + (width / 4f) - (iconS / 2f), barTop + 9f, Fonts.MATERIAL_ICONS_ROUND, colEdit, iconS);
+					SkijaRenderer.text(ICON_EDIT, x + (width / 4f) - (iconS / 2f), barTop + 9f, Fonts.MATERIAL_ICONS_ROUND, colEdit, iconS);
 
 					// Right Half: Delete
 					boolean hovDel = mx > midX && mx < x + width && my > barTop && my < barTop + BAR_H;
 					int colDel = hovDel ? barFg : UIColors.withAlpha(barFg, 160);
-					NVGRenderer.text(ICON_DELETE, x + (3 * width / 4f) - (iconS / 2f), barTop + 9f, Fonts.MATERIAL_ICONS_ROUND, colDel, iconS);
+					SkijaRenderer.text(ICON_DELETE, x + (3 * width / 4f) - (iconS / 2f), barTop + 9f, Fonts.MATERIAL_ICONS_ROUND, colDel, iconS);
 				}
 			}
 
-			NVGRenderer.outlineRect(x, y, width, height, 1.5f, active ? UIColors.ACCENT_BLUE : UIColors.ITEM_BORDER, 12f);
+			SkijaRenderer.outlineRect(x, y, width, height, 1.5f, active ? UIColors.ACCENT_BLUE : UIColors.ITEM_BORDER, 12f);
 		}
 
 		@Override
@@ -482,18 +480,18 @@ public class ConfigScreen extends Screen {
 
 			// Glow/Shadow effect on hover
 			if (hoverAnim > 0) {
-				NVGRenderer.rect(x - hoverAnim * 2, y - hoverAnim * 2, width + hoverAnim * 4, height + hoverAnim * 4, UColor.withAlpha(theme.accent, (int)(hoverAnim * 25)), 14f);
+				SkijaRenderer.rect(x - hoverAnim * 2, y - hoverAnim * 2, width + hoverAnim * 4, height + hoverAnim * 4, UColor.withAlpha(theme.accent, (int)(hoverAnim * 25)), 14f);
 			}
 
 			// Main Background
-			NVGRenderer.rect(x, y, width, height, theme.itemBg, 12f);
+			SkijaRenderer.rect(x, y, width, height, theme.itemBg, 12f);
 			if (hoverAnim > 0) {
 				int targetHover = UColor.withAlpha(theme.itemHover, (int)(hoverAnim * UColor.getAlpha(theme.itemHover)));
-				NVGRenderer.rect(x, y, width, height, targetHover, 12f);
+				SkijaRenderer.rect(x, y, width, height, targetHover, 12f);
 			}
 
 			// Theme name
-			NVGRenderer.text(theme.name, x + 15, y + 18, Fonts.PRETENDARD_SEMIBOLD, theme.textPrimary, 15f);
+			SkijaRenderer.text(theme.name, x + 15, y + 18, Fonts.PRETENDARD_SEMIBOLD, theme.textPrimary, 15f);
 
 			// Palette Preview circles
 			float size = 10f;
@@ -503,18 +501,18 @@ public class ConfigScreen extends Screen {
 
 			int[] colors = { theme.accent, theme.textPrimary, theme.sidebarBg, theme.winBg };
 			for (int i = 0; i < colors.length; i++) {
-				NVGRenderer.circle(px + i * (size + gap), py, size / 2f, colors[i]);
-				NVGRenderer.outlineCircle(px + i * (size + gap), py, size / 2f + 1, 0.5f, theme.itemBorder);
+				SkijaRenderer.circle(px + i * (size + gap), py, size / 2f, colors[i]);
+				SkijaRenderer.outlineCircle(px + i * (size + gap), py, size / 2f + 1, 0.5f, theme.itemBorder);
 			}
 
 			// Active Indicator
 			if (current) {
-				NVGRenderer.circle(x + width - 20, y + 20, 5, theme.accent);
-				NVGRenderer.outlineCircle(x + width - 20, y + 20, 7, 1, theme.accent);
+				SkijaRenderer.circle(x + width - 20, y + 20, 5, theme.accent);
+				SkijaRenderer.outlineCircle(x + width - 20, y + 20, 7, 1, theme.accent);
 			}
 
 			// Border
-			NVGRenderer.outlineRect(x, y, width, height, 1.5f, current ? theme.accent : theme.itemBorder, 12f);
+			SkijaRenderer.outlineRect(x, y, width, height, 1.5f, current ? theme.accent : theme.itemBorder, 12f);
 		}
 
 		@Override
@@ -539,9 +537,9 @@ public class ConfigScreen extends Screen {
 		@Override
 		protected void renderWidget(GuiGraphicsExtractor graphics, int mx, int my, float delta) {
 			boolean hov = mx >= x && mx <= x + width && my >= y && my <= y + height;
-			NVGRenderer.rect(x, y, width, height, hov ? UIColors.CARD_HOVER : UIColors.CARD_BG, 8f);
-			NVGRenderer.outlineRect(x, y, width, height, 1, UIColors.ITEM_BORDER, 8f);
-			NVGRenderer.text(label, x + 16, y + 17, Fonts.PRETENDARD_SEMIBOLD, UIColors.TEXT_PRIMARY, 16f);
+			SkijaRenderer.rect(x, y, width, height, hov ? UIColors.CARD_HOVER : UIColors.CARD_BG, 8f);
+			SkijaRenderer.outlineRect(x, y, width, height, 1, UIColors.ITEM_BORDER, 8f);
+			SkijaRenderer.text(label, x + 16, y + 17, Fonts.PRETENDARD_SEMIBOLD, UIColors.TEXT_PRIMARY, 16f);
 			renderDescription(description, x + 16, y + 41, width - 32 - 110, 13f);
 		}
 
@@ -567,26 +565,26 @@ public class ConfigScreen extends Screen {
 				for (int i = 0; i < segText.length(); i++) {
 					char ch = segText.charAt(i);
 					lineBuffer.append(ch);
-					float w = NVGRenderer.textWidth(lineBuffer.toString(), Fonts.PRETENDARD_LIGHT, fontSize);
+					float w = SkijaRenderer.textWidth(lineBuffer.toString(), Fonts.PRETENDARD_LIGHT, fontSize);
 					if (w > maxW && lineBuffer.length() > 1) {
 						lineBuffer.deleteCharAt(lineBuffer.length() - 1);
 						i--;
-						NVGRenderer.text(lineBuffer.toString(), currentX, currentY, Fonts.PRETENDARD_LIGHT, lineColor, fontSize);
+						SkijaRenderer.text(lineBuffer.toString(), currentX, currentY, Fonts.PRETENDARD_LIGHT, lineColor, fontSize);
 						currentX = sx;
 						currentY += lineH;
 						lineBuffer.setLength(0);
 					}
 				}
 				if (lineBuffer.length() > 0) {
-					NVGRenderer.text(lineBuffer.toString(), currentX, currentY, Fonts.PRETENDARD_LIGHT, seg.color, fontSize);
-					currentX += NVGRenderer.textWidth(lineBuffer.toString(), Fonts.PRETENDARD_LIGHT, fontSize);
+					SkijaRenderer.text(lineBuffer.toString(), currentX, currentY, Fonts.PRETENDARD_LIGHT, seg.color, fontSize);
+					currentX += SkijaRenderer.textWidth(lineBuffer.toString(), Fonts.PRETENDARD_LIGHT, fontSize);
 					lineColor = seg.color;
 					lineBuffer.setLength(0);
 				}
 			}
 			if (lineBuffer.length() > 0) {
-				NVGRenderer.text(lineBuffer.toString(), currentX, currentY, Fonts.PRETENDARD_LIGHT, lineColor, fontSize);
-				currentX += NVGRenderer.textWidth(lineBuffer.toString(), Fonts.PRETENDARD_LIGHT, fontSize);
+				SkijaRenderer.text(lineBuffer.toString(), currentX, currentY, Fonts.PRETENDARD_LIGHT, lineColor, fontSize);
+				currentX += SkijaRenderer.textWidth(lineBuffer.toString(), Fonts.PRETENDARD_LIGHT, fontSize);
 			}
 			return currentY + lineH;
 		}
@@ -662,13 +660,14 @@ public class ConfigScreen extends Screen {
 	protected void init() {
 		super.init();
 
+		ModManager.cleanupUnusedProfiles();
 		Lucent.config.loadGlobalConfig();
 		lastScreenWidth = UDisplay.getScreenWidth();
 		lastScreenHeight = UDisplay.getScreenHeight();
 
 		LucentResourceManager.loadLucentIcons();
 
-		float standardScale = NVGRenderer.getStandardGuiScale();
+		float standardScale = SkijaRenderer.getStandardGuiScale();
 		float screenW = UDisplay.getScreenWidth() / standardScale;
 		float screenH = UDisplay.getScreenHeight() / standardScale;
 
@@ -761,22 +760,22 @@ public class ConfigScreen extends Screen {
 			}
 		}
 
-		NVGPIPRenderer.draw(graphics, 0, 0, width, height, () -> {
-			float gs  = NVGRenderer.getStandardGuiScale();
-			float smx = UMouse.getNvgScaledX(uiScale);
-			float smy = UMouse.getNvgScaledY(uiScale);
+		SkijaRenderer.draw(graphics, 0, 0, width, height, () -> {
+			float gs  = SkijaRenderer.getStandardGuiScale();
+			float smx = UMouse.getSkijaScaledX(uiScale);
+			float smy = UMouse.getSkijaScaledY(uiScale);
 
-			NVGRenderer.push();
+			SkijaRenderer.push();
 			
 			// Apply Animation
 			if (LucentConfig.openAnimation) {
 				float ease = UAnimation.Easing.spring(openAnimationProgress);
-				NVGRenderer.translate(width / 2f, height / 2f);
-				NVGRenderer.scale(0.9f + 0.1f * ease, 0.9f + 0.1f * ease);
-				NVGRenderer.translate(-width / 2f, -height / 2f);
-				NVGRenderer.globalAlpha(UAnimation.clamp(openAnimationProgress * 1.5f, 0f, 1f));
+				SkijaRenderer.translate(width / 2f, height / 2f);
+				SkijaRenderer.scale(0.9f + 0.1f * ease, 0.9f + 0.1f * ease);
+				SkijaRenderer.translate(-width / 2f, -height / 2f);
+				SkijaRenderer.globalAlpha(UAnimation.clamp(openAnimationProgress * 1.5f, 0f, 1f));
 			}
-			NVGRenderer.scale(gs * uiScale, gs * uiScale);
+			SkijaRenderer.scale(gs * uiScale, gs * uiScale);
 
 			drawFrame();
 			renderSidebar();
@@ -787,19 +786,19 @@ public class ConfigScreen extends Screen {
 				if (currentModSettings == null) renderCategoryTabs();
 			} 
  
-			NVGRenderer.pushScissor(contentX - 2, scissorY - 2, contentW - SCROLLBAR_W - 2, scissorH + 4);
+			SkijaRenderer.pushScissor(contentX - 2, scissorY - 2, contentW - SCROLLBAR_W - 2, scissorH + 4);
 			if (currentSidebarPage.equals("Mods") && currentModSettings != null) renderSettingsHeader();
 			
-			NVGRenderer.push();
-			NVGRenderer.translate(0, (float) -scrollOffset);
+			SkijaRenderer.push();
+			SkijaRenderer.translate(0, (float) -scrollOffset);
 			for (UIWidget w : widgets) {
 				w.render(graphics, (int) smx, (int) (smy + scrollOffset), delta);
 			}
 			for (UIWidget w : overlayWidgets) {
 				if (shouldSkipOverlay(w)) w.render(graphics, (int) smx, (int) (smy + scrollOffset), delta);
 			}
-			NVGRenderer.pop();
-			NVGRenderer.popScissor();
+			SkijaRenderer.pop();
+			SkijaRenderer.popScissor();
 
 			if (maxScroll > 0) renderScrollbar(smx, smy);
 
@@ -814,7 +813,7 @@ public class ConfigScreen extends Screen {
 				}
 			}
 
-			NVGRenderer.pop();
+			SkijaRenderer.pop();
 		});
 
 		super.extractRenderState(graphics, mx, my, delta);
@@ -822,8 +821,8 @@ public class ConfigScreen extends Screen {
 
 	@Override
 	public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick) {
-		float mx = UMouse.getNvgScaledX(uiScale);
-		float my = UMouse.getNvgScaledY(uiScale);
+		float mx = UMouse.getSkijaScaledX(uiScale);
+		float my = UMouse.getSkijaScaledY(uiScale);
 		int btn  = event.button();
 
 		// KeyBindButton이 대기 중일 때 모든 클릭을 가로챔
@@ -900,7 +899,7 @@ public class ConfigScreen extends Screen {
 			float catY = winY + TOPBAR_H;
 			
 			for (String cat : getCategories()) {
-				float tw = NVGRenderer.textWidth(L10n.translate(cat), Fonts.PRETENDARD_MEDIUM, 13f);
+				float tw = SkijaRenderer.textWidth(L10n.translate(cat), Fonts.PRETENDARD_MEDIUM, 13f);
 				int tabW = (int)(tw + 32);
 				if (mx >= catX && mx <= catX + tabW && my >= catY && my <= catY + 28f) {
 					if (!currentCategory.equals(cat)) {
@@ -951,7 +950,7 @@ public class ConfigScreen extends Screen {
 
 	@Override
 	public boolean mouseDragged(MouseButtonEvent event, double mouseX, double mouseY) {
-		float mx = UMouse.getNvgScaledX(uiScale), my = UMouse.getNvgScaledY(uiScale);
+		float mx = UMouse.getSkijaScaledX(uiScale), my = UMouse.getSkijaScaledY(uiScale);
 		int btn  = event.button();
 
 		if (scrollbarDragging && btn == 0) {
@@ -977,7 +976,7 @@ public class ConfigScreen extends Screen {
 	@Override
 	public boolean mouseReleased(MouseButtonEvent event) {
 		scrollbarDragging = false;
-		float mx = UMouse.getNvgScaledX(uiScale), my = UMouse.getNvgScaledY(uiScale);
+		float mx = UMouse.getSkijaScaledX(uiScale), my = UMouse.getSkijaScaledY(uiScale);
 		int btn  = event.button();
 
 		for (UIWidget w : overlayWidgets) {
@@ -997,7 +996,7 @@ public class ConfigScreen extends Screen {
 
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double hAmt, double vAmt) {
-		float mx = UMouse.getNvgScaledX(uiScale), my = UMouse.getNvgScaledY(uiScale);
+		float mx = UMouse.getSkijaScaledX(uiScale), my = UMouse.getSkijaScaledY(uiScale);
 
 		for (UIWidget w : overlayWidgets) {
 			if (!shouldSkipOverlay(w)) {
@@ -1722,8 +1721,8 @@ public class ConfigScreen extends Screen {
 		widgets.add(new UIWidget(bx, by, bw, bh) {
 			@Override
 			protected void renderWidget(GuiGraphicsExtractor graphics, int mx, int my, float delta) {
-				NVGRenderer.rect(bx, by, bw, bh, UIColors.CARD_BG, 10f);
-				NVGRenderer.outlineRect(bx, by, bw, bh, 1f, UIColors.ITEM_BORDER, 10f);
+				SkijaRenderer.rect(bx, by, bw, bh, UIColors.CARD_BG, 10f);
+				SkijaRenderer.outlineRect(bx, by, bw, bh, 1f, UIColors.ITEM_BORDER, 10f);
 			}
 		});
 
@@ -1810,7 +1809,7 @@ public class ConfigScreen extends Screen {
 				labelW = rightAreaEnd - rightAreaStart;
 
 				if (align == Align.LEFT) labelX = rightAreaStart;
-				else labelX = (int)(rightAreaEnd - NVGRenderer.textWidth(label, Fonts.PRETENDARD_MEDIUM, fontSize));
+				else labelX = (int)(rightAreaEnd - SkijaRenderer.textWidth(label, Fonts.PRETENDARD_MEDIUM, fontSize));
 
 			}
 
@@ -1818,7 +1817,7 @@ public class ConfigScreen extends Screen {
 			else {
 				if (align == Align.RIGHT) widgetX = cx + colW - pad - widgetW;
 				else {
-					widgetX = (int)(cx + pad + NVGRenderer.textWidth(label, Fonts.PRETENDARD_MEDIUM, fontSize) + widgetPadding);
+					widgetX = (int)(cx + pad + SkijaRenderer.textWidth(label, Fonts.PRETENDARD_MEDIUM, fontSize) + widgetPadding);
 					widgetX = Math.min(widgetX, cx + colW - pad - widgetW); // protect overflow
 				}
 				labelX = cx + pad;
@@ -1952,10 +1951,9 @@ public class ConfigScreen extends Screen {
 		widgets.add(new UIWidget((int)fx, (int)fy, (int)fw, (int)fs + 2) {
 			@Override
 			protected void renderWidget(GuiGraphicsExtractor graphics, int mx, int my, float delta) {
-				NVGRenderer.push();
-				NanoVG.nvgIntersectScissor(NVGRenderer.getVG(), fx, fy - 2, fw, fs + 4);
-				NVGRenderer.text(text, fx, fy, Fonts.PRETENDARD_MEDIUM, fc, fs);
-				NVGRenderer.pop();
+				SkijaRenderer.pushScissor(fx, fy - 2, fw, fs + 4);
+				SkijaRenderer.text(text, fx, fy, Fonts.PRETENDARD_MEDIUM, fc, fs);
+				SkijaRenderer.popScissor();
 			}
 		});
 	}
@@ -1996,14 +1994,14 @@ public class ConfigScreen extends Screen {
 				}
 				if (tooltipAlpha > 0f) {
 					float fs = 12f;
-					float tw = NVGRenderer.textWidth(tooltip, Fonts.PRETENDARD_LIGHT, fs);
+					float tw = SkijaRenderer.textWidth(tooltip, Fonts.PRETENDARD_LIGHT, fs);
 					float bw = tw + TIP_PAD * 2;
 					float bh = fs + TIP_PAD * 2;
 					float tx = x + (width - bw) / 2f;
 					float ty = y - bh - 6;
-					NVGRenderer.rect(tx, ty, bw, bh, UIColors.withAlpha(0xF0202028, (int)(tooltipAlpha * 0xF0)), 6f);
-					NVGRenderer.outlineRect(tx, ty, bw, bh, 1f, UIColors.withAlpha(UIColors.ITEM_BORDER, (int)(tooltipAlpha * 255)), 6f);
-					NVGRenderer.text(tooltip, tx + TIP_PAD, ty + TIP_PAD, Fonts.PRETENDARD_LIGHT, UIColors.withAlpha(UIColors.TEXT_PRIMARY, (int)(tooltipAlpha * 255)), fs);
+					SkijaRenderer.rect(tx, ty, bw, bh, UIColors.withAlpha(0xF0202028, (int)(tooltipAlpha * 0xF0)), 6f);
+					SkijaRenderer.outlineRect(tx, ty, bw, bh, 1f, UIColors.withAlpha(UIColors.ITEM_BORDER, (int)(tooltipAlpha * 255)), 6f);
+					SkijaRenderer.text(tooltip, tx + TIP_PAD, ty + TIP_PAD, Fonts.PRETENDARD_LIGHT, UIColors.withAlpha(UIColors.TEXT_PRIMARY, (int)(tooltipAlpha * 255)), fs);
 				}
 			} else {
 				hoverStartMs = -1L;
@@ -2022,7 +2020,7 @@ public class ConfigScreen extends Screen {
 		int total = 0;
 		for (String part : parts) {
 			if (part.isEmpty()) { total++; continue; }
-			float lineW = NVGRenderer.textWidth(part, Fonts.PRETENDARD_LIGHT, fontSize);
+			float lineW = SkijaRenderer.textWidth(part, Fonts.PRETENDARD_LIGHT, fontSize);
 			int linesForPart = (int) Math.ceil(Math.max(1.0, (double)lineW / maxWidth));
 			total += linesForPart;
 		}
@@ -2146,8 +2144,8 @@ public class ConfigScreen extends Screen {
 
 	private void drawFrame() {
 		int round = 14;
-		NVGRenderer.rect(winX + SIDEBAR_W, winY, WINDOW_W - SIDEBAR_W, WINDOW_H, UIColors.WIN_BG, 0,round,round,0);
-		NVGRenderer.rect(winX, winY, SIDEBAR_W, WINDOW_H, UIColors.SIDEBAR_BG, round,0,0,round);
+		SkijaRenderer.rect(winX + SIDEBAR_W, winY, WINDOW_W - SIDEBAR_W, WINDOW_H, UIColors.WIN_BG, 0,round,round,0);
+		SkijaRenderer.rect(winX, winY, SIDEBAR_W, WINDOW_H, UIColors.SIDEBAR_BG, round,0,0,round);
 	}
 
 	private void renderSidebar() {
@@ -2155,18 +2153,18 @@ public class ConfigScreen extends Screen {
 
 		if (moduleManager.getTitleFont() == null) moduleManager.setTitleFont(Fonts.PRETENDARD_SEMIBOLD);
 		int titleColor = moduleManager.isThemeColor() ? UIColors.ACCENT_BLUE : moduleManager.getTitleColor();
-		NVGRenderer.text(moduleManager.getTitle(), ix, winY + 26f, moduleManager.getTitleFont(), titleColor, moduleManager.getTitleSize());
+		SkijaRenderer.text(moduleManager.getTitle(), ix, winY + 26f, moduleManager.getTitleFont(), titleColor, moduleManager.getTitleSize());
 
 		int sy = winY + 44;
 		
 		sy += 36;
-		NVGRenderer.text("MOD CONFIG", ix, sy, Fonts.PRETENDARD_SEMIBOLD, UIColors.MUTED, 10f);
+		SkijaRenderer.text("MOD CONFIG", ix, sy, Fonts.PRETENDARD_SEMIBOLD, UIColors.MUTED, 10f);
 		sy += 16;
 		sy = sidebarItem(ix, sy, ICON_HOME, L10n.translate("lucent.sidebar.mods"), currentSidebarPage.equals("Mods"));
 		sy = sidebarItem(ix, sy, ICON_ACCOUNT, L10n.translate("lucent.sidebar.profiles"), currentSidebarPage.equals("Profiles"));
 
 		sy += 16;
-		NVGRenderer.text("PERSONALIZATION", ix, sy, Fonts.PRETENDARD_SEMIBOLD, UIColors.MUTED, 10f);
+		SkijaRenderer.text("PERSONALIZATION", ix, sy, Fonts.PRETENDARD_SEMIBOLD, UIColors.MUTED, 10f);
 		sy += 16;
 		sy = sidebarItem(ix, sy, ICON_PALETTE, L10n.translate("lucent.sidebar.themes"), currentSidebarPage.equals("Themes"));
 		sy = sidebarItem(ix, sy, ICON_SETTINGS, L10n.translate("lucent.sidebar.preferences"), currentSidebarPage.equals("Preferences"));
@@ -2179,24 +2177,24 @@ public class ConfigScreen extends Screen {
 	private int sidebarItem(int x, int y, String iconText, String label, boolean active) {
 		final int itemH = 34;
 		if (active) {
-			NVGRenderer.rect(winX + 12, y, SIDEBAR_W - 24, itemH, UIColors.SIDEBAR_SEL, 8f);
-			NVGRenderer.rect(winX + 12, y + 6, 3, itemH - 12, UIColors.ACCENT_BLUE, 1.5f);
+			SkijaRenderer.rect(winX + 12, y, SIDEBAR_W - 24, itemH, UIColors.SIDEBAR_SEL, 8f);
+			SkijaRenderer.rect(winX + 12, y + 6, 3, itemH - 12, UIColors.ACCENT_BLUE, 1.5f);
 		}
 		int fg = active ? UIColors.TEXT_PRIMARY : UIColors.TEXT_SECONDARY;
-		NVGRenderer.text(iconText, x + 4, y + 8f, Fonts.MATERIAL_ICONS_ROUND, fg, 18f);
-		NVGRenderer.text(label, x + 30, y + 10f, Fonts.PRETENDARD_MEDIUM, fg, 14f);
+		SkijaRenderer.text(iconText, x + 4, y + 8f, Fonts.MATERIAL_ICONS_ROUND, fg, 18f);
+		SkijaRenderer.text(label, x + 30, y + 10f, Fonts.PRETENDARD_MEDIUM, fg, 14f);
 		return y + itemH + 2;
 	}
 
 //	private int sidebarItem(int x, int y, Image icon, String label, boolean active) {
 //		final int itemH = 34;
 //		if (active) {
-//			NVGRenderer.rect(winX + 12, y, SIDEBAR_W - 24, itemH, UIColors.SIDEBAR_SEL, 8f);
-//			NVGRenderer.rect(winX + 12, y + 6, 3, itemH - 12, UIColors.ACCENT_BLUE, 1.5f);
+//			SkijaRenderer.rect(winX + 12, y, SIDEBAR_W - 24, itemH, UIColors.SIDEBAR_SEL, 8f);
+//			SkijaRenderer.rect(winX + 12, y + 6, 3, itemH - 12, UIColors.ACCENT_BLUE, 1.5f);
 //		}
 //		int fg = active ? UIColors.TEXT_PRIMARY : UIColors.TEXT_SECONDARY;
-//		NVGRenderer.image(icon, x + 4, y + (itemH - 16) / 2f, 16);
-//		NVGRenderer.text(label, x + 30, y + 10f, Fonts.PRETENDARD_MEDIUM, fg, 14f);
+//		SkijaRenderer.image(icon, x + 4, y + (itemH - 16) / 2f, 16);
+//		SkijaRenderer.text(label, x + 30, y + 10f, Fonts.PRETENDARD_MEDIUM, fg, 14f);
 //		return y + itemH + 2;
 //	}
 
@@ -2209,13 +2207,13 @@ public class ConfigScreen extends Screen {
 		int backColor = canGoBack ? UIColors.TEXT_PRIMARY : UIColors.MUTED;
 		int fwdColor = canGoForward  ? UIColors.TEXT_PRIMARY : UIColors.MUTED;
 
-		NVGRenderer.text("←", cx, winY + 26f,  Fonts.PRETENDARD_MEDIUM, backColor, 20f);
-		NVGRenderer.text("→", cx + 32, winY + 26f,  Fonts.PRETENDARD_MEDIUM, fwdColor, 20f);
+		SkijaRenderer.text("←", cx, winY + 26f,  Fonts.PRETENDARD_MEDIUM, backColor, 20f);
+		SkijaRenderer.text("→", cx + 32, winY + 26f,  Fonts.PRETENDARD_MEDIUM, fwdColor, 20f);
 
 		String title = currentSidebarPage;
 		if (currentSidebarPage.equals("Mods") && currentModSettings != null) title = L10n.translate(currentModSettings.name);
 		else title = L10n.translate(title); // Sidebar page names might also be translatable or handled by keys
-		NVGRenderer.text(title, cx + 70, winY + 25f,  Fonts.PRETENDARD_SEMIBOLD, UIColors.TEXT_PRIMARY, 22f);
+		SkijaRenderer.text(title, cx + 70, winY + 25f,  Fonts.PRETENDARD_SEMIBOLD, UIColors.TEXT_PRIMARY, 22f);
 	}
 
 	private void renderSearchBarBg() {
@@ -2223,9 +2221,9 @@ public class ConfigScreen extends Screen {
 		int bx = winX + WINDOW_W - PAD - bw;
 		int by = winY + (TOPBAR_H - bh) / 2;
 
-		NVGRenderer.rect(bx, by, bw, bh, UIColors.SEARCHBAR_BG, 8f);
-		NVGRenderer.outlineRect(bx, by, bw, bh, 1, searchFocused ? UIColors.ACCENT_BLUE : UIColors.ITEM_BORDER, 8f);
-		NVGRenderer.text(ICON_SEARCH, bx + 10, by + 8f, Fonts.MATERIAL_ICONS_ROUND, UIColors.TEXT_SECONDARY, 18f);
+		SkijaRenderer.rect(bx, by, bw, bh, UIColors.SEARCHBAR_BG, 8f);
+		SkijaRenderer.outlineRect(bx, by, bw, bh, 1, searchFocused ? UIColors.ACCENT_BLUE : UIColors.ITEM_BORDER, 8f);
+		SkijaRenderer.text(ICON_SEARCH, bx + 10, by + 8f, Fonts.MATERIAL_ICONS_ROUND, UIColors.TEXT_SECONDARY, 18f);
 
 		if (searchField != null) {
 			String txt = searchField.getValue();
@@ -2235,27 +2233,25 @@ public class ConfigScreen extends Screen {
 			float textAreaW = bw - 34 - 8;
 
 			if (txt.isEmpty() && !searchFocused) {
-				NVGRenderer.push();
-				NanoVG.nvgIntersectScissor(NVGRenderer.getVG(), (int) textAreaX, by, (int) textAreaW, bh);
-				NVGRenderer.text(L10n.translate("lucent.search.placeholder"), textAreaX, textY, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_SECONDARY, 14f);
-				NVGRenderer.pop();
+				SkijaRenderer.pushScissor((int) textAreaX, by, (int) textAreaW, bh);
+				SkijaRenderer.text(L10n.translate("lucent.search.placeholder"), textAreaX, textY, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_SECONDARY, 14f);
+				SkijaRenderer.popScissor();
 			} else {
 				int cpos = searchField.getCursorPosition();
 				String beforeCursor = txt.substring(0, Math.min(cpos, txt.length()));
-				float cursorX = NVGRenderer.textWidth(beforeCursor, Fonts.PRETENDARD_MEDIUM, 14f);
+				float cursorX = SkijaRenderer.textWidth(beforeCursor, Fonts.PRETENDARD_MEDIUM, 14f);
 
 				float scrollX = 0f;
 				if (cursorX > textAreaW) scrollX = cursorX - textAreaW + 4f;
 
-				NVGRenderer.push();
-				NanoVG.nvgIntersectScissor(NVGRenderer.getVG(), (int) textAreaX, by, (int) textAreaW, bh);
-				NVGRenderer.text(txt, textAreaX - scrollX, textY, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_PRIMARY, 14f);
+				SkijaRenderer.pushScissor((int) textAreaX, by, (int) textAreaW, bh);
+				SkijaRenderer.text(txt, textAreaX - scrollX, textY, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_PRIMARY, 14f);
 
 				if (searchFocused && (System.currentTimeMillis() / 500) % 2 == 0) {
 					float cx = textAreaX + cursorX - scrollX;
-					NVGRenderer.rect(cx + 1f, textY - 1f, 1.5f, 16f, UIColors.TEXT_PRIMARY, 0f);
+					SkijaRenderer.rect(cx + 1f, textY - 1f, 1.5f, 16f, UIColors.TEXT_PRIMARY, 0f);
 				}
-				NVGRenderer.pop();
+				SkijaRenderer.popScissor();
 			}
 		}
 	}
@@ -2268,7 +2264,7 @@ public class ConfigScreen extends Screen {
 
 		for (String cat : cats) {
 			String translatedCat = L10n.translate(cat);
-			float tw = NVGRenderer.textWidth(translatedCat, Fonts.PRETENDARD_MEDIUM, 13f);
+			float tw = SkijaRenderer.textWidth(translatedCat, Fonts.PRETENDARD_MEDIUM, 13f);
 			boolean active = cat.equals(currentCategory);
 			
 			int bg = active ? UIColors.ACCENT_BLUE : UIColors.TAB_BG;
@@ -2278,9 +2274,9 @@ public class ConfigScreen extends Screen {
 			int tabW = (int)(tw + padX * 2);
 			int tabH = 28;
 			
-			NVGRenderer.rect(cx, cy, tabW, tabH, bg, 8f);
+			SkijaRenderer.rect(cx, cy, tabW, tabH, bg, 8f);
 			float textY = cy + (tabH - 13f) / 2f;
-			NVGRenderer.text(translatedCat, cx + padX, textY, Fonts.PRETENDARD_MEDIUM, fg, 13f);
+			SkijaRenderer.text(translatedCat, cx + padX, textY, Fonts.PRETENDARD_MEDIUM, fg, 13f);
 			
 			cx += tabW + 8f; 
 		}
@@ -2291,8 +2287,8 @@ public class ConfigScreen extends Screen {
 		float hy = contentY - (float) scrollOffset;
 
 		if (hy > scissorY - 80 && hy < scissorY + scissorH) {
-			NVGRenderer.text(L10n.translate(currentModSettings.name), sx, hy, Fonts.PRETENDARD_SEMIBOLD, UIColors.TEXT_PRIMARY, 26f);
-			NVGRenderer.text(L10n.translate(currentModSettings.description), sx, hy + 32, Fonts.PRETENDARD, UIColors.TEXT_SECONDARY, 14f);
+			SkijaRenderer.text(L10n.translate(currentModSettings.name), sx, hy, Fonts.PRETENDARD_SEMIBOLD, UIColors.TEXT_PRIMARY, 26f);
+			SkijaRenderer.text(L10n.translate(currentModSettings.description), sx, hy + 32, Fonts.PRETENDARD, UIColors.TEXT_SECONDARY, 14f);
 		}
 	}
 
@@ -2312,7 +2308,7 @@ public class ConfigScreen extends Screen {
 
 		boolean hovSb  = smx >= trackX - 2 && smx <= trackX + SCROLLBAR_W + 2 && smy >= trackY && smy <= trackY + trackH;
 		int thumbColor = (scrollbarDragging || hovSb) ? 0x80FFFFFF : 0x4DFFFFFF;
-		NVGRenderer.rect(trackX, thumbT, SCROLLBAR_W, thumbH, thumbColor, 3f);
+		SkijaRenderer.rect(trackX, thumbT, SCROLLBAR_W, thumbH, thumbColor, 3f);
 	}
 
 	private boolean isScrollbarHit(float smx, float smy) {
@@ -2366,13 +2362,13 @@ public class ConfigScreen extends Screen {
 
 			if (iconImage != null) {
 				float is = 26f + hoverAnim * 2f;
-				//NVGRenderer.image(iconImage, x + (width - is) / 2f, y + (height - is) / 2f, is, is, 0.85f + hoverAnim * 0.15f);
-				NVGRenderer.image(iconImage, x + (width - is) / 2f, y + (height - is) / 2f, is, is, 0f, 0.85f + hoverAnim * 0.15f);
+				//SkijaRenderer.image(iconImage, x + (width - is) / 2f, y + (height - is) / 2f, is, is, 0.85f + hoverAnim * 0.15f);
+				SkijaRenderer.image(iconImage, x + (width - is) / 2f, y + (height - is) / 2f, is, is, 0f, 0.85f + hoverAnim * 0.15f);
 
 			} else if (iconText != null) {
 				float is = 28f + hoverAnim * 2f;
 				int color = hoverAnim > 0 ? UIColors.PURE_WHITE : UIColors.withAlpha(UIColors.PURE_WHITE, 190);
-				NVGRenderer.text(iconText, x + (width - is) / 2f, y + (height - is) / 2f + 2f, Fonts.MATERIAL_ICONS_ROUND, color, is);
+				SkijaRenderer.text(iconText, x + (width - is) / 2f, y + (height - is) / 2f + 2f, Fonts.MATERIAL_ICONS_ROUND, color, is);
 			}
 		}
 

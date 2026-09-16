@@ -12,6 +12,8 @@
 		"accessors.InventoryScreenAccessor",
 		"accessors.KeyMappingAccessor",
 		"accessors.LevelRendererAccessor",
+		"skija.GuiExtractMixin",
+		"skija.GuiRendererMixin",
 		"mixins.events.entity.MixinEntityRenderDispatcher_ExtractRenderStatePre",
 		"mixins.events.entity.MixinEntityRenderer_RenderEntityEvent",
 		"mixins.events.entity.MixinLivingEntity",

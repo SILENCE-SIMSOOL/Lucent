@@ -8,8 +8,8 @@ import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.general.models.abstracts.Mod;
 import silence.simsool.lucent.general.utils.LucentUtils;
 import silence.simsool.lucent.general.utils.useful.UThread;
-import silence.simsool.lucent.ui.utils.nvg.Image;
-import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
+import silence.simsool.lucent.ui.utils.skija.Image;
+import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 
 public class LucentResourceManager {
 
@@ -41,7 +41,7 @@ public class LucentResourceManager {
 				for (Mod mod : config.modules) {
 					if (mod.icon != null && !mod.icon.isEmpty() && !modIconsMap.containsKey(mod.name)) {
 						try {
-							modIconsMap.put(mod.name, NVGRenderer.createImage(mod.icon));
+							modIconsMap.put(mod.name, SkijaRenderer.createImage(mod.icon));
 						} catch (Exception ex) {
 							//ex.printStackTrace();
 						}

@@ -23,13 +23,13 @@ import silence.simsool.lucent.general.models.abstracts.LucentHUD;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
 import silence.simsool.lucent.general.utils.useful.UScreen;
 import silence.simsool.lucent.ui.screens.EditHUDScreen;
-import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
+import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 
 public class HUDManager {
 
 	private final List<LucentHUD> huds = new ArrayList<>();
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-	private boolean cachedHasNanoVG = false;
+	private boolean cachedHasSkija = false;
 
 	public HUDManager() {}
 
@@ -41,7 +41,7 @@ public class HUDManager {
 		hud.setParentManager(manager);
 		huds.add(hud);
 		load(hud);
-		updateNanoVGStatus();
+		updateSkijaStatus();
 	}
 
 	private void load(LucentHUD hud) {
@@ -100,11 +100,11 @@ public class HUDManager {
 			}
 		}
 
-		// nano draw
-		if (cachedHasNanoVG) {
-			NVGPIPRenderer.draw(graphics, 0, 0, UDisplay.getWidth(), UDisplay.getHeight(), () -> {
+		// skija draw
+		if (cachedHasSkija) {
+			SkijaRenderer.draw(graphics, 0, 0, UDisplay.getWidth(), UDisplay.getHeight(), () -> {
 				for (LucentHUD hud : huds) {
-					if (hud.isEnabled() && hud.getRenderType() == RenderType.NANOVG) {
+					if (hud.isEnabled() && hud.getRenderType() == RenderType.SKIJA) {
 						hud.draw(graphics);
 					}
 				}
@@ -112,27 +112,6 @@ public class HUDManager {
 		}
 	}
 
-//	public void preview(GuiGraphicsExtractor graphics, int screenW, int screenH) {
-//		if (huds.isEmpty() || mc.player == null || mc.level == null) return;
-//
-//		// mc preview
-//		for (LucentHUD hud : huds) {
-//			if (hud.isEnabled() && hud.getRenderType() == RenderType.MINECRAFT) {
-//				hud.preview(graphics);
-//			}
-//		}
-//
-//		// nano preview
-//		if (cachedHasNanoVG) {
-//			NVGPIPRenderer.draw(graphics, 0, 0, screenW, screenH, () -> {
-//				for (LucentHUD hud : huds) {
-//					if (hud.isEnabled() && hud.getRenderType() == RenderType.NANOVG) {
-//						hud.preview(graphics);
-//					}
-//				}
-//			});
-//		}
-//	}
 
 	public void loadAll() {
 		for (LucentHUD hud : huds) {
@@ -145,34 +124,47 @@ public class HUDManager {
 		for (LucentHUD hud : huds) managers.add(hud.getParentManager());
 
 		for (ModManager manager : managers) {
-			File file = manager.getHudConfigFile();
-			file.getParentFile().mkdirs();
-
-			JsonObject root = new JsonObject();
-			JsonObject hudsJson = new JsonObject();
-
-			for (LucentHUD hud : huds) {
-				if (hud.getParentManager() != manager) continue;
-				JsonObject entry = new JsonObject();
-				entry.addProperty("x", hud.x);
-				entry.addProperty("y", hud.y);
-				entry.addProperty("scale", hud.scale);
-				entry.addProperty("alignment", hud.alignment.name());
-				hudsJson.add(hud.id, entry);
-			}
-
-			root.add("huds", hudsJson);
-
-			try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)) {
-				GSON.toJson(root, writer);
-			} catch (Exception e) {
-				Lucent.LOG.warn("Failed to save hud configs for " + manager + ": " + e.getMessage());
-			}
+			save(manager);
 		}
 	}
 
-	private void updateNanoVGStatus() {
-		this.cachedHasNanoVG = huds.stream().anyMatch(h -> h.getRenderType() == RenderType.NANOVG);
+	public void save(ModManager manager) {
+		File file = manager.getHudConfigFile();
+		if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
+
+		JsonObject root = null;
+		if (file.exists()) {
+			try (BufferedReader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
+				root = GSON.fromJson(reader, JsonObject.class);
+			} catch (Exception e) {
+				Lucent.LOG.warn("Failed to read existing hud config for " + manager + ": " + e.getMessage());
+			}
+		}
+
+		if (root == null) root = new JsonObject();
+		JsonObject hudsJson = root.has("huds") && root.get("huds").isJsonObject() ? root.getAsJsonObject("huds") : new JsonObject();
+
+		for (LucentHUD hud : huds) {
+			if (hud.getParentManager() != manager) continue;
+			JsonObject entry = new JsonObject();
+			entry.addProperty("x", hud.x);
+			entry.addProperty("y", hud.y);
+			entry.addProperty("scale", hud.scale);
+			entry.addProperty("alignment", hud.alignment.name());
+			hudsJson.add(hud.id, entry);
+		}
+
+		root.add("huds", hudsJson);
+
+		try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)) {
+			GSON.toJson(root, writer);
+		} catch (Exception e) {
+			Lucent.LOG.warn("Failed to save hud configs for " + manager + ": " + e.getMessage());
+		}
+	}
+
+	private void updateSkijaStatus() {
+		this.cachedHasSkija = huds.stream().anyMatch(h -> h.getRenderType() == RenderType.SKIJA);
 	}
 
 }

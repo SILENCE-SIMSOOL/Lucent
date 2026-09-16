@@ -10,8 +10,8 @@ import silence.simsool.lucent.general.models.data.KeyBind;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UColor;
 import silence.simsool.lucent.ui.utils.UIColors;
-import silence.simsool.lucent.ui.utils.nvg.Fonts;
-import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
+import silence.simsool.lucent.ui.utils.skija.Fonts;
+import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 import silence.simsool.lucent.ui.widget.UIWidget;
 
 public class KeyBindButton extends UIWidget {
@@ -38,7 +38,7 @@ public class KeyBindButton extends UIWidget {
 
 	@Override
 	protected void renderWidget(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
-		NVGRenderer.push();
+		SkijaRenderer.push();
 		
 		hoverAnim = UAnimation.stepProgress(hoverAnim, hovered && !waiting, ANIM_SPEED, delta);
 		if (waiting) waitAnim = (float) ((System.currentTimeMillis() - waitStart) % 1500) / 1500f;
@@ -50,22 +50,22 @@ public class KeyBindButton extends UIWidget {
 		// Breathing Glow for waiting state
 		if (waiting) {
 			float pulse = 0.5f + 0.5f * (float) Math.sin(waitAnim * Math.PI * 2);
-			NVGRenderer.rect(x - 2, y - 2, width + 4, height + 4, UColor.withAlpha(UIColors.ACCENT_BLUE, (int) (15 + pulse * 25)), radius + 2);
+			SkijaRenderer.rect(x - 2, y - 2, width + 4, height + 4, UColor.withAlpha(UIColors.ACCENT_BLUE, (int) (15 + pulse * 25)), radius + 2);
 		}
 
 		// Main Rect
-		NVGRenderer.rect(x, y, width, height, bgColor, radius);
+		SkijaRenderer.rect(x, y, width, height, bgColor, radius);
 
 		// Striped Identity Pattern (Subtle)
 		if (waiting || hovered) {
-			NVGRenderer.pushScissor(x, y, width, height);
+			SkijaRenderer.pushScissor(x, y, width, height);
 			for (int i = -width; i < width + height; i += 12) {
-				NVGRenderer.rect(x + i + (waitAnim * 12), y, 2, height, UColor.withAlpha(UIColors.PURE_WHITE, 10), 0);
+				SkijaRenderer.rect(x + i + (waitAnim * 12), y, 2, height, UColor.withAlpha(UIColors.PURE_WHITE, 10), 0);
 			}
-			NVGRenderer.popScissor();
+			SkijaRenderer.popScissor();
 		}
 
-		NVGRenderer.outlineRect(x, y, width, height, 1f, borderColor, radius);
+		SkijaRenderer.outlineRect(x, y, width, height, 1f, borderColor, radius);
 
 		// 텍스트
 		String label;
@@ -82,7 +82,7 @@ public class KeyBindButton extends UIWidget {
 		}
 
 		float fontSize = 13f;
-		float tw = NVGRenderer.textWidth(label, Fonts.PRETENDARD_MEDIUM, fontSize);
+		float tw = SkijaRenderer.textWidth(label, Fonts.PRETENDARD_MEDIUM, fontSize);
 
 		float iconSize = 4f;
 		float iconGap = 1f;
@@ -94,24 +94,24 @@ public class KeyBindButton extends UIWidget {
 		int iconColor = waiting ? UIColors.ACCENT_BLUE : (!value.isBound() ? UIColors.MUTED : UIColors.TEXT_SECONDARY);
 
 		// Keyboard Icon
-		NVGRenderer.rect(ix + iconSize + iconGap, iy, iconSize, iconSize, iconColor, 1f); // W
-		NVGRenderer.rect(ix, iy + iconSize + iconGap, iconSize, iconSize, iconColor, 1f); // A
-		NVGRenderer.rect(ix + iconSize + iconGap, iy + iconSize + iconGap, iconSize, iconSize, iconColor, 1f); // S
-		NVGRenderer.rect(ix + iconSize * 2 + iconGap * 2, iy + iconSize + iconGap, iconSize, iconSize, iconColor, 1f); // D
+		SkijaRenderer.rect(ix + iconSize + iconGap, iy, iconSize, iconSize, iconColor, 1f); // W
+		SkijaRenderer.rect(ix, iy + iconSize + iconGap, iconSize, iconSize, iconColor, 1f); // A
+		SkijaRenderer.rect(ix + iconSize + iconGap, iy + iconSize + iconGap, iconSize, iconSize, iconColor, 1f); // S
+		SkijaRenderer.rect(ix + iconSize * 2 + iconGap * 2, iy + iconSize + iconGap, iconSize, iconSize, iconColor, 1f); // D
 
 		float tx = x + 28 + (width - 28 - tw) / 2f;
 		float ty = y + (height - fontSize) / 2f;
-		NVGRenderer.text(label, tx - 6, ty, Fonts.PRETENDARD_MEDIUM, textColor, fontSize);
+		SkijaRenderer.text(label, tx - 6, ty, Fonts.PRETENDARD_MEDIUM, textColor, fontSize);
 
 		// 대기 중일 때 ESC 힌트
 		if (waiting) {
 			String hint = "ESC to clear";
-			float hw = NVGRenderer.textWidth(hint, Fonts.PRETENDARD, 10f);
+			float hw = SkijaRenderer.textWidth(hint, Fonts.PRETENDARD, 10f);
 			float hintAlpha = 0.5f + 0.3f * (float) Math.sin(waitAnim * Math.PI * 2);
-			NVGRenderer.text(hint, x + (width - hw) / 2f, y + height + 4f, Fonts.PRETENDARD, UColor.withAlpha(UIColors.TEXT_PRIMARY, (int) (hintAlpha * 255)), 10f);
+			SkijaRenderer.text(hint, x + (width - hw) / 2f, y + height + 4f, Fonts.PRETENDARD, UColor.withAlpha(UIColors.TEXT_PRIMARY, (int) (hintAlpha * 255)), 10f);
 		}
 		
-		NVGRenderer.pop();
+		SkijaRenderer.pop();
 	}
 
 	@Override

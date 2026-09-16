@@ -7,13 +7,12 @@ import java.net.http.HttpResponse;
 
 import org.lwjgl.glfw.GLFW;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vulkan.VulkanDevice;
 import com.mojang.brigadier.Command;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.PictureInPictureRendererRegistry;
 import net.minecraft.client.KeyMapping;
@@ -36,17 +35,17 @@ import silence.simsool.lucent.general.utils.useful.UChat;
 import silence.simsool.lucent.general.utils.useful.ULog;
 import silence.simsool.lucent.general.utils.useful.UScreen;
 import silence.simsool.lucent.hud.HUDManager;
-import silence.simsool.lucent.mixin.accessors.GpuDeviceAccessor;
-import silence.simsool.lucent.ui.manager.LucentResourceManager;
-import silence.simsool.lucent.ui.utils.nvg.Fonts;
-import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 import silence.simsool.lucent.init.PremiumCosmetics;
+import silence.simsool.lucent.skija.compositor.SkijaCompositor;
+import silence.simsool.lucent.skija.natives.SkijaNatives;
+import silence.simsool.lucent.ui.manager.LucentResourceManager;
+import silence.simsool.lucent.ui.utils.skija.Fonts;
 
 public class Lucent implements ClientModInitializer {
 
 	public static final String ID = "lucent";
 	public static final String NAME = "Lucent";
-	public static final String VERSION = "1.4.7";
+	public static final String VERSION = "1.5.0";
 	public static String LATEST_VERSION = "Fetching...";
 
 	public static Minecraft mc = Minecraft.getInstance();
@@ -62,7 +61,6 @@ public class Lucent implements ClientModInitializer {
 	));
 
 	public static boolean devMode = false;
-	public static boolean warningVulkan = false;
 
 	static {
 		updateLatestVersion();
@@ -71,6 +69,7 @@ public class Lucent implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		LOG.info("Lucent library initializing..");
+		SkijaNatives.ensure();
 		PremiumCosmetics.init();
 
 		Fonts.initAsync();
@@ -80,19 +79,14 @@ public class Lucent implements ClientModInitializer {
 		Render3D.init();
 		IrisCompatibility.init();
 
+		ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
+			SkijaCompositor.INSTANCE.shutdown();
+		});
+
 		if (devMode) {
 			config.registerExampleMods();
 			LucentAPI.registerHUD(config, new ExampleHUD());
-			//config.setTitle("YOU CAN CHANGE TITLE");
-			//config.setTitleFont(Fonts.PRETENDARD_SEMIBOLD);
-			//config.setTitleSize(2.0f);
-			//config.setThemeColor(false);
-			//config.setTitleColor(UIColors.PURE_WHITE);
 		}
-
-		PictureInPictureRendererRegistry.register(context ->
-			new NVGPIPRenderer()
-		);
 
 		PictureInPictureRendererRegistry.register(context ->
 			new RoundRectPIPRenderer()
@@ -104,20 +98,13 @@ public class Lucent implements ClientModInitializer {
 
 		LucentEvent.INIT_FINISHED_EVENT.register(() -> {
 			config.loadGlobalConfig();
+			ModManager.cleanupUnusedProfiles();
 			config.loadConfigs();
 		});
 
 		LucentEvent.RESOURCES_READY_EVENT.register(() -> {
 			LucentResourceManager.loadLucentIcons();
 			LucentResourceManager.loadModIcons(config);
-		});
-
-		LucentEvent.SERVER_JOIN_EVENT.register(() -> {
-			if (((GpuDeviceAccessor) RenderSystem.getDevice()).getBackend() instanceof VulkanDevice) {
-				if (warningVulkan) return;
-				warningVulkan = true;
-				UChat.chat("\n §cLucent does not currently support Vulkan. Please go to Minecraft Video Settings, change the Graphics API to Default or OpenGL, and restart the game.\n");
-			}
 		});
 
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
