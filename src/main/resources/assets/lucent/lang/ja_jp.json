@@ -39,5 +39,9 @@
 	"lucent.preferences.render_wings": "翼の描画",
 	"lucent.preferences.render_wings.desc": "翼装飾品の描画を切り替えます。",
 	"lucent.preferences.render_capes": "マントの描画",
-	"lucent.preferences.render_capes.desc": "マント装飾品の描画を切り替えます。"
+	"lucent.preferences.render_capes.desc": "マント装飾品の描画を切り替えます。",
+	"lucent.config.lucent.translucent3drenderfixmod.general.name": "3D半透明レンダリング修正",
+	"lucent.config.lucent.translucent3drenderfixmod.general.description": "地形描画後に半透明カスタムジオメトリが正常にレンダリングされるよう修正します。",
+	"lucent.config.lucent.translucent3drenderfixmod.property.customgeometry.name": "カスタムジオメトリの描画",
+	"lucent.config.lucent.translucent3drenderfixmod.property.customgeometry.description": "地形描画後に半透明カスタムジオメトリを描画します。"
 }

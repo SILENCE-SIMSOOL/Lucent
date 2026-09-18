@@ -27,6 +27,7 @@ import silence.simsool.lucent.examplemod.huds.ExampleHUD;
 import silence.simsool.lucent.general.managers.LucentManagerRegister;
 import silence.simsool.lucent.general.utils.ClientHandler;
 import silence.simsool.lucent.general.utils.LucentUtils;
+import silence.simsool.lucent.general.utils.notification.NotificationRenderer;
 import silence.simsool.lucent.general.utils.render.IrisCompatibility;
 import silence.simsool.lucent.general.utils.render.ItemRenderer;
 import silence.simsool.lucent.general.utils.render.Render3D;
@@ -36,6 +37,7 @@ import silence.simsool.lucent.general.utils.useful.ULog;
 import silence.simsool.lucent.general.utils.useful.UScreen;
 import silence.simsool.lucent.hud.HUDManager;
 import silence.simsool.lucent.init.PremiumCosmetics;
+import silence.simsool.lucent.mods.Translucent3DRenderFixMod;
 import silence.simsool.lucent.skija.compositor.SkijaCompositor;
 import silence.simsool.lucent.skija.natives.SkijaNatives;
 import silence.simsool.lucent.ui.manager.LucentResourceManager;
@@ -45,7 +47,7 @@ public class Lucent implements ClientModInitializer {
 
 	public static final String ID = "lucent";
 	public static final String NAME = "Lucent";
-	public static final String VERSION = "1.5.1";
+	public static final String VERSION = "1.5.2";
 	public static String LATEST_VERSION = "Fetching...";
 
 	public static Minecraft mc = Minecraft.getInstance();
@@ -78,6 +80,8 @@ public class Lucent implements ClientModInitializer {
 		ClientHandler.init();
 		Render3D.init();
 		IrisCompatibility.init();
+
+		config.register(new Translucent3DRenderFixMod());
 
 		ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
 			SkijaCompositor.INSTANCE.shutdown();
@@ -155,6 +159,9 @@ public class Lucent implements ClientModInitializer {
 
 		GUIEvent.RenderHUD.EVENT.register(event -> {
 			hudManager.render(event.graphics);
+			if (UScreen.getScreen() == null) {
+				NotificationRenderer.render(event.graphics);
+			}
 		});
 
 		LOG.info("Successfully loaded Lucent!");

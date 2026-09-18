@@ -39,5 +39,9 @@
 	"lucent.preferences.render_wings": "날개 랜더링",
 	"lucent.preferences.render_wings.desc": "날개 치장품의 랜더링 여부를 설정합니다.",
 	"lucent.preferences.render_capes": "망토 랜더링",
-	"lucent.preferences.render_capes.desc": "망토 치장품의 랜더링 여부를 설정합니다."
+	"lucent.preferences.render_capes.desc": "망토 치장품의 랜더링 여부를 설정합니다.",
+	"lucent.config.lucent.translucent3drenderfixmod.general.name": "3D 반투명 렌더링 수정",
+	"lucent.config.lucent.translucent3drenderfixmod.general.description": "반투명 커스텀 지오메트리가 지형 뒤에서 정상적으로 렌더링되도록 수정합니다.",
+	"lucent.config.lucent.translucent3drenderfixmod.property.customgeometry.name": "커스텀 지오메트리 렌더링",
+	"lucent.config.lucent.translucent3drenderfixmod.property.customgeometry.description": "지형 렌더링 후 반투명 커스텀 지오메트리를 렌더링합니다."
 }

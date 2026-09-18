@@ -39,5 +39,9 @@
 	"lucent.preferences.render_wings": "Render Wings",
 	"lucent.preferences.render_wings.desc": "Toggles rendering of wing cosmetics.",
 	"lucent.preferences.render_capes": "Render Capes",
-	"lucent.preferences.render_capes.desc": "Toggles rendering of cape cosmetics."
+	"lucent.preferences.render_capes.desc": "Toggles rendering of cape cosmetics.",
+	"lucent.config.lucent.translucent3drenderfixmod.general.name": "3D Translucent Render Fix",
+	"lucent.config.lucent.translucent3drenderfixmod.general.description": "Fixes translucent custom geometry rendering after terrain.",
+	"lucent.config.lucent.translucent3drenderfixmod.property.customgeometry.name": "Render Custom Geometry",
+	"lucent.config.lucent.translucent3drenderfixmod.property.customgeometry.description": "Renders translucent custom geometry after terrain rendering."
 }

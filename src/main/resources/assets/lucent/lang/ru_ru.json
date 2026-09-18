@@ -39,5 +39,9 @@
 	"lucent.preferences.render_wings": "Отображение крыльев",
 	"lucent.preferences.render_wings.desc": "Включает или выключает отображение крыльев.",
 	"lucent.preferences.render_capes": "Отображение плащей",
-	"lucent.preferences.render_capes.desc": "Включает или выключает отображение плащей."
+	"lucent.preferences.render_capes.desc": "Включает или выключает отображение плащей.",
+	"lucent.config.lucent.translucent3drenderfixmod.general.name": "Исправление 3D-полупрозрачного рендера",
+	"lucent.config.lucent.translucent3drenderfixmod.general.description": "Исправляет рендеринг полупрозрачной пользовательской геометрии после ландшафта.",
+	"lucent.config.lucent.translucent3drenderfixmod.property.customgeometry.name": "Рендеринг геометрии",
+	"lucent.config.lucent.translucent3drenderfixmod.property.customgeometry.description": "Рендерит полупрозрачную пользовательскую геометрию после ландшафта."
 }
