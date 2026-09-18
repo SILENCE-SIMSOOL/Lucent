@@ -5,8 +5,7 @@
 	"injectors": {
 		"defaultRequire": 1
 	},
-	"mixins": [
-	],
+	"mixins": [],
 	"client": [
 		"accessors.BeaconBeamAccessor",
 		"accessors.InventoryScreenAccessor",
@@ -18,6 +17,7 @@
 		"mixins.events.gui.MixinBossHealthOverlay",
 		"mixins.events.gui.MixinChatComponent",
 		"mixins.events.gui.MixinGui",
+		"mixins.events.gui.MixinScreen",
 		"mixins.events.input.keyboard.MixinKeyboardHandler",
 		"mixins.events.input.MixinChatScreen_MESSAGE_SENT_EVENT",
 		"mixins.events.input.mouse.MixinMouseHandler",
