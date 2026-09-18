@@ -52,7 +52,19 @@ public class NotificationRenderer {
 			// Render notifications from bottom to top
 			for (int i = list.size() - 1; i >= 0; i--) {
 				Notification n = list.get(i);
-				float cardH = n.hasMessage() ? 58 + 20 : 58;
+				float maxTextW = cardW - 46.0f - 16.0f;
+				float[] titleBounds = NVGRenderer.wrappedTextBounds(n.getTitle(), maxTextW, Fonts.PRETENDARD_MEDIUM, 16.0f);
+				float titleH = Math.max(16.0f, titleBounds[3] - titleBounds[1]);
+
+				float msgH = 0.0f;
+				if (n.hasMessage()) {
+					float[] msgBounds = NVGRenderer.wrappedTextBounds(n.getMessage(), maxTextW, Fonts.PRETENDARD, 12.0f);
+					msgH = Math.max(14.0f, msgBounds[3] - msgBounds[1]);
+				}
+
+				float cardH = n.hasMessage()
+					? Math.max(78.0f, 18.0f + titleH + 8.0f + msgH + 18.0f)
+					: Math.max(58.0f, 18.0f + titleH + 24.0f);
 				currentTargetY -= cardH;
 
 				if (n.getCurrentY() < 0f) {
@@ -94,11 +106,12 @@ public class NotificationRenderer {
 				// Title text
 				float contentX = drawX + 46.0f;
 				float titleY = drawY + 18.0f;
-				NVGRenderer.text(n.getTitle(), contentX, titleY, Fonts.PRETENDARD_MEDIUM, UColor.withAlpha(UIColors.PURE_WHITE, 225), 16.0f);
+				NVGRenderer.drawWrappedString(n.getTitle(), contentX, titleY, maxTextW, Fonts.PRETENDARD_MEDIUM, 16.0f, UColor.withAlpha(UIColors.PURE_WHITE, 225));
 
 				// Message text
 				if (n.hasMessage()) {
-					NVGRenderer.text(n.getMessage(), contentX, drawY + 44.0f, Fonts.PRETENDARD, 0xCCD1D5DB, 12.0f);
+					float msgY = titleY + titleH + 8.0f;
+					NVGRenderer.drawWrappedString(n.getMessage(), contentX, msgY, maxTextW, Fonts.PRETENDARD, 12.0f, 0xCCD1D5DB);
 				}
 
 				// Cool-down progress bar
