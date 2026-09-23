@@ -17,7 +17,7 @@ public abstract class MixinEntityRenderer_RenderEntityEvent<T extends Entity> {
 
 	@Inject(method = "shouldRender", at = @At("HEAD"), cancellable = true)
 	private void lucent$onShouldRender(T entity, Frustum frustum, double x, double y, double z, CallbackInfoReturnable<Boolean> cir) {
-		if (entity == null) return;
+		if (entity == null || !EntityEvent.hasRenderEntityAllowListeners) return;
 		EntityEvent.RenderEntityAllowEvent event = new EntityEvent.RenderEntityAllowEvent(entity, frustum, x, y, z);
 		EntityEvent.RENDER_ENTITY_ALLOW_EVENT.invoker().onRenderEntityAllow(event);
 		if (event.isCanceled()) cir.setReturnValue(false);
@@ -25,7 +25,7 @@ public abstract class MixinEntityRenderer_RenderEntityEvent<T extends Entity> {
 
 	@Inject(method = "createRenderState(Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/entity/state/EntityRenderState;", at = @At("TAIL"))
 	private void lucent$postExtractRenderEntity(Entity entity, float f, CallbackInfoReturnable<EntityRenderState> cir, @Local EntityRenderState state) {
-		if (entity == null || state == null) return; // Prevent potential NPEs from Mixin local capture failures or third-party renderer modifications.
+		if (entity == null || state == null || !EntityEvent.hasExtractRenderStatePostListeners) return; // Prevent potential NPEs from Mixin local capture failures or third-party renderer modifications.
 		EntityEvent.ExtractRenderStatePost event = new EntityEvent.ExtractRenderStatePost(entity, state, f);
 		EntityEvent.EXTRACT_RENDER_STATE_POST.invoker().onExtractRenderStatePost(event);
 	}

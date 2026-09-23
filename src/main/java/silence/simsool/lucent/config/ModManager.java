@@ -308,6 +308,14 @@ public class ModManager {
 		if (!defaultProfile.exists()) defaultProfile.mkdirs();
 	}
 
+	private static boolean isOverridden(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
+		try {
+			return clazz.getMethod(methodName, parameterTypes).getDeclaringClass() != Mod.class;
+		} catch (NoSuchMethodException e) {
+			return false;
+		}
+	}
+
 	public void register(Mod module) {
 		modules.add(module);
 
@@ -318,318 +326,478 @@ public class ModManager {
 			}
 		}
 
-		LucentEvent.INIT_FINISHED_EVENT.register(() -> {
-			module.onInitFinished();
-			if (module.isEnabled) module.onInitFinishedMod();
-		});
-
-		LucentEvent.RESOURCES_READY_EVENT.register(() -> {
-			module.onResourcesReady();
-			if (module.isEnabled) module.onResourcesReadyMod();
-		});
-
-		LucentEvent.TICK_EVENT.LOW.register(() -> {
-			if (module.isEnabled) module.onTick();
-		});
-
-		LucentEvent.TICK_EVENT.MEDIUM.register(() -> {
-			if (module.isEnabled) module.onMediumTick();
-		});
-
-		LucentEvent.TICK_EVENT.HIGH.register(() -> {
-			if (module.isEnabled) module.onHighTick();
-		});
-
-		LucentEvent.EVERY_SECOND_EVENT.register(() -> {
-			if (module.isEnabled) module.onEverySecond();
-		});
-
-		LucentEvent.SERVER_TICK_EVENT.register(() -> {
-			if (module.isEnabled) module.onServerTick();
-		});
-
-		LucentEvent.CHAT_EVENT.register(event -> {
-			if (module.isEnabled) module.onChat(event);
-		});
-
-		LucentEvent.MOD_MESSAGE_EVENT.register(event -> {
-			if (module.isEnabled) module.onModMessage(event);
-		});
-
-		LucentEvent.ACTIONBAR_EVENT.register(event -> {
-			if (module.isEnabled) module.onActionBar(event);
-		});
-
-		LucentEvent.SERVER_JOIN_EVENT.register(() -> {
-			module.onServerJoin();
-			if (module.isEnabled) module.onServerJoinMod();
-		});
-
-		LucentEvent.SERVER_DISCONNECT_EVENT.register(() -> {
-			module.onServerDisconnect();
-			if (module.isEnabled) module.onServerDisconnectMod();
-		});
-
-		LucentEvent.WORLD_LOAD_EVENT.register(() -> {
-			module.onWorldLoad();
-			if (module.isEnabled) module.onWorldLoadMod();
-		});
-
-		LucentEvent.BLOCK_UPDATE_EVENT.register(event -> {
-			if (module.isEnabled) module.onBlockUpdate(event);
-		});
-
-		LucentEvent.WORLD_RENDER.register(event -> {
-			if (module.isEnabled) module.onRenderWorld(event);
-		});
-
-		LucentEvent.WORLD_RENDER_LAST.register(event -> {
-			if (module.isEnabled) module.onRenderWorldLast(event);
-		});
-
-		LucentEvent.BLOCK_INTERACT_EVENT.register(event -> {
-			if (module.isEnabled) module.onBlockInteract(event);
-		});
-
-		LucentEvent.BLOCK_OVERLAY_EVENT.register(event -> {
-			if (module.isEnabled) module.onBlockOverlay(event);
-		});
-
-		LucentEvent.MESSAGE_SENT_EVENT.register(event -> {
-			if (module.isEnabled) module.onMessageSent(event);
-		});
-
-		LucentEvent.TAB_COMPLETION_EVENT.register(event -> {
-			if (module.isEnabled) module.onTabComplete(event);
-		});
-
-		LucentEvent.BOSS_BAR_RENDER_EVENT.register(event -> {
-			if (module.isEnabled) module.onRenderBossBar(event);
-		});
-
-		LucentEvent.PARTICLE_SPAWN_EVENT.register(event -> {
-			if (module.isEnabled) module.onParticleSpawn(event);
-		});
-
-		LucentEvent.KEYBIND_EVENT.register(event -> {
-			if (module.isEnabled) module.onKeybind(event);
-		});
-
-		LucentEvent.DROP_ITEM_EVENT.register(event -> {
-			if (module.isEnabled) module.onDropItem(event);
-		});
-
-		LucentEvent.ITEM_PICKUP_EVENT.register(event -> {
-			if (module.isEnabled) module.onItemPickup(event);
-		});
-
-		LucentEvent.SOUND_EVENT.register(event -> {
-			if (module.isEnabled) module.onSound(event);
-		});
-
-		LucentEvent.SCOREBOARD_EVENT.register(event -> {
-			if (module.isEnabled) module.onScoreboard(event);
-		});
-
-		LucentEvent.TABLIST_UPDATE_EVENT.register(event -> {
-			if (module.isEnabled) module.onTablistUpdate(event);
-		});
-
-		LucentEvent.TAB_ADD_EVENT.register(event -> {
-			if (module.isEnabled) module.onTabAdd(event);
-		});
-
-		LucentEvent.TAB_UPDATE_EVENT.register(event -> {
-			if (module.isEnabled) module.onTabUpdate(event);
-		});
-
-		LucentEvent.TAB_FOOTER_EVENT.register(event -> {
-			if (module.isEnabled) module.onTabFooter(event);
-		});
-
-		LucentEvent.TAB_HEADER_EVENT.register(event -> {
-			if (module.isEnabled) module.onTabHeader(event);
-		});
-
-		LucentEvent.ACTIONBAR_TEXT_EVENT.register(event -> {
-			if (module.isEnabled) module.onActionbar(event);
-		});
-
-		LucentEvent.SCOREBOARD_UPDATE_EVENT.register(event -> {
-			if (module.isEnabled) module.onScoreboardUpdate(event);
-		});
-
-		LucentEvent.USE_ITEM_ON_EVENT.register(event -> {
-			if (module.isEnabled) module.onUseItemOn(event);
-		});
-
-		LucentEvent.USE_ITEM_EVENT.register(event -> {
-			if (module.isEnabled) module.onUseItem(event);
-		});
-
-		LucentEvent.LEFT_CLICK_PRE_EVENT.register(event -> {
-			if (module.isEnabled) module.onLeftClickPre(event);
-		});
-
-		LucentEvent.LEFT_CLICK_POST_EVENT.register(event -> {
-			if (module.isEnabled) module.onLeftClickPost(event);
-		});
-
-		LucentEvent.RIGHT_CLICK_PRE_EVENT.register(event -> {
-			if (module.isEnabled) module.onRightClickPre(event);
-		});
-
-		LucentEvent.RIGHT_CLICK_POST_EVENT.register(event -> {
-			if (module.isEnabled) module.onRightClickPost(event);
-		});
-
-		InputEvent.MOUSE.register(event -> {
-			if (module.isEnabled) module.onMouseInput(event);
-		});
-
-		InputEvent.KEY.register(event -> {
-			if (module.isEnabled) module.onKeyInput(event);
-		});
-
-		GUIEvent.RenderHUD.EVENT.register(event -> {
-			if (module.isEnabled) module.onRenderHUD(event);
-		});
-
-		GUIEvent.OPEN.EVENT.register(event -> {
-			if (module.isEnabled) module.onGUIOpen(event);
-		});
-
-		GUIEvent.OPEN_PRE.EVENT.register(event -> {
-			if (module.isEnabled) module.onGUIOpenPre(event);
-		});
-
-		GUIEvent.CLOSE.EVENT.register(event -> {
-			if (module.isEnabled) module.onGUIClose(event);
-		});
-
-		GUIEvent.CLICK.EVENT.register(event -> {
-			if (module.isEnabled) module.onGUIClick(event);
-		});
-
-		GUIEvent.KEY.EVENT.register(event -> {
-			if (module.isEnabled) module.onGUIKey(event);
-		});
-
-		GUIEvent.SLOT.Click.EVENT.register(event -> {
-			if (module.isEnabled) module.onSlotClick(event);
-		});
-
-		GUIEvent.SLOT.RenderPre.EVENT.register(event -> {
-			if (module.isEnabled) module.onSlotRenderPre(event);
-		});
-
-		GUIEvent.SLOT.RenderPost.EVENT.register(event -> {
-			if (module.isEnabled) module.onSlotRenderPost(event);
-		});
-
-		GUIEvent.SLOT.RenderHotbarPre.EVENT.register(event -> {
-			if (module.isEnabled) module.onHotbarRenderPre(event);
-		});
-
-		GUIEvent.SLOT.RenderHotbarPost.EVENT.register(event -> {
-			if (module.isEnabled) module.onHotbarRenderPost(event);
-		});
-
-		GUIEvent.SLOT.Update.EVENT.register(event -> {
-			if (module.isEnabled) module.onSlotUpdate(event);
-		});
-
-		GUIEvent.CONTAINER.All.EVENT.register(event -> {
-			if (module.isEnabled) module.onRenderContainer(event);
-		});
-
-		GUIEvent.CONTAINER.Inventory.EVENT.register(event -> {
-			if (module.isEnabled) module.onRenderInventory(event);
-		});
-
-		GUIEvent.CONTAINER.Chest.EVENT.register(event -> {
-			if (module.isEnabled) module.onRenderChest(event);
-		});
-
-		GUIEvent.Tooltip.EVENT.register(event -> {
-			if (module.isEnabled) module.onRenderTooltip(event);
-		});
-
-		EntityEvent.RENDER_ENTITY_PRE_EVENT.register(event -> {
-			if (module.isEnabled) module.onRenderEntityPre(event);
-		});
-
-		EntityEvent.RENDER_ENTITY_ALLOW_EVENT.register(event -> {
-			if (module.isEnabled) module.onRenderEntity(event);
-		});
-
-		EntityEvent.EXTRACT_RENDER_STATE_PRE.register(event -> {
-			if (module.isEnabled) module.onExtractRenderStatePre(event);
-		});
-
-		EntityEvent.EXTRACT_RENDER_STATE_POST.register(event -> {
-			if (module.isEnabled) module.onExtractRenderStatePost(event);
-		});
-
-		EntityEvent.ENTITY_JOIN_EVENT.register(event -> {
-			if (module.isEnabled) module.onEntityJoin(event);
-		});
-
-		EntityEvent.ENTITY_LEAVE_EVENT.register(event -> {
-			if (module.isEnabled) module.onEntityLeave(event);
-		});
-
-		EntityEvent.ENTITY_DEATH_EVENT.register(event -> {
-			if (module.isEnabled) module.onEntityDeath(event);
-		});
-
-		EntityEvent.ENTITY_DATA_EVENT.register(event -> {
-			if (module.isEnabled) module.onEntityData(event);
-		});
-
-		EntityEvent.NAME_CHANGE_EVENT.register(event -> {
-			if (module.isEnabled) module.onNameChange(event);
-		});
-
-		EntityEvent.ENTITY_EQUIPMENT_EVENT.register(event -> {
-			if (module.isEnabled) module.onEntityEquipment(event);
-		});
-
-		EntityEvent.ENTITY_INTERACT_EVENT.register(event -> {
-			if (module.isEnabled) module.onEntityInteract(event);
-		});
-
-		PacketEvent.RECEIVE.register(event -> {
-			if (module.isEnabled) module.onReceivePacket(event);
-		});
-
-		PacketEvent.SEND.register(event -> {
-			if (module.isEnabled) module.onSendPacket(event);
-		});
-
-		ConfigEvent.TOGGLE_BUTTON.register(event -> {
-			if (module.isEnabled) module.onToggleButtonChange(event);
-		});
-
-		ConfigEvent.SLIDER.register(event -> {
-			if (module.isEnabled) module.onSliderChange(event);
-		});
-
-		ConfigEvent.SELECTOR.register(event -> {
-			if (module.isEnabled) module.onSelectorChange(event);
-		});
-
-		ConfigEvent.COLOR_PICKER.register(event -> {
-			if (module.isEnabled) module.onColorPickerChange(event);
-		});
-
-		ConfigEvent.TEXT_BOX.register(event -> {
-			if (module.isEnabled) module.onTextBoxChange(event);
-		});
-
-		ConfigEvent.KEY_BIND.register(event -> {
-			if (module.isEnabled) module.onKeyBindChange(event);
-		});
+		Class<?> clazz = module.getClass();
+
+		if (isOverridden(clazz, "onInitFinished") || isOverridden(clazz, "onInitFinishedMod")) {
+			LucentEvent.INIT_FINISHED_EVENT.register(() -> {
+				module.onInitFinished();
+				if (module.isEnabled) module.onInitFinishedMod();
+			});
+		}
+
+		if (isOverridden(clazz, "onResourcesReady") || isOverridden(clazz, "onResourcesReadyMod")) {
+			LucentEvent.RESOURCES_READY_EVENT.register(() -> {
+				module.onResourcesReady();
+				if (module.isEnabled) module.onResourcesReadyMod();
+			});
+		}
+
+		if (isOverridden(clazz, "onTick")) {
+			LucentEvent.TICK_EVENT.LOW.register(() -> {
+				if (module.isEnabled) module.onTick();
+			});
+		}
+
+		if (isOverridden(clazz, "onMediumTick")) {
+			LucentEvent.TICK_EVENT.MEDIUM.register(() -> {
+				if (module.isEnabled) module.onMediumTick();
+			});
+		}
+
+		if (isOverridden(clazz, "onHighTick")) {
+			LucentEvent.TICK_EVENT.HIGH.register(() -> {
+				if (module.isEnabled) module.onHighTick();
+			});
+		}
+
+		if (isOverridden(clazz, "onEverySecond")) {
+			LucentEvent.EVERY_SECOND_EVENT.register(() -> {
+				if (module.isEnabled) module.onEverySecond();
+			});
+		}
+
+		if (isOverridden(clazz, "onServerTick")) {
+			LucentEvent.SERVER_TICK_EVENT.register(() -> {
+				if (module.isEnabled) module.onServerTick();
+			});
+		}
+
+		if (isOverridden(clazz, "onChat", LucentEvent.MessageEvent.class)) {
+			LucentEvent.CHAT_EVENT.register(event -> {
+				if (module.isEnabled) module.onChat(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onModMessage", LucentEvent.ModMessageEvent.class)) {
+			LucentEvent.MOD_MESSAGE_EVENT.register(event -> {
+				if (module.isEnabled) module.onModMessage(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onActionBar", LucentEvent.MessageEvent.class)) {
+			LucentEvent.ACTIONBAR_EVENT.register(event -> {
+				if (module.isEnabled) module.onActionBar(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onServerJoin") || isOverridden(clazz, "onServerJoinMod")) {
+			LucentEvent.SERVER_JOIN_EVENT.register(() -> {
+				module.onServerJoin();
+				if (module.isEnabled) module.onServerJoinMod();
+			});
+		}
+
+		if (isOverridden(clazz, "onServerDisconnect") || isOverridden(clazz, "onServerDisconnectMod")) {
+			LucentEvent.SERVER_DISCONNECT_EVENT.register(() -> {
+				module.onServerDisconnect();
+				if (module.isEnabled) module.onServerDisconnectMod();
+			});
+		}
+
+		if (isOverridden(clazz, "onWorldLoad") || isOverridden(clazz, "onWorldLoadMod")) {
+			LucentEvent.WORLD_LOAD_EVENT.register(() -> {
+				module.onWorldLoad();
+				if (module.isEnabled) module.onWorldLoadMod();
+			});
+		}
+
+		if (isOverridden(clazz, "onBlockUpdate", LucentEvent.BlockUpdateEvent.class)) {
+			LucentEvent.BLOCK_UPDATE_EVENT.register(event -> {
+				if (module.isEnabled) module.onBlockUpdate(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onRenderWorld", LucentEvent.RenderWorldEvent.class)) {
+			LucentEvent.WORLD_RENDER.register(event -> {
+				if (module.isEnabled) module.onRenderWorld(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onRenderWorldLast", LucentEvent.RenderWorldLastEvent.class)) {
+			LucentEvent.WORLD_RENDER_LAST.register(event -> {
+				if (module.isEnabled) module.onRenderWorldLast(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onBlockInteract", LucentEvent.BlockInteractEvent.class)) {
+			LucentEvent.BLOCK_INTERACT_EVENT.register(event -> {
+				if (module.isEnabled) module.onBlockInteract(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onBlockOverlay", LucentEvent.BlockOverlayEvent.class)) {
+			LucentEvent.BLOCK_OVERLAY_EVENT.register(event -> {
+				if (module.isEnabled) module.onBlockOverlay(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onMessageSent", LucentEvent.MessageSentEvent.class)) {
+			LucentEvent.MESSAGE_SENT_EVENT.register(event -> {
+				if (module.isEnabled) module.onMessageSent(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onTabComplete", LucentEvent.TabCompletionEvent.class)) {
+			LucentEvent.TAB_COMPLETION_EVENT.register(event -> {
+				if (module.isEnabled) module.onTabComplete(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onRenderBossBar", LucentEvent.RenderBossBarEvent.class)) {
+			LucentEvent.BOSS_BAR_RENDER_EVENT.register(event -> {
+				if (module.isEnabled) module.onRenderBossBar(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onParticleSpawn", LucentEvent.ParticleSpawnEvent.class)) {
+			LucentEvent.PARTICLE_SPAWN_EVENT.register(event -> {
+				if (module.isEnabled) module.onParticleSpawn(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onKeybind", LucentEvent.KeybindEvent.class)) {
+			LucentEvent.KEYBIND_EVENT.register(event -> {
+				if (module.isEnabled) module.onKeybind(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onDropItem", LucentEvent.DropItemEvent.class)) {
+			LucentEvent.DROP_ITEM_EVENT.register(event -> {
+				if (module.isEnabled) module.onDropItem(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onItemPickup", LucentEvent.ItemPickupEvent.class)) {
+			LucentEvent.ITEM_PICKUP_EVENT.register(event -> {
+				if (module.isEnabled) module.onItemPickup(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onSound", LucentEvent.SoundEvent.class)) {
+			LucentEvent.SOUND_EVENT.register(event -> {
+				if (module.isEnabled) module.onSound(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onScoreboard", LucentEvent.ScoreboardEvent.class)) {
+			LucentEvent.SCOREBOARD_EVENT.register(event -> {
+				if (module.isEnabled) module.onScoreboard(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onTablistUpdate", LucentEvent.TablistUpdateEvent.class)) {
+			LucentEvent.TABLIST_UPDATE_EVENT.register(event -> {
+				if (module.isEnabled) module.onTablistUpdate(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onTabAdd", LucentEvent.TabAddEvent.class)) {
+			LucentEvent.TAB_ADD_EVENT.register(event -> {
+				if (module.isEnabled) module.onTabAdd(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onTabUpdate", LucentEvent.TabUpdateEvent.class)) {
+			LucentEvent.TAB_UPDATE_EVENT.register(event -> {
+				if (module.isEnabled) module.onTabUpdate(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onTabFooter", LucentEvent.TabFooterEvent.class)) {
+			LucentEvent.TAB_FOOTER_EVENT.register(event -> {
+				if (module.isEnabled) module.onTabFooter(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onTabHeader", LucentEvent.TabHeaderEvent.class)) {
+			LucentEvent.TAB_HEADER_EVENT.register(event -> {
+				if (module.isEnabled) module.onTabHeader(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onActionbar", LucentEvent.ActionbarEvent.class)) {
+			LucentEvent.ACTIONBAR_TEXT_EVENT.register(event -> {
+				if (module.isEnabled) module.onActionbar(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onScoreboardUpdate", LucentEvent.ScoreboardUpdateEvent.class)) {
+			LucentEvent.SCOREBOARD_UPDATE_EVENT.register(event -> {
+				if (module.isEnabled) module.onScoreboardUpdate(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onUseItemOn", LucentEvent.UseItemOnEvent.class)) {
+			LucentEvent.USE_ITEM_ON_EVENT.register(event -> {
+				if (module.isEnabled) module.onUseItemOn(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onUseItem", LucentEvent.UseItemEvent.class)) {
+			LucentEvent.USE_ITEM_EVENT.register(event -> {
+				if (module.isEnabled) module.onUseItem(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onLeftClickPre", LucentEvent.LeftClickPreEvent.class)) {
+			LucentEvent.LEFT_CLICK_PRE_EVENT.register(event -> {
+				if (module.isEnabled) module.onLeftClickPre(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onLeftClickPost", LucentEvent.LeftClickPostEvent.class)) {
+			LucentEvent.LEFT_CLICK_POST_EVENT.register(event -> {
+				if (module.isEnabled) module.onLeftClickPost(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onRightClickPre", LucentEvent.RightClickPreEvent.class)) {
+			LucentEvent.RIGHT_CLICK_PRE_EVENT.register(event -> {
+				if (module.isEnabled) module.onRightClickPre(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onRightClickPost", LucentEvent.RightClickPostEvent.class)) {
+			LucentEvent.RIGHT_CLICK_POST_EVENT.register(event -> {
+				if (module.isEnabled) module.onRightClickPost(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onMouseInput", InputEvent.MouseInputEvent.class)) {
+			InputEvent.MOUSE.register(event -> {
+				if (module.isEnabled) module.onMouseInput(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onKeyInput", InputEvent.KeyInputEvent.class)) {
+			InputEvent.KEY.register(event -> {
+				if (module.isEnabled) module.onKeyInput(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onRenderHUD", GUIEvent.RenderHUD.class)) {
+			GUIEvent.RenderHUD.EVENT.register(event -> {
+				if (module.isEnabled) module.onRenderHUD(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onGUIOpen", GUIEvent.GUIOpenEvent.class)) {
+			GUIEvent.OPEN.EVENT.register(event -> {
+				if (module.isEnabled) module.onGUIOpen(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onGUIOpenPre", GUIEvent.GUIOpenPreEvent.class)) {
+			GUIEvent.OPEN_PRE.EVENT.register(event -> {
+				if (module.isEnabled) module.onGUIOpenPre(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onGUIClose", GUIEvent.GUICloseEvent.class)) {
+			GUIEvent.CLOSE.EVENT.register(event -> {
+				if (module.isEnabled) module.onGUIClose(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onGUIClick", GUIEvent.GUIClickEvent.class)) {
+			GUIEvent.CLICK.EVENT.register(event -> {
+				if (module.isEnabled) module.onGUIClick(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onGUIKey", GUIEvent.GUIKeyEvent.class)) {
+			GUIEvent.KEY.EVENT.register(event -> {
+				if (module.isEnabled) module.onGUIKey(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onSlotClick", GUIEvent.SlotClickEvent.class)) {
+			GUIEvent.SLOT.Click.EVENT.register(event -> {
+				if (module.isEnabled) module.onSlotClick(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onSlotRenderPre", GUIEvent.RenderSlotPreEvent.class)) {
+			GUIEvent.SLOT.RenderPre.EVENT.register(event -> {
+				if (module.isEnabled) module.onSlotRenderPre(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onSlotRenderPost", GUIEvent.RenderSlotPostEvent.class)) {
+			GUIEvent.SLOT.RenderPost.EVENT.register(event -> {
+				if (module.isEnabled) module.onSlotRenderPost(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onHotbarRenderPre", GUIEvent.RenderHotbarPreEvent.class)) {
+			GUIEvent.SLOT.RenderHotbarPre.EVENT.register(event -> {
+				if (module.isEnabled) module.onHotbarRenderPre(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onHotbarRenderPost", GUIEvent.RenderHotbarPostEvent.class)) {
+			GUIEvent.SLOT.RenderHotbarPost.EVENT.register(event -> {
+				if (module.isEnabled) module.onHotbarRenderPost(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onSlotUpdate", GUIEvent.SlotUpdateEvent.class)) {
+			GUIEvent.SLOT.Update.EVENT.register(event -> {
+				if (module.isEnabled) module.onSlotUpdate(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onRenderContainer", GUIEvent.RenderContainer.class)) {
+			GUIEvent.CONTAINER.All.EVENT.register(event -> {
+				if (module.isEnabled) module.onRenderContainer(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onRenderInventory", GUIEvent.RenderInventory.class)) {
+			GUIEvent.CONTAINER.Inventory.EVENT.register(event -> {
+				if (module.isEnabled) module.onRenderInventory(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onRenderChest", GUIEvent.RenderChest.class)) {
+			GUIEvent.CONTAINER.Chest.EVENT.register(event -> {
+				if (module.isEnabled) module.onRenderChest(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onRenderTooltip", GUIEvent.TooltipEvent.class)) {
+			GUIEvent.Tooltip.EVENT.register(event -> {
+				if (module.isEnabled) module.onRenderTooltip(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onRenderEntityPre", EntityEvent.RenderEntityPreEvent.class)) {
+			EntityEvent.hasRenderEntityPreListeners = true;
+			EntityEvent.RENDER_ENTITY_PRE_EVENT.register(event -> {
+				if (module.isEnabled) module.onRenderEntityPre(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onRenderEntity", EntityEvent.RenderEntityAllowEvent.class)) {
+			EntityEvent.hasRenderEntityAllowListeners = true;
+			EntityEvent.RENDER_ENTITY_ALLOW_EVENT.register(event -> {
+				if (module.isEnabled) module.onRenderEntity(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onExtractRenderStatePre", EntityEvent.ExtractRenderStatePre.class)) {
+			EntityEvent.hasExtractRenderStatePreListeners = true;
+			EntityEvent.EXTRACT_RENDER_STATE_PRE.register(event -> {
+				if (module.isEnabled) module.onExtractRenderStatePre(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onExtractRenderStatePost", EntityEvent.ExtractRenderStatePost.class)) {
+			EntityEvent.hasExtractRenderStatePostListeners = true;
+			EntityEvent.EXTRACT_RENDER_STATE_POST.register(event -> {
+				if (module.isEnabled) module.onExtractRenderStatePost(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onEntityJoin", EntityEvent.EntityJoinEvent.class)) {
+			EntityEvent.ENTITY_JOIN_EVENT.register(event -> {
+				if (module.isEnabled) module.onEntityJoin(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onEntityLeave", EntityEvent.EntityLeaveEvent.class)) {
+			EntityEvent.ENTITY_LEAVE_EVENT.register(event -> {
+				if (module.isEnabled) module.onEntityLeave(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onEntityDeath", EntityEvent.EntityDeathEvent.class)) {
+			EntityEvent.ENTITY_DEATH_EVENT.register(event -> {
+				if (module.isEnabled) module.onEntityDeath(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onEntityData", EntityEvent.EntityDataEvent.class)) {
+			EntityEvent.ENTITY_DATA_EVENT.register(event -> {
+				if (module.isEnabled) module.onEntityData(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onNameChange", EntityEvent.NameChangeEvent.class)) {
+			EntityEvent.NAME_CHANGE_EVENT.register(event -> {
+				if (module.isEnabled) module.onNameChange(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onEntityEquipment", EntityEvent.EntityEquipmentEvent.class)) {
+			EntityEvent.ENTITY_EQUIPMENT_EVENT.register(event -> {
+				if (module.isEnabled) module.onEntityEquipment(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onEntityInteract", EntityEvent.EntityInteractEvent.class)) {
+			EntityEvent.ENTITY_INTERACT_EVENT.register(event -> {
+				if (module.isEnabled) module.onEntityInteract(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onReceivePacket", PacketEvent.ReceiveEvent.class)) {
+			PacketEvent.RECEIVE.register(event -> {
+				if (module.isEnabled) module.onReceivePacket(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onSendPacket", PacketEvent.SendEvent.class)) {
+			PacketEvent.SEND.register(event -> {
+				if (module.isEnabled) module.onSendPacket(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onToggleButtonChange", ConfigEvent.ToggleButtonEvent.class)) {
+			ConfigEvent.TOGGLE_BUTTON.register(event -> {
+				if (module.isEnabled) module.onToggleButtonChange(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onSliderChange", ConfigEvent.SliderEvent.class)) {
+			ConfigEvent.SLIDER.register(event -> {
+				if (module.isEnabled) module.onSliderChange(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onSelectorChange", ConfigEvent.SelectorEvent.class)) {
+			ConfigEvent.SELECTOR.register(event -> {
+				if (module.isEnabled) module.onSelectorChange(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onColorPickerChange", ConfigEvent.ColorPickerEvent.class)) {
+			ConfigEvent.COLOR_PICKER.register(event -> {
+				if (module.isEnabled) module.onColorPickerChange(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onTextBoxChange", ConfigEvent.TextBoxEvent.class)) {
+			ConfigEvent.TEXT_BOX.register(event -> {
+				if (module.isEnabled) module.onTextBoxChange(event);
+			});
+		}
+
+		if (isOverridden(clazz, "onKeyBindChange", ConfigEvent.KeyBindEvent.class)) {
+			ConfigEvent.KEY_BIND.register(event -> {
+				if (module.isEnabled) module.onKeyBindChange(event);
+			});
+		}
 	}
 
 	public void registerExampleMods() {

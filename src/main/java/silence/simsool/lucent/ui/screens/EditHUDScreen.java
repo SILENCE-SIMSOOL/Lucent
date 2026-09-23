@@ -26,6 +26,7 @@ import silence.simsool.lucent.init.PremiumCosmetics;
 import silence.simsool.lucent.ui.manager.LucentResourceManager;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UIColors;
+import silence.simsool.lucent.ui.utils.URender;
 import silence.simsool.lucent.ui.utils.skija.Fonts;
 import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 
@@ -116,6 +117,9 @@ public class EditHUDScreen extends Screen {
 
 	@Override
 	public void extractBackground(GuiGraphicsExtractor ctx, int mx, int my, float delta) {
+		if (Lucent.preview) {
+			URender.drawImage(ctx, Lucent.PREVIEW_BACKGROUND, 0, 0, width, height);
+		}
 		ctx.fill(0, 0, width, height, 0x11000000);
 	}
 

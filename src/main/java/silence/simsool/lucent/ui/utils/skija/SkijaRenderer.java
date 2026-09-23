@@ -25,6 +25,10 @@ import io.github.humbleui.skija.PathBuilder;
 import io.github.humbleui.skija.SamplingMode;
 import io.github.humbleui.skija.Shader;
 import io.github.humbleui.skija.Typeface;
+import io.github.humbleui.skija.paragraph.Paragraph;
+import io.github.humbleui.skija.paragraph.ParagraphBuilder;
+import io.github.humbleui.skija.paragraph.ParagraphStyle;
+import io.github.humbleui.skija.paragraph.TextStyle;
 import io.github.humbleui.skija.svg.SVGDOM;
 import io.github.humbleui.types.Point;
 import io.github.humbleui.types.RRect;
@@ -32,6 +36,7 @@ import io.github.humbleui.types.Rect;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import silence.simsool.lucent.general.enums.Direction;
 import silence.simsool.lucent.general.enums.GradientType;
+import silence.simsool.lucent.general.utils.MinecraftColor;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
 import silence.simsool.lucent.skija.compositor.SkijaCompositor;
 import silence.simsool.lucent.ui.font.LucentFont;
@@ -360,11 +365,104 @@ public class SkijaRenderer {
 		text(text, x, y, font, UIColors.PURE_WHITE, size, shadow);
 	}
 
+	private static boolean hasMissingGlyphs(Font font, String text) {
+		for (int i = 0; i < text.length(); ) {
+			int cp = text.codePointAt(i);
+			if (!Character.isWhitespace(cp) && !Character.isISOControl(cp)) {
+				if (font.getUTF32Glyph(cp) == 0) {
+					return true;
+				}
+			}
+			i += Character.charCount(cp);
+		}
+		return false;
+	}
+
+	private static void renderParagraph(Canvas canvas, String text, float x, float y, LucentFont font, int color, float size, boolean shadow) {
+		String family = (font != null && font.getName() != null) ? font.getName() : "pretendard";
+		String[] families = new String[] { family, "Yu Gothic", "Meiryo", "Microsoft YaHei", "sans-serif" };
+
+		if (shadow) {
+			int shadowColor = applyAlpha(0x80000000, currentAlpha);
+			try (TextStyle shadowStyle = new TextStyle();
+				 ParagraphStyle pStyle = new ParagraphStyle();
+				 ParagraphBuilder builder = new ParagraphBuilder(pStyle, Fonts.getFontCollection())) {
+				shadowStyle.setFontFamilies(families);
+				shadowStyle.setFontSize(size);
+				shadowStyle.setColor(shadowColor);
+				builder.pushStyle(shadowStyle);
+				builder.addText(stripColorCodes(text));
+				try (Paragraph p = builder.build()) {
+					p.layout(Float.POSITIVE_INFINITY);
+					p.paint(canvas, x + 0.75f, y + 0.75f);
+				}
+			}
+		}
+
+		try (ParagraphStyle pStyle = new ParagraphStyle();
+			 ParagraphBuilder builder = new ParagraphBuilder(pStyle, Fonts.getFontCollection())) {
+			if (text.indexOf('§') == -1) {
+				try (TextStyle textStyle = new TextStyle()) {
+					textStyle.setFontFamilies(families);
+					textStyle.setFontSize(size);
+					textStyle.setColor(color);
+					builder.pushStyle(textStyle);
+					builder.addText(text);
+				}
+			} else {
+				int curColor = color;
+				int len = text.length();
+				StringBuilder sb = new StringBuilder();
+				for (int i = 0; i < len; i++) {
+					char c = text.charAt(i);
+					if (c == '§' && i + 1 < len) {
+						char code = text.charAt(i + 1);
+						if (MinecraftColor.isColorCode(code)) {
+							if (sb.length() > 0) {
+								try (TextStyle style = new TextStyle()) {
+									style.setFontFamilies(families);
+									style.setFontSize(size);
+									style.setColor(curColor);
+									builder.pushStyle(style);
+									builder.addText(sb.toString());
+									builder.popStyle();
+								}
+								sb.setLength(0);
+							}
+							curColor = applyAlpha(MinecraftColor.getColorByCode(code, color), currentAlpha);
+							i++;
+							continue;
+						}
+					}
+					sb.append(c);
+				}
+				if (sb.length() > 0) {
+					try (TextStyle style = new TextStyle()) {
+						style.setFontFamilies(families);
+						style.setFontSize(size);
+						style.setColor(curColor);
+						builder.pushStyle(style);
+						builder.addText(sb.toString());
+						builder.popStyle();
+					}
+				}
+			}
+			try (Paragraph p = builder.build()) {
+				p.layout(Float.POSITIVE_INFINITY);
+				p.paint(canvas, x, y);
+			}
+		}
+	}
+
 	public static void text(String text, float x, float y, LucentFont font, int color, float size, boolean shadow) {
 		if (text == null || text.isEmpty()) return;
 		int argb = applyAlpha(color, currentAlpha);
 		enqueue(canvas -> {
 			Font skijaFont = getOrCreateFont(font, size);
+			if (hasMissingGlyphs(skijaFont, text)) {
+				renderParagraph(canvas, text, x, y, font, argb, size, shadow);
+				return;
+			}
 			FontMetrics metrics = skijaFont.getMetrics();
 			float asc = -metrics.getAscent();
 			float desc = metrics.getDescent();
@@ -377,14 +475,53 @@ public class SkijaRenderer {
 				shadowPaint.reset();
 				shadowPaint.setColor(shadowColor);
 				shadowPaint.setAntiAlias(true);
-				canvas.drawString(text, x + 0.75f, baselineY + 0.75f, skijaFont, shadowPaint);
+				if (text.indexOf('§') == -1) {
+					canvas.drawString(text, x + 0.75f, baselineY + 0.75f, skijaFont, shadowPaint);
+				} else {
+					canvas.drawString(stripColorCodes(text), x + 0.75f, baselineY + 0.75f, skijaFont, shadowPaint);
+				}
 			}
 
 			Paint paint = RENDER_PAINT.get();
 			paint.reset();
-			paint.setColor(argb);
 			paint.setAntiAlias(true);
-			canvas.drawString(text, x, baselineY, skijaFont, paint);
+
+			if (text.indexOf('§') == -1) {
+				paint.setColor(argb);
+				canvas.drawString(text, x, baselineY, skijaFont, paint);
+				return;
+			}
+
+			float curX = x;
+			int curColor = argb;
+			int len = text.length();
+			StringBuilder sb = new StringBuilder();
+
+			for (int i = 0; i < len; i++) {
+				char c = text.charAt(i);
+				if (c == '§' && i + 1 < len) {
+					char code = text.charAt(i + 1);
+					if (MinecraftColor.isColorCode(code)) {
+						if (sb.length() > 0) {
+							String seg = sb.toString();
+							paint.setColor(curColor);
+							canvas.drawString(seg, curX, baselineY, skijaFont, paint);
+							curX += skijaFont.measureTextWidth(seg);
+							sb.setLength(0);
+						}
+						curColor = applyAlpha(MinecraftColor.getColorByCode(code, color), currentAlpha);
+						i++;
+						continue;
+					}
+				}
+				sb.append(c);
+			}
+
+			if (sb.length() > 0) {
+				String seg = sb.toString();
+				paint.setColor(curColor);
+				canvas.drawString(seg, curX, baselineY, skijaFont, paint);
+			}
 		});
 	}
 
@@ -415,8 +552,42 @@ public class SkijaRenderer {
 
 	public static float textWidth(String text, LucentFont font, float size) {
 		if (text == null || text.isEmpty()) return 0f;
+		String clean = stripColorCodes(text);
 		Font skijaFont = getOrCreateFont(font, size);
-		return skijaFont.measureTextWidth(text);
+		if (hasMissingGlyphs(skijaFont, clean)) {
+			String family = (font != null && font.getName() != null) ? font.getName() : "pretendard";
+			try (TextStyle style = new TextStyle();
+				 ParagraphStyle pStyle = new ParagraphStyle();
+				 ParagraphBuilder builder = new ParagraphBuilder(pStyle, Fonts.getFontCollection())) {
+				style.setFontFamilies(new String[] { family, "Yu Gothic", "Meiryo", "Microsoft YaHei", "sans-serif" });
+				style.setFontSize(size);
+				builder.pushStyle(style);
+				builder.addText(clean);
+				try (Paragraph p = builder.build()) {
+					p.layout(Float.POSITIVE_INFINITY);
+					return p.getMaxIntrinsicWidth();
+				}
+			}
+		}
+		return skijaFont.measureTextWidth(clean);
+	}
+
+	public static String stripColorCodes(String text) {
+		if (text == null || text.indexOf('§') == -1) return text;
+		StringBuilder sb = new StringBuilder(text.length());
+		int len = text.length();
+		for (int i = 0; i < len; i++) {
+			char c = text.charAt(i);
+			if (c == '§' && i + 1 < len) {
+				char code = text.charAt(i + 1);
+				if (MinecraftColor.isColorCode(code)) {
+					i++;
+					continue;
+				}
+			}
+			sb.append(c);
+		}
+		return sb.toString();
 	}
 
 	private static List<String> wrapText(String text, Font font, float maxWidth) {
@@ -429,7 +600,7 @@ public class SkijaRenderer {
 				lines.add("");
 				continue;
 			}
-			if (font.measureTextWidth(rawLine) <= maxWidth) {
+			if (skijaMeasureStripped(font, rawLine) <= maxWidth) {
 				lines.add(rawLine);
 				continue;
 			}
@@ -437,7 +608,12 @@ public class SkijaRenderer {
 			for (int i = 0; i < rawLine.length(); i++) {
 				char c = rawLine.charAt(i);
 				sb.append(c);
-				if (font.measureTextWidth(sb.toString()) > maxWidth) {
+				if (c == '§' && i + 1 < rawLine.length()) {
+					sb.append(rawLine.charAt(i + 1));
+					i++;
+					continue;
+				}
+				if (skijaMeasureStripped(font, sb.toString()) > maxWidth) {
 					if (sb.length() > 1) {
 						sb.deleteCharAt(sb.length() - 1);
 						lines.add(sb.toString());
@@ -457,11 +633,76 @@ public class SkijaRenderer {
 		return lines;
 	}
 
+	private static float skijaMeasureStripped(Font font, String text) {
+		return font.measureTextWidth(stripColorCodes(text));
+	}
+
 	public static void drawWrappedString(String text, float x, float y, float w, LucentFont font, float size, int color, float lineHeight) {
 		if (text == null || text.isEmpty()) return;
 		int argb = applyAlpha(color, currentAlpha);
 		enqueue(canvas -> {
 			Font skijaFont = getOrCreateFont(font, size);
+			if (hasMissingGlyphs(skijaFont, stripColorCodes(text))) {
+				String family = (font != null && font.getName() != null) ? font.getName() : "pretendard";
+				String[] families = new String[] { family, "Yu Gothic", "Meiryo", "Microsoft YaHei", "sans-serif" };
+				try (ParagraphStyle pStyle = new ParagraphStyle();
+					 ParagraphBuilder builder = new ParagraphBuilder(pStyle, Fonts.getFontCollection())) {
+					if (text.indexOf('§') == -1) {
+						try (TextStyle style = new TextStyle()) {
+							style.setFontFamilies(families);
+							style.setFontSize(size);
+							style.setHeight(lineHeight);
+							style.setColor(argb);
+							builder.pushStyle(style);
+							builder.addText(text);
+						}
+					} else {
+						int curColor = argb;
+						int len = text.length();
+						StringBuilder sb = new StringBuilder();
+						for (int i = 0; i < len; i++) {
+							char c = text.charAt(i);
+							if (c == '§' && i + 1 < len) {
+								char code = text.charAt(i + 1);
+								if (MinecraftColor.isColorCode(code)) {
+									if (sb.length() > 0) {
+										try (TextStyle style = new TextStyle()) {
+											style.setFontFamilies(families);
+											style.setFontSize(size);
+											style.setHeight(lineHeight);
+											style.setColor(curColor);
+											builder.pushStyle(style);
+											builder.addText(sb.toString());
+											builder.popStyle();
+										}
+										sb.setLength(0);
+									}
+									curColor = applyAlpha(MinecraftColor.getColorByCode(code, color), currentAlpha);
+									i++;
+									continue;
+								}
+							}
+							sb.append(c);
+						}
+						if (sb.length() > 0) {
+							try (TextStyle style = new TextStyle()) {
+								style.setFontFamilies(families);
+								style.setFontSize(size);
+								style.setHeight(lineHeight);
+								style.setColor(curColor);
+								builder.pushStyle(style);
+								builder.addText(sb.toString());
+								builder.popStyle();
+							}
+						}
+					}
+					try (Paragraph p = builder.build()) {
+						p.layout(w);
+						p.paint(canvas, x, y);
+					}
+				}
+				return;
+			}
 			FontMetrics metrics = skijaFont.getMetrics();
 			float asc = -metrics.getAscent();
 			float desc = metrics.getDescent();
@@ -472,11 +713,43 @@ public class SkijaRenderer {
 
 			Paint paint = RENDER_PAINT.get();
 			paint.reset();
-			paint.setColor(argb);
 			paint.setAntiAlias(true);
 			float curY = baselineY;
+			int inheritedColor = argb;
+
 			for (String line : lines) {
-				canvas.drawString(line, x, curY, skijaFont, paint);
+				if (line.indexOf('§') == -1) {
+					paint.setColor(inheritedColor);
+					canvas.drawString(line, x, curY, skijaFont, paint);
+				} else {
+					float curX = x;
+					int len = line.length();
+					StringBuilder sb = new StringBuilder();
+					for (int i = 0; i < len; i++) {
+						char c = line.charAt(i);
+						if (c == '§' && i + 1 < len) {
+							char code = line.charAt(i + 1);
+							if (MinecraftColor.isColorCode(code)) {
+								if (sb.length() > 0) {
+									String seg = sb.toString();
+									paint.setColor(inheritedColor);
+									canvas.drawString(seg, curX, curY, skijaFont, paint);
+									curX += skijaFont.measureTextWidth(seg);
+									sb.setLength(0);
+								}
+								inheritedColor = applyAlpha(MinecraftColor.getColorByCode(code, color), currentAlpha);
+								i++;
+								continue;
+							}
+						}
+						sb.append(c);
+					}
+					if (sb.length() > 0) {
+						String seg = sb.toString();
+						paint.setColor(inheritedColor);
+						canvas.drawString(seg, curX, curY, skijaFont, paint);
+					}
+				}
 				curY += lineGap;
 			}
 		});
@@ -492,7 +765,7 @@ public class SkijaRenderer {
 		List<String> lines = wrapText(text, skijaFont, w);
 		float maxLineWidth = 0f;
 		for (String line : lines) {
-			float lw = skijaFont.measureTextWidth(line);
+			float lw = skijaMeasureStripped(skijaFont, line);
 			if (lw > maxLineWidth) maxLineWidth = lw;
 		}
 		float totalHeight = lines.size() * size * lineHeight;

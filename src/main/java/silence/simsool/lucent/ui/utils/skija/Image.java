@@ -38,7 +38,9 @@ public class Image {
 
 	public synchronized SVGDOM getSvgDom() {
 		if (svgDom == null && isSVG && data != null) {
-			svgDom = new SVGDOM(Data.makeFromBytes(data));
+			try (Data d = Data.makeFromBytes(data)) {
+				svgDom = new SVGDOM(d);
+			}
 		}
 		return svgDom;
 	}
