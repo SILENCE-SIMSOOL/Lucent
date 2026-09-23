@@ -22,4 +22,40 @@ public class MinecraftColor {
 	public static final Color BLACK = new Color(0, 0, 0);
 	public static final Color TRANSPARENT = new Color(0, 0, 0, 0);
 
+	private static final int[] COLOR_CODES = new int[] {
+		0xFF000000, // 0: Black
+		0xFF0000AA, // 1: Dark Blue
+		0xFF00AA00, // 2: Dark Green
+		0xFF00AAAA, // 3: Dark Aqua
+		0xFFAA0000, // 4: Dark Red
+		0xFFAA00AA, // 5: Dark Purple
+		0xFFFFAA00, // 6: Gold
+		0xFFAAAAAA, // 7: Gray
+		0xFF555555, // 8: Dark Gray
+		0xFF5555FF, // 9: Blue
+		0xFF55FF55, // a: Green
+		0xFF55FFFF, // b: Aqua
+		0xFFFF5555, // c: Red
+		0xFFFF55FF, // d: Light Purple
+		0xFFFFFF55, // e: Yellow
+		0xFFFFFFFF  // f: White
+	};
+
+	public static int getColorByCode(char code, int defaultColor) {
+		int index = "0123456789abcdef".indexOf(Character.toLowerCase(code));
+		if (index >= 0) {
+			int alpha = (defaultColor >> 24) & 0xFF;
+			if (alpha == 0) alpha = 0xFF;
+			return (alpha << 24) | (COLOR_CODES[index] & 0x00FFFFFF);
+		}
+		if (code == 'r' || code == 'R') {
+			return defaultColor;
+		}
+		return defaultColor;
+	}
+
+	public static boolean isColorCode(char code) {
+		char c = Character.toLowerCase(code);
+		return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || c == 'r';
+	}
 }

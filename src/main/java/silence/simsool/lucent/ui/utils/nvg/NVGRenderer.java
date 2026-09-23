@@ -7,8 +7,10 @@ import static org.lwjgl.nanovg.NanoVG.nvgArcTo;
 import static org.lwjgl.nanovg.NanoVG.nvgBeginFrame;
 import static org.lwjgl.nanovg.NanoVG.nvgBeginPath;
 import static org.lwjgl.nanovg.NanoVG.nvgBoxGradient;
+import static org.lwjgl.nanovg.NanoVG.nvgAddFallbackFontId;
 import static org.lwjgl.nanovg.NanoVG.nvgCircle;
 import static org.lwjgl.nanovg.NanoVG.nvgClosePath;
+import static org.lwjgl.nanovg.NanoVG.nvgCreateFontAtIndex;
 import static org.lwjgl.nanovg.NanoVG.nvgCreateFontMem;
 import static org.lwjgl.nanovg.NanoVG.nvgCreateImageRGBA;
 import static org.lwjgl.nanovg.NanoVG.nvgDeleteImage;
@@ -44,6 +46,7 @@ import static org.lwjgl.nanovg.NanoVG.nvgTextLineHeight;
 import static org.lwjgl.nanovg.NanoVG.nvgTranslate;
 import static org.lwjgl.nanovg.NanoVGGL3.NVG_IMAGE_NODELETE;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -68,6 +71,7 @@ import silence.simsool.lucent.general.enums.Direction;
 import silence.simsool.lucent.general.enums.GradientType;
 import silence.simsool.lucent.general.models.data.nvg.NVGFont;
 import silence.simsool.lucent.general.models.data.nvg.NVGImage;
+import silence.simsool.lucent.general.utils.MinecraftColor;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
 import silence.simsool.lucent.ui.font.LucentFont;
 import silence.simsool.lucent.ui.utils.UIColors;
@@ -745,11 +749,49 @@ public class NVGRenderer {
 	 * @param size  Font size in pixels
 	 */
 	public static void text(String text, float x, float y, LucentFont font, int color, float size) {
+		if (text == null || text.isEmpty()) return;
 		nvgFontSize(vg, size);
 		nvgFontFaceId(vg, getFontID(font));
-		color(color);
-		nvgFillColor(vg, nvgColor);
-		nvgText(vg, x, y + .5f, text);
+
+		if (text.indexOf('§') == -1) {
+			color(color);
+			nvgFillColor(vg, nvgColor);
+			nvgText(vg, x, y + .5f, text);
+			return;
+		}
+
+		float curX = x;
+		int curColor = color;
+		int len = text.length();
+		StringBuilder sb = new StringBuilder();
+
+		for (int i = 0; i < len; i++) {
+			char c = text.charAt(i);
+			if (c == '§' && i + 1 < len) {
+				char code = text.charAt(i + 1);
+				if (MinecraftColor.isColorCode(code)) {
+					if (sb.length() > 0) {
+						String seg = sb.toString();
+						color(curColor);
+						nvgFillColor(vg, nvgColor);
+						nvgText(vg, curX, y + .5f, seg);
+						curX += nvgTextBounds(vg, 0f, 0f, seg, fontBounds);
+						sb.setLength(0);
+					}
+					curColor = MinecraftColor.getColorByCode(code, color);
+					i++;
+					continue;
+				}
+			}
+			sb.append(c);
+		}
+
+		if (sb.length() > 0) {
+			String seg = sb.toString();
+			color(curColor);
+			nvgFillColor(vg, nvgColor);
+			nvgText(vg, curX, y + .5f, seg);
+		}
 	}
 
 	/**
@@ -791,7 +833,7 @@ public class NVGRenderer {
 	 * @param size  Font size in pixels
 	 */
 	public static void centerTextShadow(String text, float x, float y, LucentFont font, int color, float size) {
-		float textWidth = nvgTextBounds(vg, 0f, 0f, text, fontBounds);
+		float textWidth = textWidth(text, font, size);
 		nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
 		textShadow(text, x - textWidth / 2f, y, font, color, size);
 	}
@@ -809,14 +851,63 @@ public class NVGRenderer {
 	 * @param size  Font size in pixels
 	 */
 	public static void textShadow(String text, float x, float y, LucentFont font, int color, float size) {
+		if (text == null || text.isEmpty()) return;
 		nvgFontFaceId(vg, getFontID(font));
 		nvgFontSize(vg, size);
-		color(-16777216);
-		nvgFillColor(vg, nvgColor);
-		nvgText(vg, Math.round(x + 2f), Math.round(y + 2f), text);
-		color(color);
-		nvgFillColor(vg, nvgColor);
-		nvgText(vg, Math.round(x), Math.round(y), text);
+
+		if (text.indexOf('§') == -1) {
+			color(-16777216);
+			nvgFillColor(vg, nvgColor);
+			nvgText(vg, Math.round(x + 2f), Math.round(y + 2f), text);
+			color(color);
+			nvgFillColor(vg, nvgColor);
+			nvgText(vg, Math.round(x), Math.round(y), text);
+			return;
+		}
+
+		float curX = x;
+		int curColor = color;
+		int len = text.length();
+		StringBuilder sb = new StringBuilder();
+
+		for (int i = 0; i < len; i++) {
+			char c = text.charAt(i);
+			if (c == '§' && i + 1 < len) {
+				char code = text.charAt(i + 1);
+				if (MinecraftColor.isColorCode(code)) {
+					if (sb.length() > 0) {
+						String seg = sb.toString();
+						float rx = Math.round(curX);
+						float ry = Math.round(y);
+						color(-16777216);
+						nvgFillColor(vg, nvgColor);
+						nvgText(vg, rx + 2f, ry + 2f, seg);
+						color(curColor);
+						nvgFillColor(vg, nvgColor);
+						nvgText(vg, rx, ry, seg);
+
+						curX += nvgTextBounds(vg, 0f, 0f, seg, fontBounds);
+						sb.setLength(0);
+					}
+					curColor = MinecraftColor.getColorByCode(code, color);
+					i++;
+					continue;
+				}
+			}
+			sb.append(c);
+		}
+
+		if (sb.length() > 0) {
+			String seg = sb.toString();
+			float rx = Math.round(curX);
+			float ry = Math.round(y);
+			color(-16777216);
+			nvgFillColor(vg, nvgColor);
+			nvgText(vg, rx + 2f, ry + 2f, seg);
+			color(curColor);
+			nvgFillColor(vg, nvgColor);
+			nvgText(vg, rx, ry, seg);
+		}
 	}
 
 	/**
@@ -828,9 +919,26 @@ public class NVGRenderer {
 	 * @return Width of the string in pixels
 	 */
 	public static float textWidth(String text, LucentFont font, float size) {
+		if (text == null || text.isEmpty()) return 0f;
 		nvgFontSize(vg, size);
 		nvgFontFaceId(vg, getFontID(font));
-		return nvgTextBounds(vg, 0f, 0f, text, fontBounds);
+		if (text.indexOf('§') == -1) {
+			return nvgTextBounds(vg, 0f, 0f, text, fontBounds);
+		}
+		StringBuilder clean = new StringBuilder();
+		int len = text.length();
+		for (int i = 0; i < len; i++) {
+			char c = text.charAt(i);
+			if (c == '§' && i + 1 < len) {
+				char code = text.charAt(i + 1);
+				if (MinecraftColor.isColorCode(code)) {
+					i++;
+					continue;
+				}
+			}
+			clean.append(c);
+		}
+		return nvgTextBounds(vg, 0f, 0f, clean.toString(), fontBounds);
 	}
 
 	/**
@@ -1083,12 +1191,52 @@ public class NVGRenderer {
 	 * @param font The font to look up or load
 	 * @return NanoVG font handle, or -1 if font is null
 	 */
+	private static int fallbackJpId = -1;
+	private static int fallbackZhId = -1;
+	private static boolean fallbacksInitialized = false;
+
+	private static void initSystemFallbacks() {
+		if (fallbacksInitialized) return;
+		fallbacksInitialized = true;
+
+		try {
+			String os = System.getProperty("os.name", "").toLowerCase();
+			if (!os.contains("win")) return;
+
+			String winDir = System.getenv("WINDIR");
+			File fontsDir = new File(winDir != null ? winDir : "C:\\Windows", "Fonts");
+			if (!fontsDir.exists()) return;
+
+			// 일본어 Fallback (Yu Gothic 우선, 없으면 Meiryo)
+			File yuGoth = new File(fontsDir, "YuGothR.ttc");
+			File meiryo = new File(fontsDir, "meiryo.ttc");
+			if (yuGoth.exists()) {
+				fallbackJpId = nvgCreateFontAtIndex(vg, "fallback_jp", yuGoth.getAbsolutePath(), 0);
+			} else if (meiryo.exists()) {
+				fallbackJpId = nvgCreateFontAtIndex(vg, "fallback_jp", meiryo.getAbsolutePath(), 0);
+			}
+
+			// 중국어 Fallback (Microsoft YaHei)
+			File yahei = new File(fontsDir, "msyh.ttc");
+			if (yahei.exists()) {
+				fallbackZhId = nvgCreateFontAtIndex(vg, "fallback_zh", yahei.getAbsolutePath(), 0);
+			}
+		} catch (Throwable t) {
+			Lucent.LOG.warn("Failed to load system fallback fonts: " + t.getMessage());
+		}
+	}
+
 	private static int getFontID(LucentFont font) {
 		if (font == null) return -1;
 		checkInit();
 		return fontMap.computeIfAbsent(font, f -> {
 			ByteBuffer buffer = f.buffer();
 			int id = nvgCreateFontMem(vg, font.getName(), buffer, false);
+			if (id >= 0) {
+				initSystemFallbacks();
+				if (fallbackJpId >= 0) nvgAddFallbackFontId(vg, id, fallbackJpId);
+				if (fallbackZhId >= 0) nvgAddFallbackFontId(vg, id, fallbackZhId);
+			}
 			return new NVGFont(id, buffer);
 		}).getId();
 	}

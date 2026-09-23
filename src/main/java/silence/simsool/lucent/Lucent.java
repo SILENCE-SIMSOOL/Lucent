@@ -16,6 +16,7 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.SpecialGuiElementRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.config.api.LucentAPI;
 import silence.simsool.lucent.events.LucentEventRegister;
@@ -44,7 +45,7 @@ public class Lucent implements ClientModInitializer {
 
 	public static final String ID = "lucent";
 	public static final String NAME = "Lucent";
-	public static final String VERSION = "1.5.2";
+	public static final String VERSION = "1.5.3";
 	public static String LATEST_VERSION = "Fetching...";
 
 	public static Minecraft mc = Minecraft.getInstance();
@@ -60,6 +61,8 @@ public class Lucent implements ClientModInitializer {
 	));
 
 	public static boolean devMode = false;
+	public static boolean preview = false;
+	public static final Identifier PREVIEW_BACKGROUND = LucentUtils.id("preview.png");
 
 	static {
 		updateLatestVersion();

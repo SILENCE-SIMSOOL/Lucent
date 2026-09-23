@@ -48,6 +48,7 @@ import silence.simsool.lucent.ui.theme.ThemeManager;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UColor;
 import silence.simsool.lucent.ui.utils.UIColors;
+import silence.simsool.lucent.ui.utils.URender;
 import silence.simsool.lucent.ui.utils.nvg.Fonts;
 import silence.simsool.lucent.ui.utils.nvg.Image;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
@@ -709,6 +710,9 @@ public class ConfigScreen extends Screen {
 
 	@Override
 	public void renderBackground(GuiGraphics graphics, int mx, int my, float delta) {
+		if (Lucent.preview) {
+			URender.drawImage(graphics, Lucent.PREVIEW_BACKGROUND, 0, 0, width, height);
+		}
 		float alpha = LucentConfig.openAnimation ? openAnimationProgress : 1f;
 		if (LucentConfig.uiBlur) {
 			graphics.fill(0, 0, width, height, UIColors.withAlpha(0x25000000, (int)(20 * alpha))); 

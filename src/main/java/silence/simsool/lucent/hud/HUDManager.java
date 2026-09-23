@@ -23,6 +23,7 @@ import silence.simsool.lucent.general.models.abstracts.LucentHUD;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
 import silence.simsool.lucent.general.utils.useful.UScreen;
 import silence.simsool.lucent.ui.screens.EditHUDScreen;
+import silence.simsool.lucent.ui.utils.URender;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 
 public class HUDManager {
@@ -91,7 +92,13 @@ public class HUDManager {
 	}
 
 	public void render(GuiGraphics graphics) {
-		if (huds.isEmpty() || UScreen.getScreen() instanceof EditHUDScreen) return;
+		if (UScreen.getScreen() instanceof EditHUDScreen) return;
+
+		if (Lucent.preview) {
+			URender.drawImage(graphics, Lucent.PREVIEW_BACKGROUND, 0, 0, UDisplay.getGuiScaledWidth(), UDisplay.getGuiScaledHeight());
+		}
+
+		if (huds.isEmpty()) return;
 
 		// mc draw
 		for (LucentHUD hud : huds) {
