@@ -8,7 +8,7 @@ import silence.simsool.lucent.general.utils.useful.UDisplay;
 
 public class NotificationManager {
 
-	private static final long DEFAULT_DURATION = 4000L;
+	private static final long DEFAULT_DURATION = 4500L;
 	private static final List<Notification> notifications = new CopyOnWriteArrayList<>();
 
 	public static Notification show(String title, String message, Notification.Type type, long durationMs) {

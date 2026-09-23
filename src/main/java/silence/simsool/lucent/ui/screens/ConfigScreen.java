@@ -796,10 +796,16 @@ public class ConfigScreen extends Screen {
 			SkijaRenderer.push();
 			SkijaRenderer.translate(0, (float) -scrollOffset);
 			for (UIWidget w : widgets) {
+				float wy = w.getY() - (float) scrollOffset;
+				if (wy + w.getHeight() < scissorY - 20 || wy > scissorY + scissorH + 20) continue;
 				w.render(graphics, (int) smx, (int) (smy + scrollOffset), delta);
 			}
 			for (UIWidget w : overlayWidgets) {
-				if (shouldSkipOverlay(w)) w.render(graphics, (int) smx, (int) (smy + scrollOffset), delta);
+				if (shouldSkipOverlay(w)) {
+					float wy = w.getY() - (float) scrollOffset;
+					if (wy + w.getHeight() < scissorY - 20 || wy > scissorY + scissorH + 20) continue;
+					w.render(graphics, (int) smx, (int) (smy + scrollOffset), delta);
+				}
 			}
 			SkijaRenderer.pop();
 			SkijaRenderer.popScissor();
@@ -2296,10 +2302,14 @@ public class ConfigScreen extends Screen {
 		}
 	}
 
+	private List<String> cachedCategories = null;
+
 	private List<String> getCategories() {
+		if (cachedCategories != null) return cachedCategories;
 		List<String> cats = new ArrayList<>();
 		cats.add("All");
 		for (Mod m : moduleManager.modules) if (!cats.contains(m.category)) cats.add(m.category);
+		cachedCategories = cats;
 		return cats;
 	}
 

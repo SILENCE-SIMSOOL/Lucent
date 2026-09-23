@@ -100,6 +100,11 @@ public class SkijaCompositor {
 		batch.add(op);
 	}
 
+	public void enqueue(Runnable task) {
+		if (task == null) return;
+		batch.add(canvas -> task.run());
+	}
+
 	public void discard() {
 		batch.clear();
 	}
