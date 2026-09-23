@@ -11,6 +11,8 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -45,6 +47,7 @@ public class ModManager {
 	private final List<KeyBindFieldInfo> keyBindFields = new ArrayList<>();
 
 	public final List<Mod> modules = new ArrayList<>();
+	private final Map<Class<? extends Mod>, Mod> moduleMap = new ConcurrentHashMap<>();
 	private final File configDirectory;
 	private static String currentProfile = "default";
 
@@ -318,6 +321,7 @@ public class ModManager {
 
 	public void register(Mod module) {
 		modules.add(module);
+		moduleMap.put(module.getClass(), module);
 
 		for (Field field : module.getClass().getDeclaredFields()) {
 			if (field.getType() == KeyBind.class) {
@@ -806,8 +810,13 @@ public class ModManager {
 
 	@SuppressWarnings("unchecked")
 	public <T extends Mod> T getModule(Class<T> moduleClass) {
+		Mod cached = moduleMap.get(moduleClass);
+		if (cached != null) {
+			return (T) cached;
+		}
 		for (Mod mod : modules) {
 			if (moduleClass.isAssignableFrom(mod.getClass())) {
+				moduleMap.put(moduleClass, mod);
 				return (T) mod;
 			}
 		}
