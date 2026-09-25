@@ -40,6 +40,8 @@
 	"lucent.preferences.render_wings.desc": "Activa o desactiva el renderizado de alas.",
 	"lucent.preferences.render_capes": "Renderizar capas",
 	"lucent.preferences.render_capes.desc": "Activa o desactiva el renderizado de capas.",
+	"lucent.preferences.play_notification_sound": "Reproducir sonido de notificación",
+	"lucent.preferences.play_notification_sound.desc": "Reproduce un sonido cuando aparece una notificación.",
 	"lucent.config.lucent.translucent3drenderfixmod.general.name": "Corrección de renderizado 3D translúcido",
 	"lucent.config.lucent.translucent3drenderfixmod.general.description": "Corrige el renderizado de geometría personalizada translúcida después del terreno.",
 	"lucent.config.lucent.translucent3drenderfixmod.property.customgeometry.name": "Renderizar geometría personalizada",

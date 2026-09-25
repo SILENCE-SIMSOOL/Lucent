@@ -49,6 +49,11 @@ public abstract class LucentHUD {
 	 * </ul>
 	 */
 	public abstract RenderType getRenderType();
+
+	/** Null disables caching; otherwise the key must change whenever rendered pixels change. */
+	public Object getRenderCacheKey() {
+		return null;
+	}
 	
 	/**
 	 * Determines if this HUD element should be rendered.

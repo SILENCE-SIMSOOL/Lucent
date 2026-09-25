@@ -36,6 +36,7 @@ import silence.simsool.lucent.general.utils.render.RoundRectPIPRenderer;
 import silence.simsool.lucent.general.utils.useful.UChat;
 import silence.simsool.lucent.general.utils.useful.ULog;
 import silence.simsool.lucent.general.utils.useful.UScreen;
+import silence.simsool.lucent.general.utils.useful.USound;
 import silence.simsool.lucent.hud.HUDManager;
 import silence.simsool.lucent.init.PremiumCosmetics;
 import silence.simsool.lucent.mods.Translucent3DRenderFixMod;
@@ -48,7 +49,7 @@ public class Lucent implements ClientModInitializer {
 
 	public static final String ID = "lucent";
 	public static final String NAME = "Lucent";
-	public static final String VERSION = "1.5.4";
+	public static final String VERSION = "1.5.5";
 	public static String LATEST_VERSION = "Fetching...";
 
 	public static Minecraft mc = Minecraft.getInstance();
@@ -63,7 +64,7 @@ public class Lucent implements ClientModInitializer {
 			KEYBINDING_CATEGORY
 	));
 
-	public static boolean devMode = false;
+	public static boolean devMode = true;
 	public static boolean preview = false;
 	public static final Identifier PREVIEW_BACKGROUND = LucentUtils.id("preview.png");
 
@@ -78,6 +79,7 @@ public class Lucent implements ClientModInitializer {
 		PremiumCosmetics.init();
 
 		Fonts.initAsync();
+		USound.LucentSounds.Alert.preloadAsync();
 		LucentEventRegister.initialize();
 		LucentManagerRegister.registerAll();
 		ClientHandler.init();
@@ -142,6 +144,8 @@ public class Lucent implements ClientModInitializer {
 					})
 				)
 			);
+
+			silence.simsool.lucent.general.utils.notification.NotificationCommand.register(dispatcher);
 		});
 
 		InputEvent.KEY.register(event -> {

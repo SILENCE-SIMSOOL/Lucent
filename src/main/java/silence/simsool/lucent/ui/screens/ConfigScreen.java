@@ -1350,7 +1350,14 @@ public class ConfigScreen extends Screen {
 		widgets.add(renderCapesBtn);
 		currentY += 84;
 
-		// 9. Version Info
+		// 9. Play Notification Sound
+		widgets.add(new SettingRowWidget(sx, currentY, itemW, 74, L10n.translate("lucent.preferences.play_notification_sound"), L10n.translate("lucent.preferences.play_notification_sound.desc")));
+		ToggleButton soundBtn = new ToggleButton(sx + itemW - PAD - 48, currentY + 25, 48, 24, LucentConfig.playNotificationSound);
+		soundBtn.setOnChange(v -> { LucentConfig.playNotificationSound = v; Lucent.config.saveGlobalConfig(); });
+		widgets.add(soundBtn);
+		currentY += 84;
+
+		// 10. Version Info
 		widgets.add(new SettingRowWidget(sx, currentY, itemW, 74, L10n.translate("lucent.preferences.version"), "Current: " + Lucent.VERSION + "  |  Latest: " + Lucent.LATEST_VERSION));
 		
 		int btnW = 120;

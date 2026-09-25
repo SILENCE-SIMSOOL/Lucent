@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import com.google.gson.Gson;
@@ -22,6 +23,7 @@ import silence.simsool.lucent.general.enums.RenderType;
 import silence.simsool.lucent.general.models.abstracts.LucentHUD;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
 import silence.simsool.lucent.general.utils.useful.UScreen;
+import silence.simsool.lucent.skija.compositor.SkijaCompositor;
 import silence.simsool.lucent.ui.screens.EditHUDScreen;
 import silence.simsool.lucent.ui.utils.URender;
 import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
@@ -31,6 +33,7 @@ public class HUDManager {
 	private final List<LucentHUD> huds = new ArrayList<>();
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private boolean cachedHasSkija = false;
+	private List<Object> lastSkijaCacheKey;
 
 	public HUDManager() {}
 
@@ -109,13 +112,32 @@ public class HUDManager {
 
 		// skija draw
 		if (cachedHasSkija) {
-			SkijaRenderer.draw(graphics, 0, 0, UDisplay.getWidth(), UDisplay.getHeight(), () -> {
+			Runnable drawSkijaHuds = () -> {
 				for (LucentHUD hud : huds) {
 					if (hud.isEnabled() && hud.getRenderType() == RenderType.SKIJA) {
 						hud.draw(graphics);
 					}
 				}
-			});
+			};
+			List<Object> cacheKey = new ArrayList<>();
+			for (LucentHUD hud : huds) {
+				if (!hud.isEnabled() || hud.getRenderType() != RenderType.SKIJA) continue;
+				Object key = hud.getRenderCacheKey();
+				if (key == null) {
+					cacheKey = null;
+					break;
+				}
+				cacheKey.add(hud);
+				cacheKey.add(key);
+			}
+			if (cacheKey != null && !cacheKey.isEmpty() && Objects.equals(cacheKey, lastSkijaCacheKey)
+					&& SkijaCompositor.INSTANCE.canReuseHud()) {
+				SkijaCompositor.INSTANCE.reuseHud(drawSkijaHuds);
+				return;
+			}
+			lastSkijaCacheKey = cacheKey;
+			SkijaCompositor.INSTANCE.invalidateHudCache();
+			SkijaRenderer.draw(graphics, 0, 0, UDisplay.getWidth(), UDisplay.getHeight(), drawSkijaHuds);
 		}
 	}
 

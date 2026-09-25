@@ -19,6 +19,8 @@
 	"lucent.preferences.ui_scale.desc": "Adjusts the scale of the configuration interface.",
 	"lucent.preferences.update": "Update",
 	"lucent.preferences.version": "Version",
+	"lucent.preferences.play_notification_sound": "Play Notification Sound",
+	"lucent.preferences.play_notification_sound.desc": "Plays a sound when a notification is displayed.",
 	"lucent.search.placeholder": "Search mods...",
 	"lucent.sidebar.close": "Close",
 	"lucent.sidebar.edithud": "Edit HUD",

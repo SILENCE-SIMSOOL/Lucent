@@ -40,6 +40,8 @@
 	"lucent.preferences.render_wings.desc": "Включает или выключает отображение крыльев.",
 	"lucent.preferences.render_capes": "Отображение плащей",
 	"lucent.preferences.render_capes.desc": "Включает или выключает отображение плащей.",
+	"lucent.preferences.play_notification_sound": "Воспроизводить звук уведомления",
+	"lucent.preferences.play_notification_sound.desc": "Воспроизводит звук при появлении уведомления.",
 	"lucent.config.lucent.translucent3drenderfixmod.general.name": "Исправление 3D-полупрозрачного рендера",
 	"lucent.config.lucent.translucent3drenderfixmod.general.description": "Исправляет рендеринг полупрозрачной пользовательской геометрии после ландшафта.",
 	"lucent.config.lucent.translucent3drenderfixmod.property.customgeometry.name": "Рендеринг геометрии",

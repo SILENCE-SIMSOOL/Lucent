@@ -40,6 +40,8 @@
 	"lucent.preferences.render_wings.desc": "קובע אם להציג כנפי קוסמטיקה.",
 	"lucent.preferences.render_capes": "הצגת גלימות",
 	"lucent.preferences.render_capes.desc": "קובע אם להציג גלימות קוסמטיקה.",
+	"lucent.preferences.play_notification_sound": "השמעת צליל התראה",
+	"lucent.preferences.play_notification_sound.desc": "משמיע צליל בעת הצגת התראה.",
 	"lucent.config.lucent.translucent3drenderfixmod.general.name": "תיקון רינדור תלת-ממד שקוף למחצה",
 	"lucent.config.lucent.translucent3drenderfixmod.general.description": "מתקן את רינדור הגיאומטריה המותאמת השקופה למחצה לאחר פני השטח.",
 	"lucent.config.lucent.translucent3drenderfixmod.property.customgeometry.name": "רינדור גיאומטריה מותאמת אישית",

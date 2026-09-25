@@ -85,6 +85,19 @@ public class SkijaCompositor {
 	private boolean warmed = false;
 	private boolean inHud = false;
 	private boolean screenBlitted = false;
+	private boolean hudCacheValid = false;
+	private boolean hudReuseRequested = false;
+	private Runnable hudReuseFallback;
+	private static final boolean PROFILE = Boolean.getBoolean("lucent.skija.profile");
+	private static final boolean SKIP_BLIT = Boolean.getBoolean("lucent.skija.skipBlit");
+	private int profileFrames = 0;
+	private int profileReusedHudFrames = 0;
+	private long profileTotalNs = 0;
+	private long profileClearNs = 0;
+	private long profileDrawNs = 0;
+	private long profileSubmitNs = 0;
+	private long profileBarrierNs = 0;
+	private long profileBlitQueueNs = 0;
 
 	private final List<Consumer<Canvas>> batch = new ArrayList<>();
 
@@ -111,6 +124,23 @@ public class SkijaCompositor {
 
 	public void beginHud() {
 		this.inHud = true;
+		this.hudReuseRequested = false;
+		this.hudReuseFallback = null;
+	}
+
+	public boolean canReuseHud() {
+		Window window = UDisplay.getWindow();
+		return hudCacheValid && batch.isEmpty() && !window.isIconified()
+				&& hudTarget.matches(window.getWidth(), window.getHeight());
+	}
+
+	public void reuseHud(Runnable redraw) {
+		hudReuseRequested = true;
+		hudReuseFallback = redraw;
+	}
+
+	public void invalidateHudCache() {
+		hudCacheValid = false;
 	}
 
 	public void markHudLayer(GuiRenderState guiRenderState) {
@@ -118,13 +148,32 @@ public class SkijaCompositor {
 		if (!SkijaNatives.isReady()) return;
 		SkijaBackend backend = SkijaBackends.getActive(); if (backend == null) return;
 
-		int queued = batch.size(); if (queued == 0) return;
+		int queued = batch.size(); if (queued == 0 && !hudReuseRequested) return;
 
 		Window window = UDisplay.getWindow();
 		int w = window.getWidth();
 		int h = window.getHeight();
 		if (window.isIconified() || w <= 0 || h <= 0) return;
 
+		if (queued == 0) {
+			hudReuseRequested = false;
+			hudReuseFallback = null;
+			if (hudCacheValid && hudTarget.matches(w, h)) {
+				addBlit(guiRenderState, backend, hudTarget.view, window.getGuiScaledWidth(), window.getGuiScaledHeight());
+				if (PROFILE && ++profileReusedHudFrames == 3000) {
+					Lucent.LOG.info("Skija HUD cache reused 3000 frames");
+					profileReusedHudFrames = 0;
+				}
+			}
+			return;
+		}
+		if (hudReuseRequested && hudReuseFallback != null) {
+			hudReuseFallback.run();
+			queued = batch.size();
+			hudCacheValid = false;
+		}
+		hudReuseRequested = false;
+		hudReuseFallback = null;
 		hudTarget.ensure(backend, w, h);
 		GpuTextureView blitView = hudTarget.view; if (blitView == null) return;
 
@@ -174,6 +223,7 @@ public class SkijaCompositor {
 			return;
 		}
 
+		long profileStart = PROFILE ? System.nanoTime() : 0;
 		backend.saveState();
 		try {
 			backend.onBeginFrame();
@@ -201,6 +251,15 @@ public class SkijaCompositor {
 		} catch (Throwable t) {
 			Lucent.LOG.error("Skija compositing failed: " + t.getMessage());
 		} finally {
+			if (PROFILE) profileTotalNs += System.nanoTime() - profileStart;
+			if (PROFILE && ++profileFrames == 300) {
+				Lucent.LOG.info("Skija CPU avg (us/frame): total={}, clear={}, draw={}, submit={}, barrier={}, blitQueue={}",
+						profileTotalNs / 300_000, profileClearNs / 300_000, profileDrawNs / 300_000,
+						profileSubmitNs / 300_000, profileBarrierNs / 300_000,
+						profileBlitQueueNs / 300_000);
+				profileFrames = 0;
+				profileTotalNs = profileClearNs = profileDrawNs = profileSubmitNs = profileBarrierNs = profileBlitQueueNs = 0;
+			}
 			discard();
 			hudSplit = -1;
 			screenBlitted = false;
@@ -215,7 +274,9 @@ public class SkijaCompositor {
 
 		backend.onBeginFrame();
 		Canvas canvas = surface.getCanvas();
+		long start = PROFILE ? System.nanoTime() : 0;
 		canvas.clear(0);
+		long cleared = PROFILE ? System.nanoTime() : 0;
 
 		int baseSave = canvas.save();
 		canvas.concat(toMatrix33(pose));
@@ -225,12 +286,21 @@ public class SkijaCompositor {
 			for (int i = from; i < end; i++) {
 				batch.get(i).accept(canvas);
 			}
+			long drawn = PROFILE ? System.nanoTime() : 0;
 			backend.getContext().flushAndSubmit(surface, false);
+			if (PROFILE) {
+				profileClearNs += cleared - start;
+				profileDrawNs += drawn - cleared;
+				profileSubmitNs += System.nanoTime() - drawn;
+			}
 		} finally {
 			canvas.restoreToCount(baseSave);
 		}
 
+		long beforeBarrier = PROFILE ? System.nanoTime() : 0;
 		backend.orderWriteBeforeRead(view);
+		if (PROFILE) profileBarrierNs += System.nanoTime() - beforeBarrier;
+		if (target == hudTarget) hudCacheValid = true;
 	}
 
 	private static Matrix33 toMatrix33(Matrix3x2f m) {
@@ -247,6 +317,8 @@ public class SkijaCompositor {
 	}
 
 	private void addBlit(GuiRenderState guiRenderState, SkijaBackend backend, GpuTextureView blitView, int guiScaledWidth, int guiScaledHeight) {
+		if (SKIP_BLIT) return;
+		long start = PROFILE ? System.nanoTime() : 0;
 		GpuSampler sampler = RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST);
 		float u0 = backend.isFlipBlitU() ? 1f : 0f;
 		float u1 = backend.isFlipBlitU() ? 0f : 1f;
@@ -264,6 +336,7 @@ public class SkijaCompositor {
 					null
 			)
 		);
+		if (PROFILE) profileBlitQueueNs += System.nanoTime() - start;
 	}
 
 	private void warmContext(SkijaBackend backend) {
@@ -280,6 +353,7 @@ public class SkijaCompositor {
 
 	public void shutdown() {
 		try {
+			hudCacheValid = false;
 			hudTarget.close();
 			overlayTarget.close();
 			SkijaBackends.reset();

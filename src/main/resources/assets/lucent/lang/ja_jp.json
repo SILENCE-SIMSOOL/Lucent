@@ -40,6 +40,8 @@
 	"lucent.preferences.render_wings.desc": "翼装飾品の描画を切り替えます。",
 	"lucent.preferences.render_capes": "マントの描画",
 	"lucent.preferences.render_capes.desc": "マント装飾品の描画を切り替えます。",
+	"lucent.preferences.play_notification_sound": "通知音を再生",
+	"lucent.preferences.play_notification_sound.desc": "通知が表示されるときに効果音を再生します。",
 	"lucent.config.lucent.translucent3drenderfixmod.general.name": "3D半透明レンダリング修正",
 	"lucent.config.lucent.translucent3drenderfixmod.general.description": "地形描画後に半透明カスタムジオメトリが正常にレンダリングされるよう修正します。",
 	"lucent.config.lucent.translucent3drenderfixmod.property.customgeometry.name": "カスタムジオメトリの描画",

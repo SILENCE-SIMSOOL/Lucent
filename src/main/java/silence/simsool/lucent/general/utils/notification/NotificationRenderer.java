@@ -115,9 +115,9 @@ public class NotificationRenderer {
 
 				// Cool-down progress bar
 				float barH = 2.5f;
-				float barY = drawY + cardH - barH - 2.0f;
-				float barTrackW = cardW - 24.0f;
-				float barTrackX = drawX + 12.0f;
+				float barY = drawY + cardH - barH - 1.2f;
+				float barTrackW = cardW - 30.0f;
+				float barTrackX = drawX + 8.0f;
 
 				int trackColor = (bgColor & 0x00FFFFFF) | 0x1A000000;
 				SkijaRenderer.rect(barTrackX, barY, barTrackW, barH, trackColor, 1.5f);
