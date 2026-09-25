@@ -39,5 +39,7 @@
 	"lucent.preferences.render_wings": "渲染翅膀",
 	"lucent.preferences.render_wings.desc": "是否渲染翅膀饰品。",
 	"lucent.preferences.render_capes": "渲染披风",
-	"lucent.preferences.render_capes.desc": "是否渲染披风饰品。"
+	"lucent.preferences.render_capes.desc": "是否渲染披风饰品。",
+	"lucent.preferences.play_notification_sound": "播放通知提示音",
+	"lucent.preferences.play_notification_sound.desc": "在显示通知时播放提示音。"
 }

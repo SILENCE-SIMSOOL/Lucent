@@ -975,6 +975,7 @@ public class ModManager {
 			if (json.has("renderPremiumHats")) LucentConfig.renderPremiumHats = json.get("renderPremiumHats").getAsBoolean();
 			if (json.has("renderPremiumWings")) LucentConfig.renderPremiumWings = json.get("renderPremiumWings").getAsBoolean();
 			if (json.has("renderPremiumCapes")) LucentConfig.renderPremiumCapes = json.get("renderPremiumCapes").getAsBoolean();
+			if (json.has("playNotificationSound")) LucentConfig.playNotificationSound = json.get("playNotificationSound").getAsBoolean();
 
 		} catch (Exception e) {}
 	}
@@ -1004,6 +1005,7 @@ public class ModManager {
 		json.addProperty("renderPremiumHats", LucentConfig.renderPremiumHats);
 		json.addProperty("renderPremiumWings", LucentConfig.renderPremiumWings);
 		json.addProperty("renderPremiumCapes", LucentConfig.renderPremiumCapes);
+		json.addProperty("playNotificationSound", LucentConfig.playNotificationSound);
 
 		try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)) {
 			GSON.toJson(json, writer);

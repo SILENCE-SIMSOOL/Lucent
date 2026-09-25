@@ -39,5 +39,7 @@
 	"lucent.preferences.render_wings": "Отображение крыльев",
 	"lucent.preferences.render_wings.desc": "Включает или выключает отображение крыльев.",
 	"lucent.preferences.render_capes": "Отображение плащей",
-	"lucent.preferences.render_capes.desc": "Включает или выключает отображение плащей."
+	"lucent.preferences.render_capes.desc": "Включает или выключает отображение плащей.",
+	"lucent.preferences.play_notification_sound": "Воспроизводить звук уведомления",
+	"lucent.preferences.play_notification_sound.desc": "Воспроизводит звук при появлении уведомления."
 }

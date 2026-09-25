@@ -39,5 +39,7 @@
 	"lucent.preferences.render_wings": "翼の描画",
 	"lucent.preferences.render_wings.desc": "翼装飾品の描画を切り替えます。",
 	"lucent.preferences.render_capes": "マントの描画",
-	"lucent.preferences.render_capes.desc": "マント装飾品の描画を切り替えます。"
+	"lucent.preferences.render_capes.desc": "マント装飾品の描画を切り替えます。",
+	"lucent.preferences.play_notification_sound": "通知音を再生",
+	"lucent.preferences.play_notification_sound.desc": "通知が表示されるときに効果音を再生します。"
 }

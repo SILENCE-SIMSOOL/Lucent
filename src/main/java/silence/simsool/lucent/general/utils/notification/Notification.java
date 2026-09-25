@@ -34,18 +34,37 @@ public class Notification {
 	private float animProgress = 0f;
 	private boolean dismissing = false;
 	private float currentY = -1f;
+	private boolean playSound = true;
 
 	public Notification(String title, String message, Type type, long duration) {
-		this(title, message, type, type != null ? type.getIcon() : "\uE88F", duration);
+		this(title, message, type, type != null ? type.getIcon() : "\uE88F", duration, true);
 	}
 
 	public Notification(String title, String message, Type type, String icon, long duration) {
+		this(title, message, type, icon, duration, true);
+	}
+
+	public Notification(String title, String message, Type type, long duration, boolean playSound) {
+		this(title, message, type, type != null ? type.getIcon() : "\uE88F", duration, playSound);
+	}
+
+	public Notification(String title, String message, Type type, String icon, long duration, boolean playSound) {
 		this.title = title;
 		this.message = message;
 		this.type = type != null ? type : Type.INFO;
 		this.icon = icon != null ? icon : (this.type != null ? this.type.getIcon() : "\uE88F");
 		this.duration = duration;
 		this.createdAt = System.currentTimeMillis();
+		this.playSound = playSound;
+	}
+
+	public boolean isPlaySound() {
+		return playSound;
+	}
+
+	public Notification setPlaySound(boolean playSound) {
+		this.playSound = playSound;
+		return this;
 	}
 
 	public String getIcon() {

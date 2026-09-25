@@ -39,5 +39,7 @@
 	"lucent.preferences.render_wings": "הצגת כנפיים",
 	"lucent.preferences.render_wings.desc": "קובע אם להציג כנפי קוסמטיקה.",
 	"lucent.preferences.render_capes": "הצגת גלימות",
-	"lucent.preferences.render_capes.desc": "קובע אם להציג גלימות קוסמטיקה."
+	"lucent.preferences.render_capes.desc": "קובע אם להציג גלימות קוסמטיקה.",
+	"lucent.preferences.play_notification_sound": "השמעת צליל התראה",
+	"lucent.preferences.play_notification_sound.desc": "משמיע צליל בעת הצגת התראה."
 }
