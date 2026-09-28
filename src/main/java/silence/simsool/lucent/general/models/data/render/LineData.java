@@ -29,6 +29,11 @@ public class LineData {
 		this.isTracer = isTracer;
 	}
 
+	public int renderTypeIndex() {
+		boolean isFullOpaque = Render3D.isFullyOpaque(color1) && Render3D.isFullyOpaque(color2);
+		return (depth ? 2 : 0) | (isFullOpaque ? 1 : 0);
+	}
+
 	public RenderType renderType() {
 		return Render3D.resolveLineRenderType(depth, Render3D.isFullyOpaque(color1) && Render3D.isFullyOpaque(color2));
 	}

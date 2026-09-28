@@ -29,6 +29,11 @@ public class CircleData {
 		this.filled = filled;
 	}
 
+	public int renderTypeIndex() {
+		boolean isFullyOpaque = a >= 0.999f;
+		return (depth ? 2 : 0) | (isFullyOpaque ? 1 : 0);
+	}
+
 	public RenderType renderType() {
 		boolean isFullyOpaque = a >= 0.999f;
 		if (filled) return Render3D.resolveFillRenderType(depth, isFullyOpaque);

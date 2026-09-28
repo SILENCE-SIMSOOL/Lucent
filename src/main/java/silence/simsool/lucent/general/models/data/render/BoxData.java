@@ -25,6 +25,16 @@ public class BoxData {
 		this.depth = depth;
 	}
 
+	public int lineRenderTypeIndex() {
+		boolean isFullyOpaque = a >= 0.999f;
+		return (depth ? 2 : 0) | (isFullyOpaque ? 1 : 0);
+	}
+
+	public int filledRenderTypeIndex() {
+		boolean isFullyOpaque = a >= 0.999f;
+		return (depth ? 2 : 0) | (isFullyOpaque ? 1 : 0);
+	}
+
 	public RenderType lineRenderType() {
 		boolean isFullyOpaque = a >= 0.999f;
 		return Render3D.resolveLineRenderType(depth, isFullyOpaque);

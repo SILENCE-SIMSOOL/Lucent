@@ -37,12 +37,43 @@ import silence.simsool.lucent.ui.utils.UColor;
 
 public class Render3D {
 
-	private static final List<LineData> queuedLines = new ObjectArrayList<>();
-	private static final List<BoxData> queuedFilledBoxes = new ObjectArrayList<>();
-	private static final List<BoxData> queuedWireBoxes = new ObjectArrayList<>();
+	private static final RenderType[] LINE_RENDER_TYPES = {
+		LucentRenderType.LINES_TRANSLUCENT_ESP,
+		LucentRenderType.LINES_ESP,
+		LucentRenderType.LINES_TRANSLUCENT,
+		LucentRenderType.LINES
+	};
+
+	private static final RenderType[] FILL_RENDER_TYPES = {
+		LucentRenderType.FILLED_TRANSLUCENT_ESP,
+		LucentRenderType.FILLED_ESP,
+		LucentRenderType.FILLED_TRANSLUCENT,
+		LucentRenderType.FILLED
+	};
+
+	@SuppressWarnings("unchecked")
+	private static final List<LineData>[] lineBuckets = new List[4];
+	@SuppressWarnings("unchecked")
+	private static final List<BoxData>[] wireBoxBuckets = new List[4];
+	@SuppressWarnings("unchecked")
+	private static final List<BoxData>[] filledBoxBuckets = new List[4];
+	@SuppressWarnings("unchecked")
+	private static final List<CircleData>[] lineCircleBuckets = new List[4];
+	@SuppressWarnings("unchecked")
+	private static final List<CircleData>[] filledCircleBuckets = new List[4];
+
 	private static final List<TextData> queuedTexts = new ObjectArrayList<>();
 	private static final List<BeaconBeamData> queuedBeaconBeams = new ObjectArrayList<>();
-	private static final List<CircleData> queuedCircles = new ObjectArrayList<>();
+
+	static {
+		for (int i = 0; i < 4; i++) {
+			lineBuckets[i] = new ObjectArrayList<>();
+			wireBoxBuckets[i] = new ObjectArrayList<>();
+			filledBoxBuckets[i] = new ObjectArrayList<>();
+			lineCircleBuckets[i] = new ObjectArrayList<>();
+			filledCircleBuckets[i] = new ObjectArrayList<>();
+		}
+	}
 
 	// Pools
 	private static final List<LineData> linePool = new ObjectArrayList<>();
@@ -88,9 +119,8 @@ public class Render3D {
 
 			matrix.pushPose();
 
-			renderQueuedLinesAndWireBoxes(matrix, submitNodeCollector);
-			renderQueuedFilledBoxes(matrix, submitNodeCollector);
-			renderQueuedCircles(matrix, submitNodeCollector);
+			renderQueuedLinesAndWireBoxes(matrix, submitNodeCollector, camera);
+			renderQueuedFilledBoxes(matrix, submitNodeCollector, camera);
 
 			matrix.popPose();
 
@@ -148,7 +178,8 @@ public class Render3D {
 	// Draw Box
 	// ==========================================
 	public static void drawBox(AABB aabb, int color, boolean depth) {
-		queuedFilledBoxes.add(getOrCreateBox(aabb, color, 3f, depth));
+		BoxData data = getOrCreateBox(aabb, color, 3f, depth);
+		filledBoxBuckets[data.filledRenderTypeIndex()].add(data);
 	}
 
 	public static void drawBox(AABB aabb, int color) {
@@ -199,7 +230,8 @@ public class Render3D {
 	// Draw Box Line
 	// ==========================================
 	public static void drawBoxLine(AABB aabb, int color, float thickness, boolean depth) {
-		queuedWireBoxes.add(getOrCreateBox(aabb, color, thickness, depth));
+		BoxData data = getOrCreateBox(aabb, color, thickness, depth);
+		wireBoxBuckets[data.lineRenderTypeIndex()].add(data);
 	}
 
 	public static void drawBoxLine(AABB aabb, int color, float thickness) {
@@ -454,7 +486,8 @@ public class Render3D {
 	// Draw Line
 	// ==========================================
 	public static void drawLine(Vec3 from, Vec3 to, int color1, int color2, boolean depth, float thickness) {
-		queuedLines.add(getOrCreateLine(from, to, color1, color2, thickness, depth, false));
+		LineData data = getOrCreateLine(from, to, color1, color2, thickness, depth, false);
+		lineBuckets[data.renderTypeIndex()].add(data);
 	}
 
 	public static void drawLine(Vec3 from, Vec3 to, int color, boolean depth, float thickness) {
@@ -513,7 +546,8 @@ public class Render3D {
 	// Draw Tracer
 	// ==========================================
 	public static void drawTracer(Vec3 to, int color, boolean depth, float thickness) {
-		queuedLines.add(getOrCreateLine(getTracerSource(), to, color, color, thickness, depth, true));
+		LineData data = getOrCreateLine(getTracerSource(), to, color, color, thickness, depth, true);
+		lineBuckets[data.renderTypeIndex()].add(data);
 	}
 
 	public static void drawTracer(Vec3 to, int color, float thickness) {
@@ -529,7 +563,8 @@ public class Render3D {
 	}
 
 	public static void drawTracer(BlockPos to, int color, boolean depth, float thickness) {
-		queuedLines.add(getOrCreateLine(getTracerSource(), getBlockCenter(to), color, color, thickness, depth, true));
+		LineData data = getOrCreateLine(getTracerSource(), getBlockCenter(to), color, color, thickness, depth, true);
+		lineBuckets[data.renderTypeIndex()].add(data);
 	}
 
 	public static void drawTracer(BlockPos to, int color, float thickness) {
@@ -824,7 +859,8 @@ public class Render3D {
 	// Draw Circle
 	// ==========================================
 	public static void drawCircle(Vec3 pos, float radius, int color, boolean depth) {
-		queuedCircles.add(getOrCreateCircle(pos, radius, 1.0f, color, depth, true));
+		CircleData data = getOrCreateCircle(pos, radius, 1.0f, color, depth, true);
+		filledCircleBuckets[data.renderTypeIndex()].add(data);
 	}
 
 	public static void drawCircle(Vec3 pos, float radius, int color) {
@@ -859,7 +895,8 @@ public class Render3D {
 	}
 
 	public static void drawCircleLine(Vec3 pos, float radius, float thickness, int color, boolean depth) {
-		queuedCircles.add(getOrCreateCircle(pos, radius, thickness, color, depth, false));
+		CircleData data = getOrCreateCircle(pos, radius, thickness, color, depth, false);
+		lineCircleBuckets[data.renderTypeIndex()].add(data);
 	}
 
 	public static void drawCircleLine(Vec3 pos, float radius, float thickness, int color) {
@@ -913,9 +950,12 @@ public class Render3D {
 			Vec3 p1Bottom = center.add(x1, 0, z1);
 			Vec3 p2Bottom = center.add(x2, 0, z2);
 
-			queuedLines.add(getOrCreateLine(p1Top, p2Top, color, color, thickness, depth, false));
-			queuedLines.add(getOrCreateLine(p1Bottom, p2Bottom, color, color, thickness, depth, false));
-			queuedLines.add(getOrCreateLine(p1Bottom, p1Top, color, color, thickness, depth, false));
+			LineData l1 = getOrCreateLine(p1Top, p2Top, color, color, thickness, depth, false);
+			lineBuckets[l1.renderTypeIndex()].add(l1);
+			LineData l2 = getOrCreateLine(p1Bottom, p2Bottom, color, color, thickness, depth, false);
+			lineBuckets[l2.renderTypeIndex()].add(l2);
+			LineData l3 = getOrCreateLine(p1Bottom, p1Top, color, color, thickness, depth, false);
+			lineBuckets[l3.renderTypeIndex()].add(l3);
 		}
 	}
 
@@ -994,12 +1034,15 @@ public class Render3D {
 	// Internals
 	// ==========================================
 	private static void clearAll() {
-		queuedLines.clear();
-		queuedFilledBoxes.clear();
-		queuedWireBoxes.clear();
+		for (int i = 0; i < 4; i++) {
+			lineBuckets[i].clear();
+			wireBoxBuckets[i].clear();
+			filledBoxBuckets[i].clear();
+			lineCircleBuckets[i].clear();
+			filledCircleBuckets[i].clear();
+		}
 		queuedTexts.clear();
 		queuedBeaconBeams.clear();
-		queuedCircles.clear();
 
 		linePoolIndex = 0;
 		boxPoolIndex = 0;
@@ -1018,71 +1061,62 @@ public class Render3D {
 		return from;
 	}
 
-	private static void renderQueuedLinesAndWireBoxes(PoseStack matrix, SubmitNodeCollector submitNodeCollector) {
-		if (queuedLines.isEmpty() && queuedWireBoxes.isEmpty()) return;
+	private static void renderQueuedLinesAndWireBoxes(PoseStack matrix, SubmitNodeCollector submitNodeCollector, Vec3 camera) {
+		Vec3 tracerSource = null;
 
-		for (LineData line : queuedLines) {
-			submitNodeCollector.submitCustomGeometry(matrix, line.renderType(), (pose, buffer) -> {
-				Vec3 drawCamera = UWorld.getCameraPos();
-				Vec3 fromPos = line.isTracer ? getTracerSource() : line.from;
-				Vec3 relativeFrom = fromPos.subtract(drawCamera);
-				Vector3f start = new Vector3f((float) relativeFrom.x, (float) relativeFrom.y, (float) relativeFrom.z);
-				Vec3 dir = line.to.subtract(fromPos);
-				PrimitiveRenderer.renderVector(pose, buffer, start, dir, line.color1, line.color2, line.thickness);
-			});
-		}
+		for (int i = 0; i < 4; i++) {
+			List<LineData> lines = lineBuckets[i];
+			List<BoxData> wireBoxes = wireBoxBuckets[i];
+			List<CircleData> wireCircles = lineCircleBuckets[i];
 
-		for (BoxData box : queuedWireBoxes) {
-			submitNodeCollector.submitCustomGeometry(matrix, box.lineRenderType(), (pose, buffer) -> {
-				Vec3 drawCamera = UWorld.getCameraPos();
-				AABB relativeAABB = box.aabb.move(-drawCamera.x, -drawCamera.y, -drawCamera.z);
-				PrimitiveRenderer.renderLineBox(pose, buffer, relativeAABB, box.r, box.g, box.b, box.a, box.thickness);
-			});
-		}
-	}
+			if (lines.isEmpty() && wireBoxes.isEmpty() && wireCircles.isEmpty()) continue;
 
-	private static void renderQueuedFilledBoxes(PoseStack matrix, SubmitNodeCollector submitNodeCollector) {
-		if (queuedFilledBoxes.isEmpty()) return;
+			RenderType renderType = LINE_RENDER_TYPES[i];
 
-		for (BoxData box : queuedFilledBoxes) {
-			submitNodeCollector.submitCustomGeometry(matrix, box.filledRenderType(), (pose, buffer) -> {
-				Vec3 drawCamera = UWorld.getCameraPos();
-				AABB relativeAABB = box.aabb.move(-drawCamera.x, -drawCamera.y, -drawCamera.z);
-				PrimitiveRenderer.addChainedFilledBoxVertices(pose, buffer, (float) relativeAABB.minX, (float) relativeAABB.minY, (float) relativeAABB.minZ, (float) relativeAABB.maxX, (float) relativeAABB.maxY, (float) relativeAABB.maxZ, box.r, box.g, box.b, box.a);
-			});
-		}
-	}
+			if (tracerSource == null) {
+				tracerSource = getTracerSource();
+			}
+			final Vec3 finalTracerSource = tracerSource;
 
-	private static void renderQueuedCircles(PoseStack matrix, SubmitNodeCollector submitNodeCollector) {
-		if (queuedCircles.isEmpty()) return;
+			submitNodeCollector.submitCustomGeometry(matrix, renderType, (pose, buffer) -> {
+				double camX = camera.x;
+				double camY = camera.y;
+				double camZ = camera.z;
 
-		for (CircleData circle : queuedCircles) {
-			submitNodeCollector.submitCustomGeometry(matrix, circle.renderType(), (pose, buffer) -> {
-				Vec3 drawCamera = UWorld.getCameraPos();
-				Vec3 relativeCenter = circle.center.subtract(drawCamera);
-				float cx = (float) relativeCenter.x;
-				float cy = (float) relativeCenter.y;
-				float cz = (float) relativeCenter.z;
+				// 1. Lines
+				for (int j = 0; j < lines.size(); j++) {
+					LineData line = lines.get(j);
+					Vec3 fromPos = line.isTracer ? finalTracerSource : line.from;
+					float startX = (float) (fromPos.x - camX);
+					float startY = (float) (fromPos.y - camY);
+					float startZ = (float) (fromPos.z - camZ);
+					Vector3f start = new Vector3f(startX, startY, startZ);
+					Vec3 dir = line.to.subtract(fromPos);
+					PrimitiveRenderer.renderVector(pose, buffer, start, dir, line.color1, line.color2, line.thickness);
+				}
 
-				if (circle.filled) {
-					Matrix4f matrix4f = pose.pose();
-					for (int i = 0; i < 360; i += 2) {
-						int idx1 = i / 2;
-						int idx2 = (i + 2) / 2;
-						float dx1 = COS_TABLE[idx1] * circle.radius;
-						float dz1 = SIN_TABLE[idx1] * circle.radius;
-						float dx2 = COS_TABLE[idx2] * circle.radius;
-						float dz2 = SIN_TABLE[idx2] * circle.radius;
+				// 2. Wire Boxes
+				for (int j = 0; j < wireBoxes.size(); j++) {
+					BoxData box = wireBoxes.get(j);
+					float x0 = (float) (box.aabb.minX - camX);
+					float y0 = (float) (box.aabb.minY - camY);
+					float z0 = (float) (box.aabb.minZ - camZ);
+					float x1 = (float) (box.aabb.maxX - camX);
+					float y1 = (float) (box.aabb.maxY - camY);
+					float z1 = (float) (box.aabb.maxZ - camZ);
+					PrimitiveRenderer.renderLineBox(pose, buffer, x0, y0, z0, x1, y1, z1, box.r, box.g, box.b, box.a, box.thickness);
+				}
 
-						buffer.addVertex(matrix4f, cx, cy, cz).setColor(circle.r, circle.g, circle.b, circle.a);
-						buffer.addVertex(matrix4f, cx + dx1, cy, cz + dz1).setColor(circle.r, circle.g, circle.b, circle.a);
-						buffer.addVertex(matrix4f, cx + dx2, cy, cz + dz2).setColor(circle.r, circle.g, circle.b, circle.a);
-						buffer.addVertex(matrix4f, cx, cy, cz).setColor(circle.r, circle.g, circle.b, circle.a);
-					}
-				} else {
-					for (int i = 0; i < 360; i += 2) {
-						int idx1 = i / 2;
-						int idx2 = (i + 2) / 2;
+				// 3. Wire Circles
+				for (int j = 0; j < wireCircles.size(); j++) {
+					CircleData circle = wireCircles.get(j);
+					float cx = (float) (circle.center.x - camX);
+					float cy = (float) (circle.center.y - camY);
+					float cz = (float) (circle.center.z - camZ);
+
+					for (int deg = 0; deg < 360; deg += 2) {
+						int idx1 = deg / 2;
+						int idx2 = (deg + 2) / 2;
 						float dx1 = COS_TABLE[idx1] * circle.radius;
 						float dz1 = SIN_TABLE[idx1] * circle.radius;
 						float dx2 = COS_TABLE[idx2] * circle.radius;
@@ -1093,6 +1127,60 @@ public class Render3D {
 
 						buffer.addVertex(pose, cx + dx1, cy, cz + dz1).setColor(circle.r, circle.g, circle.b, circle.a).setNormal(pose, nx, 0, nz).setLineWidth(circle.thickness);
 						buffer.addVertex(pose, cx + dx2, cy, cz + dz2).setColor(circle.r, circle.g, circle.b, circle.a).setNormal(pose, nx, 0, nz).setLineWidth(circle.thickness);
+					}
+				}
+			});
+		}
+	}
+
+	private static void renderQueuedFilledBoxes(PoseStack matrix, SubmitNodeCollector submitNodeCollector, Vec3 camera) {
+		for (int i = 0; i < 4; i++) {
+			List<BoxData> filledBoxes = filledBoxBuckets[i];
+			List<CircleData> filledCircles = filledCircleBuckets[i];
+
+			if (filledBoxes.isEmpty() && filledCircles.isEmpty()) continue;
+
+			RenderType renderType = FILL_RENDER_TYPES[i];
+
+			submitNodeCollector.submitCustomGeometry(matrix, renderType, (pose, buffer) -> {
+				double camX = camera.x;
+				double camY = camera.y;
+				double camZ = camera.z;
+
+				// 1. Filled Boxes
+				for (int j = 0; j < filledBoxes.size(); j++) {
+					BoxData box = filledBoxes.get(j);
+					float minX = (float) (box.aabb.minX - camX);
+					float minY = (float) (box.aabb.minY - camY);
+					float minZ = (float) (box.aabb.minZ - camZ);
+					float maxX = (float) (box.aabb.maxX - camX);
+					float maxY = (float) (box.aabb.maxY - camY);
+					float maxZ = (float) (box.aabb.maxZ - camZ);
+					PrimitiveRenderer.addChainedFilledBoxVertices(pose, buffer, minX, minY, minZ, maxX, maxY, maxZ, box.r, box.g, box.b, box.a);
+				}
+
+				// 2. Filled Circles
+				if (!filledCircles.isEmpty()) {
+					Matrix4f matrix4f = pose.pose();
+					for (int j = 0; j < filledCircles.size(); j++) {
+						CircleData circle = filledCircles.get(j);
+						float cx = (float) (circle.center.x - camX);
+						float cy = (float) (circle.center.y - camY);
+						float cz = (float) (circle.center.z - camZ);
+
+						for (int deg = 0; deg < 360; deg += 2) {
+							int idx1 = deg / 2;
+							int idx2 = (deg + 2) / 2;
+							float dx1 = COS_TABLE[idx1] * circle.radius;
+							float dz1 = SIN_TABLE[idx1] * circle.radius;
+							float dx2 = COS_TABLE[idx2] * circle.radius;
+							float dz2 = SIN_TABLE[idx2] * circle.radius;
+
+							buffer.addVertex(matrix4f, cx, cy, cz).setColor(circle.r, circle.g, circle.b, circle.a);
+							buffer.addVertex(matrix4f, cx + dx1, cy, cz + dz1).setColor(circle.r, circle.g, circle.b, circle.a);
+							buffer.addVertex(matrix4f, cx + dx2, cy, cz + dz2).setColor(circle.r, circle.g, circle.b, circle.a);
+							buffer.addVertex(matrix4f, cx, cy, cz).setColor(circle.r, circle.g, circle.b, circle.a);
+						}
 					}
 				}
 			});
