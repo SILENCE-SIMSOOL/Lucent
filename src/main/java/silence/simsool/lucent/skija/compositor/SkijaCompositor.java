@@ -32,6 +32,8 @@ public class SkijaCompositor {
 
 	public static final SkijaCompositor INSTANCE = new SkijaCompositor();
 
+	private static final Matrix3x2f IDENTITY_MATRIX = new Matrix3x2f();
+
 	private static final int UI_TEXTURE_USAGE = 0xf;
 
 	private static class Target {
@@ -233,7 +235,7 @@ public class SkijaCompositor {
 			int h = window.getHeight();
 			if (window.isIconified() || w <= 0 || h <= 0) return;
 
-			Matrix3x2f pose = new Matrix3x2f();
+			Matrix3x2f pose = IDENTITY_MATRIX;
 
 			if (hudSplit > 0) {
 				hudTarget.ensure(backend, w, h);
@@ -279,7 +281,9 @@ public class SkijaCompositor {
 		long cleared = PROFILE ? System.nanoTime() : 0;
 
 		int baseSave = canvas.save();
-		canvas.concat(toMatrix33(pose));
+		if (pose != IDENTITY_MATRIX) {
+			canvas.concat(toMatrix33(pose));
+		}
 
 		try {
 			int end = Math.min(to, batch.size());
@@ -329,7 +333,7 @@ public class SkijaCompositor {
 			new BlitRenderState(
 					RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA,
 					TextureSetup.singleTexture(blitView, sampler),
-					new Matrix3x2f(),
+					IDENTITY_MATRIX,
 					0, 0, guiScaledWidth, guiScaledHeight,
 					u0, u1, v0, v1,
 					-1,

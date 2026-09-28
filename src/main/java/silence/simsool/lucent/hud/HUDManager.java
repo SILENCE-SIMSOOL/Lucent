@@ -33,7 +33,18 @@ public class HUDManager {
 	private final List<LucentHUD> huds = new ArrayList<>();
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private boolean cachedHasSkija = false;
-	private List<Object> lastSkijaCacheKey;
+	private final List<Object> currentSkijaCacheKey = new ArrayList<>();
+	private final List<Object> lastSkijaCacheKey = new ArrayList<>();
+	private boolean hasValidLastSkijaCache = false;
+	private GuiGraphicsExtractor currentGraphics;
+	private final Runnable drawSkijaHuds = () -> {
+		if (currentGraphics == null) return;
+		for (LucentHUD hud : huds) {
+			if (hud.isEnabled() && hud.getRenderType() == RenderType.SKIJA) {
+				hud.draw(currentGraphics);
+			}
+		}
+	};
 
 	public HUDManager() {}
 
@@ -112,30 +123,33 @@ public class HUDManager {
 
 		// skija draw
 		if (cachedHasSkija) {
-			Runnable drawSkijaHuds = () -> {
-				for (LucentHUD hud : huds) {
-					if (hud.isEnabled() && hud.getRenderType() == RenderType.SKIJA) {
-						hud.draw(graphics);
-					}
-				}
-			};
-			List<Object> cacheKey = new ArrayList<>();
+			this.currentGraphics = graphics;
+			currentSkijaCacheKey.clear();
+			boolean canCache = true;
 			for (LucentHUD hud : huds) {
 				if (!hud.isEnabled() || hud.getRenderType() != RenderType.SKIJA) continue;
 				Object key = hud.getRenderCacheKey();
 				if (key == null) {
-					cacheKey = null;
+					canCache = false;
 					break;
 				}
-				cacheKey.add(hud);
-				cacheKey.add(key);
+				currentSkijaCacheKey.add(hud);
+				currentSkijaCacheKey.add(key);
 			}
-			if (cacheKey != null && !cacheKey.isEmpty() && Objects.equals(cacheKey, lastSkijaCacheKey)
+			if (canCache && !currentSkijaCacheKey.isEmpty() && hasValidLastSkijaCache
+					&& currentSkijaCacheKey.equals(lastSkijaCacheKey)
 					&& SkijaCompositor.INSTANCE.canReuseHud()) {
 				SkijaCompositor.INSTANCE.reuseHud(drawSkijaHuds);
 				return;
 			}
-			lastSkijaCacheKey = cacheKey;
+			if (canCache && !currentSkijaCacheKey.isEmpty()) {
+				lastSkijaCacheKey.clear();
+				lastSkijaCacheKey.addAll(currentSkijaCacheKey);
+				hasValidLastSkijaCache = true;
+			} else {
+				lastSkijaCacheKey.clear();
+				hasValidLastSkijaCache = false;
+			}
 			SkijaCompositor.INSTANCE.invalidateHudCache();
 			SkijaRenderer.draw(graphics, 0, 0, UDisplay.getWidth(), UDisplay.getHeight(), drawSkijaHuds);
 		}
