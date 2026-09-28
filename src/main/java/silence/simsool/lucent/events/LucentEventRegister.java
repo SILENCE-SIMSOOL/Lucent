@@ -314,6 +314,8 @@ public class LucentEventRegister {
 		});
 
 		ClientEntityEvents.ENTITY_UNLOAD.register((entity, client) -> {
+			entityTypes.remove(entity.getId());
+			entityPos.remove(entity.getId());
 			if (mc.player == null || mc.level == null) return;
 			EntityEvent.ENTITY_LEAVE_EVENT.invoker().onEntityLeave(new EntityEvent.EntityLeaveEvent(entity));
 		});
