@@ -7,7 +7,6 @@ import java.util.OptionalInt;
 
 import org.joml.Matrix3x2f;
 import org.joml.Matrix4f;
-import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -118,17 +117,19 @@ public class RoundRectPIPRenderer extends PictureInPictureRenderer<RoundRectPIPR
 
 	public static void submit(GuiGraphics context, int x0, int y0, int x1, int y1, int topLeftColor, int topRightColor, int bottomRightColor, int bottomLeftColor, float topLeftRadius, float topRightRadius, float bottomRightRadius, float bottomLeftRadius, int outlineColor, float outlineWidth) {
 		ScreenRectangle scissor = context.scissorStack.peek();
-		Matrix3x2f pose = new Matrix3x2f(context.pose());
+		Matrix3x2f pose = context.pose();
 
-		Vector2f p0 = pose.transformPosition(new Vector2f((float) x0, (float) y0), new Vector2f());
-		Vector2f p1 = pose.transformPosition(new Vector2f((float) x1, (float) y1), new Vector2f());
+		float p0x = pose.m00 * x0 + pose.m10 * y0 + pose.m20;
+		float p0y = pose.m01 * x0 + pose.m11 * y0 + pose.m21;
+		float p1x = pose.m00 * x1 + pose.m10 * y1 + pose.m20;
+		float p1y = pose.m01 * x1 + pose.m11 * y1 + pose.m21;
 
-		int screenLeft = Math.round(Math.min(p0.x, p1.x));
-		int screenTop = Math.round(Math.min(p0.y, p1.y));
-		int screenW = Math.round(Math.max(p0.x, p1.x)) - screenLeft;
-		int screenH = Math.round(Math.max(p0.y, p1.y)) - screenTop;
+		int screenLeft = Math.round(Math.min(p0x, p1x));
+		int screenTop = Math.round(Math.min(p0y, p1y));
+		int screenW = Math.round(Math.max(p0x, p1x)) - screenLeft;
+		int screenH = Math.round(Math.max(p0y, p1y)) - screenTop;
 
-		float poseScale = pose.transformDirection(new Vector2f(1f, 0f), new Vector2f()).length();
+		float poseScale = (float) Math.hypot(pose.m00, pose.m01);
 
 		ScreenRectangle screenRect = new ScreenRectangle(screenLeft, screenTop, screenW, screenH);
 		ScreenRectangle bounds = (scissor != null) ? scissor.intersection(screenRect) : screenRect;
