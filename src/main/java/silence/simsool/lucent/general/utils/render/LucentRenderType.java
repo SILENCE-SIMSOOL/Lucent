@@ -41,6 +41,7 @@ public class LucentRenderType {
 		"quads-opaque",
 		RenderSetup.builder(LucentRenderPipelines.FILLED)
 			.setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+			.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
 			.createRenderSetup()
 	);
 
@@ -49,6 +50,7 @@ public class LucentRenderType {
 		RenderSetup.builder(LucentRenderPipelines.FILLED_TRANSLUCENT)
 			.sortOnUpload()
 			.setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+			.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
 			.createRenderSetup()
 	);
 
@@ -57,6 +59,7 @@ public class LucentRenderType {
 		RenderSetup.builder(LucentRenderPipelines.FILLED_ESP)
 			.sortOnUpload()
 			.setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+			.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
 			.createRenderSetup()
 	);
 
@@ -65,6 +68,7 @@ public class LucentRenderType {
 		RenderSetup.builder(LucentRenderPipelines.FILLED_TRANSLUCENT_ESP)
 			.sortOnUpload()
 			.setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+			.setOutputTarget(OutputTarget.ITEM_ENTITY_TARGET)
 			.createRenderSetup()
 	);
 

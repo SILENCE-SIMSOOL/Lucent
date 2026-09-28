@@ -57,7 +57,7 @@ public class LucentRenderPipelines {
 		RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
 			.withLocation(Lucent.ID + "/quads_translucent")
 			.withBlend(BlendFunction.TRANSLUCENT)
-			.withCull(true)
+			.withCull(false)
 			.build()
 	);
 
