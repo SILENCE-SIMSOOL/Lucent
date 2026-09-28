@@ -1387,4 +1387,5 @@ public class NVGRenderer {
 		else nvgLineTo(vg, x, y);
 
 	}
+
 }
