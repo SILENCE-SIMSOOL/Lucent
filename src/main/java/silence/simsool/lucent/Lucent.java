@@ -1,5 +1,6 @@
 package silence.simsool.lucent;
 
+import java.awt.Color;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -17,6 +18,7 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.PictureInPictureRendererRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.config.api.LucentAPI;
@@ -28,6 +30,8 @@ import silence.simsool.lucent.examplemod.huds.ExampleHUD;
 import silence.simsool.lucent.general.managers.LucentManagerRegister;
 import silence.simsool.lucent.general.utils.ClientHandler;
 import silence.simsool.lucent.general.utils.LucentUtils;
+import silence.simsool.lucent.general.utils.MinecraftColor;
+import silence.simsool.lucent.general.utils.notification.NotificationCommand;
 import silence.simsool.lucent.general.utils.notification.NotificationRenderer;
 import silence.simsool.lucent.general.utils.render.IrisCompatibility;
 import silence.simsool.lucent.general.utils.render.ItemRenderer;
@@ -43,13 +47,14 @@ import silence.simsool.lucent.mods.Translucent3DRenderFixMod;
 import silence.simsool.lucent.skija.compositor.SkijaCompositor;
 import silence.simsool.lucent.skija.natives.SkijaNatives;
 import silence.simsool.lucent.ui.manager.LucentResourceManager;
+import silence.simsool.lucent.ui.utils.UColor;
 import silence.simsool.lucent.ui.utils.skija.Fonts;
 
 public class Lucent implements ClientModInitializer {
 
 	public static final String ID = "lucent";
 	public static final String NAME = "Lucent";
-	public static final String VERSION = "1.5.5";
+	public static final String VERSION = "1.5.6";
 	public static String LATEST_VERSION = "Fetching...";
 
 	public static Minecraft mc = Minecraft.getInstance();
@@ -64,7 +69,7 @@ public class Lucent implements ClientModInitializer {
 			KEYBINDING_CATEGORY
 	));
 
-	public static boolean devMode = true;
+	public static boolean devMode = false;
 	public static boolean preview = false;
 	public static final Identifier PREVIEW_BACKGROUND = LucentUtils.id("preview.png");
 
@@ -74,6 +79,10 @@ public class Lucent implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
+		LucentEvent.WORLD_RENDER.register(event -> {
+			Render3D.drawBox(new BlockPos(0, -59, 0), UColor.withAlpha(MinecraftColor.GOLD, 25), false);
+			Render3D.drawCircle(new BlockPos(0, -60, 0), 1.0f, new Color(85, 255, 85, 85), true);
+		});
 		LOG.info("Lucent library initializing..");
 		SkijaNatives.ensure();
 		PremiumCosmetics.init();
@@ -145,7 +154,7 @@ public class Lucent implements ClientModInitializer {
 				)
 			);
 
-			silence.simsool.lucent.general.utils.notification.NotificationCommand.register(dispatcher);
+			NotificationCommand.register(dispatcher);
 		});
 
 		InputEvent.KEY.register(event -> {
