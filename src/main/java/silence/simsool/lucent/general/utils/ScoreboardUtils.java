@@ -12,6 +12,7 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.PlayerScoreEntry;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
+import silence.simsool.lucent.general.utils.useful.UChat;
 
 public class ScoreboardUtils {
 
@@ -47,7 +48,7 @@ public class ScoreboardUtils {
 	}
 
 	public static String cleanSB(String scoreboard) {
-		char[] nvString = scoreboard.replaceAll("\u00A7.", "").toCharArray();
+		char[] nvString = UChat.cleanColor(scoreboard).toCharArray();
 		StringBuilder cleaned = new StringBuilder();
 		for (char c : nvString) {
 			if (((int) c > 20 && (int) c < 127) || c == '⏣' || c == '☽') cleaned.append(c);
