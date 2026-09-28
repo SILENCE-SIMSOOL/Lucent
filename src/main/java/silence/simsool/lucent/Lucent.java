@@ -1,6 +1,5 @@
 package silence.simsool.lucent;
 
-import java.awt.Color;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -17,7 +16,6 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.SpecialGuiElementRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.config.api.LucentAPI;
@@ -29,7 +27,6 @@ import silence.simsool.lucent.examplemod.huds.ExampleHUD;
 import silence.simsool.lucent.general.managers.LucentManagerRegister;
 import silence.simsool.lucent.general.utils.ClientHandler;
 import silence.simsool.lucent.general.utils.LucentUtils;
-import silence.simsool.lucent.general.utils.MinecraftColor;
 import silence.simsool.lucent.general.utils.notification.NotificationCommand;
 import silence.simsool.lucent.general.utils.notification.NotificationRenderer;
 import silence.simsool.lucent.general.utils.render.IrisCompatibility;
@@ -43,7 +40,6 @@ import silence.simsool.lucent.general.utils.useful.USound;
 import silence.simsool.lucent.hud.HUDManager;
 import silence.simsool.lucent.init.PremiumCosmetics;
 import silence.simsool.lucent.ui.manager.LucentResourceManager;
-import silence.simsool.lucent.ui.utils.UColor;
 import silence.simsool.lucent.ui.utils.nvg.Fonts;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 
@@ -76,10 +72,6 @@ public class Lucent implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-		LucentEvent.WORLD_RENDER.register(event -> {
-			Render3D.drawBox(new BlockPos(0, -59, 0), UColor.withAlpha(MinecraftColor.GOLD, 85), false);
-			Render3D.drawCircle(new BlockPos(0, -60, 0), 1.0f, new Color(85, 255, 85, 85), true);
-		});
 		LOG.info("Lucent library initializing..");
 		PremiumCosmetics.init();
 
