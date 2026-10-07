@@ -38,6 +38,7 @@ import net.minecraft.network.protocol.game.ServerboundUseItemPacket;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
+import silence.simsool.lucent.general.utils.useful.UMouse;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.ItemStack;
@@ -141,20 +142,20 @@ public class LucentEventRegister {
 			if (screen != null) GUIEvent.OPEN.EVENT.invoker().onOpen(new GUIEvent.GUIOpenEvent(screen));
 
 			ScreenMouseEvents.allowMouseClick(screen).register((s, click) -> {
-				GUIEvent.GUIClickEvent event = new GUIEvent.GUIClickEvent(click.x(), click.y(), click.button(), true, s);
+				GUIEvent.GUIClickEvent event = new GUIEvent.GUIClickEvent(click.x(), click.y(), UMouse.toLucentButton(click.button()), true, s);
 				GUIEvent.CLICK.EVENT.invoker().onClick(event);
 				return !event.isCanceled();
 			});
 
 			ScreenMouseEvents.allowMouseRelease(screen).register((s, click) -> {
-				GUIEvent.GUIClickEvent event = new GUIEvent.GUIClickEvent(click.x(), click.y(), click.button(), false, s);
+				GUIEvent.GUIClickEvent event = new GUIEvent.GUIClickEvent(click.x(), click.y(), UMouse.toLucentButton(click.button()), false, s);
 				GUIEvent.CLICK.EVENT.invoker().onClick(event);
 				return !event.isCanceled();
 			});
 
 			ScreenKeyboardEvents.allowKeyPress(screen).register((s, keyInput) -> {
 				String keyName = InputConstants.Type.KEYBOARD.getOrCreate(keyInput.key()).getDisplayName().getString();
-				char charTyped = (keyName != null && !keyName.isEmpty()) ? keyName.charAt(0) : '\u0000';
+				char charTyped = (keyInput.key() == InputConstants.KEY_SPACE) ? ' ' : (keyName != null && keyName.length() == 1) ? keyName.charAt(0) : '\u0000';
 				GUIEvent.GUIKeyEvent event = new GUIEvent.GUIKeyEvent(keyName, keyInput.key(), charTyped, 0, s);
 				GUIEvent.KEY.EVENT.invoker().onKey(event);
 				return !event.isCanceled();

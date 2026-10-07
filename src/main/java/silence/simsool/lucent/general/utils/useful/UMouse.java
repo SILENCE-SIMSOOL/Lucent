@@ -2,12 +2,26 @@ package silence.simsool.lucent.general.utils.useful;
 
 import static silence.simsool.lucent.Lucent.mc;
 
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.input.MouseButtonEvent;
 import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 
 public class UMouse {
+
+	private static final Set<Integer> PRESSED_BUTTONS = ConcurrentHashMap.newKeySet();
+
+	public static void setButtonPressed(int lucentButton, boolean pressed) {
+		if (pressed) PRESSED_BUTTONS.add(lucentButton);
+		else PRESSED_BUTTONS.remove(lucentButton);
+	}
+
+	public static boolean isButtonDown(int lucentButton) {
+		return PRESSED_BUTTONS.contains(lucentButton);
+	}
 
 	public static int getButton(MouseButtonEvent event) {
 		return toLucentButton(event.button());
@@ -17,6 +31,7 @@ public class UMouse {
 		if (button == InputConstants.MOUSE_BUTTON_LEFT) return 0;
 		if (button == InputConstants.MOUSE_BUTTON_RIGHT) return 1;
 		if (button == InputConstants.MOUSE_BUTTON_MIDDLE) return 2;
+		if (button >= 4) return button - 1;
 		return button;
 	}
 

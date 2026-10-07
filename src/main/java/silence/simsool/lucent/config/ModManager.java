@@ -21,6 +21,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import silence.simsool.lucent.config.api.LucentAPI;
 import silence.simsool.lucent.events.impl.GUIEvent;
@@ -274,6 +275,7 @@ public class ModManager {
 				out.name("key").value(value.keyCode);
 				out.name("mouse").value(value.mouseButton);
 				out.name("mods").value(value.mods);
+				out.name("v").value(2);
 				out.endObject();
 			}
 			@Override
@@ -283,16 +285,33 @@ public class ModManager {
 					return KeyBind.none();
 				}
 				KeyBind kb = KeyBind.none();
+				int version = 1;
 				in.beginObject();
 				while (in.hasNext()) {
 					switch (in.nextName()) {
 						case "key"   -> kb.keyCode     = in.nextInt();
 						case "mouse" -> kb.mouseButton = in.nextInt();
 						case "mods"  -> kb.mods        = in.nextInt();
+						case "v"     -> version        = in.nextInt();
 						default      -> in.skipValue();
 					}
 				}
 				in.endObject();
+				if (version < 2) {
+					if (kb.keyCode <= 0) {
+						kb.keyCode = InputConstants.UNKNOWN.getValue();
+					} else {
+						kb.keyCode = KeyBind.fromGlfwKey(kb.keyCode);
+					}
+					kb.mods = KeyBind.fromGlfwMods(kb.mods);
+					if (kb.mouseButton == 3) {
+						kb.mouseButton = KeyBind.MOUSE_RIGHT;
+					}
+				} else {
+					if (kb.keyCode <= 0) {
+						kb.keyCode = InputConstants.UNKNOWN.getValue();
+					}
+				}
 				return kb;
 			}
 		})
@@ -1041,5 +1060,4 @@ public class ModManager {
 			}
 		}
 	}
-
 }

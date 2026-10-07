@@ -202,7 +202,7 @@ public class KeyBindButton extends UIWidget {
 				if (bind.isKey()) {
 					valid = true;
 				} else if (bind.isMouse()) {
-					valid = bind.mouseButton != InputConstants.MOUSE_BUTTON_LEFT && bind.mouseButton != InputConstants.MOUSE_BUTTON_RIGHT;
+					valid = bind.mouseButton != KeyBind.MOUSE_LEFT && bind.mouseButton != KeyBind.MOUSE_RIGHT;
 				}
 			}
 		}
