@@ -76,15 +76,15 @@ public class UDisplay {
 	}
 
 	public static int getRefreshRate() {
-		return getWindow().getRefreshRate();
+		return Math.round(getWindow().getActiveVideoMode().getRefreshRate());
 	}
 
 	public static boolean isFullscreen() {
-		return getWindow().isFullscreen();
+		return getWindow().isExclusiveFullscreen();
 	}
 
 	public static boolean isMinimized() {
-		return getWindow().isMinimized();
+		return getWindow().isIconified();
 	}
 
 	public static void close() {
@@ -92,7 +92,7 @@ public class UDisplay {
 	}
 
 	public static void toggleFullScreen() {
-		getWindow().toggleFullScreen();
+		mc.options.fullscreen().set(!mc.options.fullscreen().get());
 	}
 
 	public static void setGuiScale(int scale) {

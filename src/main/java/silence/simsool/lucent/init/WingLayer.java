@@ -60,8 +60,8 @@ public class WingLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
 		getParentModel().body.translateAndRotate(poseStack);
 
 		poseStack.scale(-rScale, -rScale, rScale);
-		poseStack.mulPose(Axis.XP.rotationDegrees(180.0f));
-		poseStack.mulPose(Axis.YP.rotationDegrees(180.0f));
+		poseStack.rotateDegrees(Axis.XP, 180.0f);
+		poseStack.rotateDegrees(Axis.YP, 180.0f);
 		poseStack.translate(0.0f, (float)(height / rScale), (float)(0.2f / rScale));
 
 		if (state.isCrouching) {
@@ -76,8 +76,7 @@ public class WingLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
 				RenderTypes.armorCutoutNoCull(texture),
 				packedLight,
 				OverlayTexture.NO_OVERLAY,
-				UIColors.TRANSPARENT,
-				null
+				UIColors.TRANSPARENT
 			);
 
 			poseStack.scale(-1.0F, 1.0F, 1.0F);

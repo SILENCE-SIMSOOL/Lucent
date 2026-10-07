@@ -75,14 +75,14 @@ public abstract class MixinAbstractContainerScreen_GUIEvent {
 	}
 
 	@Inject(method = "slotClicked", at = @At("HEAD"), cancellable = true)
-	private void lucent$onSlotClicked(Slot slot, int slotId, int button, ContainerInput clickType, CallbackInfo ci) {
+	private void lucent$onSlotClicked(Slot slot, int slotId, MouseButtonEvent mouseButtonEvent, ContainerInput clickType, CallbackInfo ci) {
 		AbstractContainerScreen<?> screen = (AbstractContainerScreen<?>) (Object) this;
 
 		if (slot == null) {
 			if (slotId == -999 && clickType == ContainerInput.PICKUP) {
 				ItemStack carried = screen.getMenu().getCarried();
 				if (!carried.isEmpty()) {
-					boolean all = button == 0;
+					boolean all = mouseButtonEvent.button() == 0;
 					LucentEvent.DropItemEvent event = new LucentEvent.DropItemEvent(carried, DropType.INVENTORY_CLICK_OUTSIDE, all);
 					LucentEvent.DROP_ITEM_EVENT.invoker().onDropItem(event);
 					if (event.isCanceled()) ci.cancel();
@@ -91,7 +91,7 @@ public abstract class MixinAbstractContainerScreen_GUIEvent {
 		}
 
 		else {
-			GUIEvent.SlotClickEvent event = new GUIEvent.SlotClickEvent(slot, slotId, button, clickType, screen.getMenu(), screen);
+			GUIEvent.SlotClickEvent event = new GUIEvent.SlotClickEvent(slot, slotId, mouseButtonEvent.button(), clickType, screen.getMenu(), screen);
 			GUIEvent.SLOT.Click.EVENT.invoker().onSlotClick(event);
 			if (event.isCanceled()) ci.cancel();
 		}

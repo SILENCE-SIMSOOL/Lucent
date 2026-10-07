@@ -3,7 +3,7 @@ package silence.simsool.lucent.ui.widget.components;
 import java.util.Stack;
 import java.util.function.Consumer;
 
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import silence.simsool.lucent.general.utils.useful.UDesktop;
@@ -139,69 +139,69 @@ public class TextBox extends UIWidget {
 	public boolean keyPressed(int key, int scanCode, int modifiers) {
 		if (!focused) return false;
 
-		boolean isShiftDown = (modifiers & GLFW.GLFW_MOD_SHIFT) != 0;
-		boolean isCtrlDown = (modifiers & GLFW.GLFW_MOD_CONTROL) != 0;
+		boolean isShiftDown = (modifiers & InputConstants.MOD_SHIFT) != 0;
+		boolean isCtrlDown = (modifiers & InputConstants.MOD_CONTROL) != 0;
 
 		if (isCtrlDown) {
-			if (key == GLFW.GLFW_KEY_A) {
+			if (key == InputConstants.KEY_A) {
 				highlightPosition = 0;
 				cursorPosition = value.length();
 				return true;
-			} else if (key == GLFW.GLFW_KEY_C) {
+			} else if (key == InputConstants.KEY_C) {
 				String selText = getSelectedText();
 				if (!selText.isEmpty()) {
 					UDesktop.setClipboard(selText);
 				}
 				return true;
-			} else if (key == GLFW.GLFW_KEY_V) {
+			} else if (key == InputConstants.KEY_V) {
 				String clipboard = UDesktop.getClipboard();
 				if (clipboard != null) {
 					writeText(clipboard);
 				}
 				return true;
-			} else if (key == GLFW.GLFW_KEY_X) {
+			} else if (key == InputConstants.KEY_X) {
 				String selText = getSelectedText();
 				if (!selText.isEmpty()) {
 					UDesktop.setClipboard(selText);
 					writeText("");
 				}
 				return true;
-			} else if (key == GLFW.GLFW_KEY_Z) {
+			} else if (key == InputConstants.KEY_Z) {
 				undo();
 				return true;
-			} else if (key == GLFW.GLFW_KEY_Y) {
+			} else if (key == InputConstants.KEY_Y) {
 				redo();
 				return true;
 			}
 		}
 
-		if (key == GLFW.GLFW_KEY_BACKSPACE) {
+		if (key == InputConstants.KEY_BACKSPACE) {
 			deleteText(true);
 			return true;
 
-		} else if (key == GLFW.GLFW_KEY_DELETE) {
+		} else if (key == InputConstants.KEY_DELETE) {
 			deleteText(false);
 			return true;
 
-		} else if (key == GLFW.GLFW_KEY_LEFT) {
+		} else if (key == InputConstants.KEY_LEFT) {
 			int nextPos = isCtrlDown ? getWordSkipPosition(-1) : cursorPosition - 1;
 			moveCursorTo(nextPos, isShiftDown);
 			return true;
 
-		} else if (key == GLFW.GLFW_KEY_RIGHT) {
+		} else if (key == InputConstants.KEY_RIGHT) {
 			int nextPos = isCtrlDown ? getWordSkipPosition(1) : cursorPosition + 1;
 			moveCursorTo(nextPos, isShiftDown);
 			return true;
 
-		} else if (key == GLFW.GLFW_KEY_HOME) {
+		} else if (key == InputConstants.KEY_HOME) {
 			moveCursorTo(0, isShiftDown);
 			return true;
 
-		} else if (key == GLFW.GLFW_KEY_END) {
+		} else if (key == InputConstants.KEY_END) {
 			moveCursorTo(value.length(), isShiftDown);
 			return true;
 
-		} else if (key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER || key == GLFW.GLFW_KEY_ESCAPE) {
+		} else if (key == InputConstants.KEY_RETURN || key == InputConstants.KEY_NUMPADENTER || key == InputConstants.KEY_ESCAPE) {
 			focused = false;
 			scrollOffset = 0;
 			return true;

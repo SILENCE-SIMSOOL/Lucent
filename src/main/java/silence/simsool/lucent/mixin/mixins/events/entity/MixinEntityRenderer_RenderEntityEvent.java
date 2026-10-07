@@ -16,7 +16,7 @@ import silence.simsool.lucent.events.impl.EntityEvent;
 public abstract class MixinEntityRenderer_RenderEntityEvent<T extends Entity> {
 
 	@Inject(method = "shouldRender", at = @At("HEAD"), cancellable = true)
-	private void lucent$onShouldRender(T entity, Frustum frustum, double x, double y, double z, CallbackInfoReturnable<Boolean> cir) {
+	private void lucent$onShouldRender(T entity, Frustum frustum, double x, double y, double z, float partialTick, CallbackInfoReturnable<Boolean> cir) {
 		if (entity == null || !EntityEvent.hasRenderEntityAllowListeners) return;
 		EntityEvent.RenderEntityAllowEvent event = new EntityEvent.RenderEntityAllowEvent(entity, frustum, x, y, z);
 		EntityEvent.RENDER_ENTITY_ALLOW_EVENT.invoker().onRenderEntityAllow(event);

@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import com.mojang.renderpearl.api.commands.RenderPass;
 import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.feature.FeatureFrameContext;
@@ -21,10 +22,10 @@ public abstract class MixinPreparedFrame_FIX_TRANS_3DRENDER {
 
 	@Shadow private FeatureFrameContext context;
 	@Shadow private SubmitNodeStorage submitNodeStorage;
-	@Shadow abstract void executePhase(final FeatureRenderPhase<?> phase, final FeatureFrameContext context);
+	@Shadow abstract void executePhase(final FeatureRenderPhase<?> phase, final FeatureFrameContext context, final RenderPass renderPass);
 
 	@Inject(method = "executeTranslucentAfterTerrain", at = @At("TAIL"))
-	private void lucent$renderCustomGeometryAfterTerrain(CallbackInfo ci) {
+	private void lucent$renderCustomGeometryAfterTerrain(RenderPass renderPass, CallbackInfo ci) {
 		if (!Translucent3DRenderFixMod.CustomGeometry) return;
 
 		FeatureFrameContext ctx = Objects.requireNonNull(this.context);
@@ -33,7 +34,7 @@ public abstract class MixinPreparedFrame_FIX_TRANS_3DRENDER {
 
 		while (iterator.hasNext()) {
 			SubmitNodeCollection collection = (SubmitNodeCollection) iterator.next();
-			this.executePhase(collection.translucentCustomGeometry, ctx);
+			this.executePhase(collection.translucentCustomGeometry, ctx, renderPass);
 		}
 	}
 

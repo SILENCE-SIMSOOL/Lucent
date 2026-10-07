@@ -2,7 +2,7 @@ package silence.simsool.lucent.examplemod.mods;
 
 import java.awt.Color;
 
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.events.impl.LucentEvent;
@@ -77,7 +77,7 @@ public class ExampleMod extends Mod {
 		description = "Keybind to quickly open the mod configuration menu.",
 		priority = 600
 	)
-	public static KeyBind OpenChatKey = KeyBind.ofKey(GLFW.GLFW_KEY_RIGHT_SHIFT, 0);
+	public static KeyBind OpenChatKey = KeyBind.ofKey(InputConstants.KEY_RSHIFT, 0);
 
 	// SLIDER - Int
 	@ModConfig(
@@ -259,7 +259,7 @@ public class ExampleMod extends Mod {
 		description = "",
 		category = "Extra Example"
 	)
-	public static KeyBind ExtraKeybind = KeyBind.ofKey(GLFW.GLFW_KEY_RIGHT_SHIFT, 0);
+	public static KeyBind ExtraKeybind = KeyBind.ofKey(InputConstants.KEY_RSHIFT, 0);
 
 	@ModConfigExtra(
 		type = ConfigType.SELECTOR,

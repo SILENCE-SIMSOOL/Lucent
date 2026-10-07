@@ -1,6 +1,6 @@
 package silence.simsool.lucent.skija.backend;
 
-import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 
 import io.github.humbleui.skija.DirectContext;
 import io.github.humbleui.skija.Image;

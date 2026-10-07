@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLevelEvents;
@@ -153,9 +153,9 @@ public class LucentEventRegister {
 			});
 
 			ScreenKeyboardEvents.allowKeyPress(screen).register((s, keyInput) -> {
-				String keyName = GLFW.glfwGetKeyName(keyInput.key(), keyInput.scancode());
+				String keyName = InputConstants.Type.KEYBOARD.getOrCreate(keyInput.key()).getDisplayName().getString();
 				char charTyped = (keyName != null && !keyName.isEmpty()) ? keyName.charAt(0) : '\u0000';
-				GUIEvent.GUIKeyEvent event = new GUIEvent.GUIKeyEvent(keyName, keyInput.key(), charTyped, keyInput.scancode(), s);
+				GUIEvent.GUIKeyEvent event = new GUIEvent.GUIKeyEvent(keyName, keyInput.key(), charTyped, 0, s);
 				GUIEvent.KEY.EVENT.invoker().onKey(event);
 				return !event.isCanceled();
 			});
@@ -308,10 +308,10 @@ public class LucentEventRegister {
 
 		PacketEvent.SEND.register(event -> {
 			if (event.packet instanceof ServerboundUseItemOnPacket packet) {
-				LucentEvent.USE_ITEM_ON_EVENT.invoker().onUseItemOn(new LucentEvent.UseItemOnEvent(packet.getHitResult(), packet.getHand()));
+				LucentEvent.USE_ITEM_ON_EVENT.invoker().onUseItemOn(new LucentEvent.UseItemOnEvent(packet.hitResult(), packet.hand()));
 			}
 			if (event.packet instanceof ServerboundUseItemPacket packet) {
-				LucentEvent.USE_ITEM_EVENT.invoker().onUseItem(new LucentEvent.UseItemEvent(packet.getHand()));
+				LucentEvent.USE_ITEM_EVENT.invoker().onUseItem(new LucentEvent.UseItemEvent(packet.hand()));
 			}
 		});
 

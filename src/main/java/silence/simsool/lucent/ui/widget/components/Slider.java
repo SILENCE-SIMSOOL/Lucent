@@ -2,7 +2,7 @@ package silence.simsool.lucent.ui.widget.components;
 
 import java.util.function.Consumer;
 
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import silence.simsool.lucent.general.utils.useful.UDesktop;
@@ -249,27 +249,27 @@ public class Slider extends UIWidget {
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
 		if (!inputMode) return false;
 
-		boolean isShiftDown = (modifiers & GLFW.GLFW_MOD_SHIFT) != 0;
-		boolean isCtrlDown = (modifiers & GLFW.GLFW_MOD_CONTROL) != 0;
+		boolean isShiftDown = (modifiers & InputConstants.MOD_SHIFT) != 0;
+		boolean isCtrlDown = (modifiers & InputConstants.MOD_CONTROL) != 0;
 
 		if (isCtrlDown) {
-			if (keyCode == GLFW.GLFW_KEY_A) {
+			if (keyCode == InputConstants.KEY_A) {
 				highlightCursor = 0;
 				inputCursor = inputBuffer.length();
 				return true;
-			} else if (keyCode == GLFW.GLFW_KEY_C) {
+			} else if (keyCode == InputConstants.KEY_C) {
 				String sel = getSelectedText();
 				if (!sel.isEmpty()) {
 					UDesktop.setClipboard(sel);
 				}
 				return true;
-			} else if (keyCode == GLFW.GLFW_KEY_V) {
+			} else if (keyCode == InputConstants.KEY_V) {
 				String clipboard = UDesktop.getClipboard();
 				if (clipboard != null) {
 					insertText(clipboard);
 				}
 				return true;
-			} else if (keyCode == GLFW.GLFW_KEY_X) {
+			} else if (keyCode == InputConstants.KEY_X) {
 				String sel = getSelectedText();
 				if (!sel.isEmpty()) {
 					UDesktop.setClipboard(sel);
@@ -279,42 +279,42 @@ public class Slider extends UIWidget {
 			}
 		}
 
-		if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+		if (keyCode == InputConstants.KEY_RETURN || keyCode == InputConstants.KEY_NUMPADENTER) {
 			confirmInput();
 			return true;
 		}
 
-		if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+		if (keyCode == InputConstants.KEY_ESCAPE) {
 			cancelInput();
 			return true;
 		}
 
-		if (keyCode == GLFW.GLFW_KEY_BACKSPACE) {
+		if (keyCode == InputConstants.KEY_BACKSPACE) {
 			deleteInputText(true);
 			return true;
 		}
 
-		if (keyCode == GLFW.GLFW_KEY_DELETE) {
+		if (keyCode == InputConstants.KEY_DELETE) {
 			deleteInputText(false);
 			return true;
 		}
 
-		if (keyCode == GLFW.GLFW_KEY_LEFT) {
+		if (keyCode == InputConstants.KEY_LEFT) {
 			moveInputCursorTo(inputCursor - 1, isShiftDown);
 			return true;
 		}
 
-		if (keyCode == GLFW.GLFW_KEY_RIGHT) {
+		if (keyCode == InputConstants.KEY_RIGHT) {
 			moveInputCursorTo(inputCursor + 1, isShiftDown);
 			return true;
 		}
 
-		if (keyCode == GLFW.GLFW_KEY_HOME) {
+		if (keyCode == InputConstants.KEY_HOME) {
 			moveInputCursorTo(0, isShiftDown);
 			return true;
 		}
 
-		if (keyCode == GLFW.GLFW_KEY_END) {
+		if (keyCode == InputConstants.KEY_END) {
 			moveInputCursorTo(inputBuffer.length(), isShiftDown);
 			return true;
 		}

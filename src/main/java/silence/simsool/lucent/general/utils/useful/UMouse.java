@@ -2,9 +2,23 @@ package silence.simsool.lucent.general.utils.useful;
 
 import static silence.simsool.lucent.Lucent.mc;
 
+import com.mojang.blaze3d.platform.InputConstants;
+
+import net.minecraft.client.input.MouseButtonEvent;
 import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 
 public class UMouse {
+
+	public static int getButton(MouseButtonEvent event) {
+		return toLucentButton(event.button());
+	}
+
+	public static int toLucentButton(int button) {
+		if (button == InputConstants.MOUSE_BUTTON_LEFT) return 0;
+		if (button == InputConstants.MOUSE_BUTTON_RIGHT) return 1;
+		if (button == InputConstants.MOUSE_BUTTON_MIDDLE) return 2;
+		return button;
+	}
 
 	public static float getX() {
 		return (float) mc.mouseHandler.xpos();
@@ -73,5 +87,4 @@ public class UMouse {
 		if (mx >= width2) return (my >= height2) ? 4 : 2;
 		else return (my >= height2) ? 3 : 1;
 	}
-
 }

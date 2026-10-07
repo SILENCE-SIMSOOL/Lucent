@@ -1,8 +1,8 @@
 package silence.simsool.lucent.skija.backend;
 
-import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vulkan.VulkanDevice;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.backend.vulkan.VulkanDevice;
 
 import silence.simsool.lucent.mixin.accessors.GpuDeviceAccessor;
 

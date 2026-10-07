@@ -4,7 +4,7 @@ import static silence.simsool.lucent.Lucent.mc;
 
 import java.util.List;
 
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
@@ -191,7 +191,7 @@ public class EditHUDScreen extends Screen {
 
 		List<LucentHUD> huds = LucentAPI.getHUDManager().getHUDs();
 
-		if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+		if (button == InputConstants.MOUSE_BUTTON_LEFT) {
 			for (int i = huds.size() - 1; i >= 0; i--) {
 				LucentHUD hud = huds.get(i);
 				if (!hud.isEnabled()) continue;
@@ -237,7 +237,7 @@ public class EditHUDScreen extends Screen {
 				}
 			}
 		}
-		else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+		else if (button == InputConstants.MOUSE_BUTTON_RIGHT) {
 			for (int i = huds.size() - 1; i >= 0; i--) {
 				LucentHUD hud = huds.get(i);
 				if (hud.isEnabled() && isInsideHud(hud, mx, my)) {
@@ -253,7 +253,7 @@ public class EditHUDScreen extends Screen {
 
 	@Override
 	public boolean mouseReleased(MouseButtonEvent event) {
-		if (event.button() == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+		if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
 			if (draggingMove != null || draggingScale != null) LucentAPI.getHUDManager().save();
 			draggingMove  = null;
 			draggingScale = null;
@@ -263,7 +263,7 @@ public class EditHUDScreen extends Screen {
 
 	@Override
 	public boolean mouseDragged(MouseButtonEvent event, double mouseX, double mouseY) {
-		if (event.button() != GLFW.GLFW_MOUSE_BUTTON_LEFT) return super.mouseDragged(event, mouseX, mouseY);
+		if (event.button() != InputConstants.MOUSE_BUTTON_LEFT) return super.mouseDragged(event, mouseX, mouseY);
 
 		float gs = SkijaRenderer.getStandardGuiScale();
 		float vw = UDisplay.getScreenWidth()  / gs;
@@ -272,8 +272,8 @@ public class EditHUDScreen extends Screen {
 		float my = UMouse.getSkijaScaledY(1f);
 
 		if (draggingMove != null) {
-			boolean shiftDown = GLFW.glfwGetKey(UDisplay.getWindow().handle(), GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS
-						  || GLFW.glfwGetKey(UDisplay.getWindow().handle(), GLFW.GLFW_KEY_RIGHT_SHIFT) == GLFW.GLFW_PRESS;
+			boolean shiftDown = InputConstants.isKeyDown(InputConstants.KEY_LSHIFT)
+						  || InputConstants.isKeyDown(InputConstants.KEY_RSHIFT);
 			float rawX = mx - dragOffsetX, rawY = my - dragOffsetY;
 
 			// 4px 그리드로 이동
@@ -390,7 +390,7 @@ public class EditHUDScreen extends Screen {
 
 	@Override
 	public boolean keyPressed(KeyEvent input) {
-		if (input.key() == GLFW.GLFW_KEY_ESCAPE) {
+		if (input.key() == InputConstants.KEY_ESCAPE) {
 			this.onClose();
 			return true;
 		}
@@ -620,8 +620,8 @@ public class EditHUDScreen extends Screen {
 		}
 
 		// Shift 키 안내 텍스트
-		boolean shifting = GLFW.glfwGetKey(UDisplay.getWindow().handle(), GLFW.GLFW_KEY_LEFT_SHIFT) == GLFW.GLFW_PRESS
-					 || GLFW.glfwGetKey(UDisplay.getWindow().handle(), GLFW.GLFW_KEY_RIGHT_SHIFT) == GLFW.GLFW_PRESS;
+		boolean shifting = InputConstants.isKeyDown(InputConstants.KEY_LSHIFT)
+					 || InputConstants.isKeyDown(InputConstants.KEY_RSHIFT);
 		String hintText = shifting ? "[Shift] Snap OFF" : "[Shift] Snap ON";
 		int hintColor = shifting ? 0xFFFF1919 : 0xFF19FF05;
 		SkijaRenderer.text(hintText, tx + padX, ty + bh + 4, Fonts.PRETENDARD, hintColor, 10f);

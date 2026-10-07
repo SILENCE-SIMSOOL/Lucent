@@ -1,6 +1,6 @@
 package silence.simsool.lucent.general.utils.render;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.renderer.rendertype.RenderType;
 

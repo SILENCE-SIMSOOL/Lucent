@@ -2,7 +2,7 @@ package silence.simsool.lucent.ui.widget.components;
 
 import java.util.function.Consumer;
 
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import silence.simsool.lucent.general.enums.KeyMode;
@@ -135,7 +135,7 @@ public class KeyBindButton extends UIWidget {
 		if (!waiting)
 			return false;
 
-		if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+		if (keyCode == InputConstants.KEY_ESCAPE) {
 			// ESC → 바인딩 해제
 			setBind(KeyBind.none());
 			return true;
@@ -202,7 +202,7 @@ public class KeyBindButton extends UIWidget {
 				if (bind.isKey()) {
 					valid = true;
 				} else if (bind.isMouse()) {
-					valid = bind.mouseButton != GLFW.GLFW_MOUSE_BUTTON_LEFT && bind.mouseButton != GLFW.GLFW_MOUSE_BUTTON_RIGHT;
+					valid = bind.mouseButton != InputConstants.MOUSE_BUTTON_LEFT && bind.mouseButton != InputConstants.MOUSE_BUTTON_RIGHT;
 				}
 			}
 		}
@@ -223,10 +223,10 @@ public class KeyBindButton extends UIWidget {
 	}
 
 	private static boolean isModifierOnly(int keyCode) {
-		return (   keyCode == GLFW.GLFW_KEY_LEFT_SHIFT   || keyCode == GLFW.GLFW_KEY_RIGHT_SHIFT
-				|| keyCode == GLFW.GLFW_KEY_LEFT_CONTROL || keyCode == GLFW.GLFW_KEY_RIGHT_CONTROL
-				|| keyCode == GLFW.GLFW_KEY_LEFT_ALT     || keyCode == GLFW.GLFW_KEY_RIGHT_ALT
-				|| keyCode == GLFW.GLFW_KEY_LEFT_SUPER   || keyCode == GLFW.GLFW_KEY_RIGHT_SUPER
+		return (   keyCode == InputConstants.KEY_LSHIFT   || keyCode == InputConstants.KEY_RSHIFT
+				|| keyCode == InputConstants.KEY_LCONTROL || keyCode == InputConstants.KEY_RCONTROL
+				|| keyCode == InputConstants.KEY_LALT     || keyCode == InputConstants.KEY_RALT
+				|| keyCode == InputConstants.KEY_LGUI     || keyCode == InputConstants.KEY_RGUI
 		);
 	}
 }

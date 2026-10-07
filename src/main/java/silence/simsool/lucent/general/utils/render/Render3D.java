@@ -109,7 +109,6 @@ public class Render3D {
 			SubmitNodeCollector submitNodeCollector = event.context.submitNodeCollector();
 			if (submitNodeCollector == null) {
 				clearAll();
-				RoundRectPIPRenderer.clear();
 				return;
 			}
 
@@ -128,7 +127,6 @@ public class Render3D {
 			renderQueuedTexts(matrix, submitNodeCollector, camera);
 
 			clearAll();
-			RoundRectPIPRenderer.clear();
 		});
 	}
 
@@ -1192,7 +1190,7 @@ public class Render3D {
 			matrix.pushPose();
 			float scaleFactor = textData.scale * 0.025f;
 			matrix.translate((float) (textData.pos.x - camera.x), (float) (textData.pos.y - camera.y), (float) (textData.pos.z - camera.z));
-			matrix.mulPose(textData.cameraRotation);
+			matrix.rotate(textData.cameraRotation);
 			matrix.scale(scaleFactor, -scaleFactor, scaleFactor);
 			submitNodeCollector.submitText(matrix, -textData.textWidth / 2f, 0f, Component.literal(textData.text).getVisualOrderText(), textData.shadow, textData.depth ? Font.DisplayMode.POLYGON_OFFSET : Font.DisplayMode.SEE_THROUGH, LightCoordsUtil.FULL_BRIGHT, textData.color, textData.backgroundColor, textData.outlineColor);
 			matrix.popPose();

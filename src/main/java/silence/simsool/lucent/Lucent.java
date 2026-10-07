@@ -5,8 +5,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-import org.lwjgl.glfw.GLFW;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.brigadier.Command;
 
 import net.fabricmc.api.ClientModInitializer;
@@ -61,7 +61,7 @@ public class Lucent implements ClientModInitializer {
 	public static KeyMapping.Category KEYBINDING_CATEGORY = KeyMapping.Category.register(LucentUtils.id("main"));
 	public static KeyMapping CONFIG_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.lucent.config",
-			GLFW.GLFW_KEY_RIGHT_SHIFT, 
+			InputConstants.KEY_RSHIFT, 
 			KEYBINDING_CATEGORY
 	));
 

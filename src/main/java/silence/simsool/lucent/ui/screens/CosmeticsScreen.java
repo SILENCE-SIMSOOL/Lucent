@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.joml.Matrix3x2fStack;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
@@ -432,7 +432,7 @@ public class CosmeticsScreen extends Screen {
 		}
 
 		// Player Hitbox Drag Check
-		if (event.button() == 0) {
+		if (UMouse.getButton(event) == 0) {
 			int sx = winX + LEFT_W + PAD;
 			int sy = winY + PAD;
 			int sw = RIGHT_W - PAD * 2;
@@ -511,7 +511,7 @@ public class CosmeticsScreen extends Screen {
 
 	@Override
 	public boolean mouseReleased(MouseButtonEvent event) {
-		if (event.button() == 0) {
+		if (UMouse.getButton(event) == 0) {
 			isDraggingPlayer = false;
 		}
 		return super.mouseReleased(event);
@@ -519,7 +519,7 @@ public class CosmeticsScreen extends Screen {
 
 	@Override
 	public boolean keyPressed(KeyEvent event) {
-		if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
+		if (event.key() == InputConstants.KEY_ESCAPE) {
 			this.onClose();
 			return true;
 		}

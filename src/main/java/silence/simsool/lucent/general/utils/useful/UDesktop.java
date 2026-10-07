@@ -22,8 +22,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
-
-import net.minecraft.util.Util;
+import com.mojang.blaze3d.Blaze3D;
 
 public class UDesktop {
 	private static boolean isLinux;
@@ -89,27 +88,30 @@ public class UDesktop {
 	}
 
 	public static void openBrowse(URI uri) {
-		Util.getPlatform().openUri(uri);
+		Blaze3D.openUri(uri);
 	}
 
 	public static void openBrowse(String uri) {
-		Util.getPlatform().openUri(uri);
+		try {
+			Blaze3D.openUri(new URI(uri));
+		} catch (Exception ignored) {
+		}
 	}
 
 	public static void openPath(Path path) {
-		Util.getPlatform().openPath(path);
+		Blaze3D.openPath(path);
 	}
 
 	public static void openPath(String path) {
-		Util.getPlatform().openPath(Path.of(path));
+		Blaze3D.openPath(Path.of(path));
 	}
 
 	public static void openFile(File file) {
-		Util.getPlatform().openFile(file);
+		Blaze3D.openPath(file.toPath());
 	}
 
 	public static void openFile(String file) {
-		Util.getPlatform().openFile(new File(file));
+		Blaze3D.openPath(Path.of(file));
 	}
 
 //	public static boolean open(File file) {

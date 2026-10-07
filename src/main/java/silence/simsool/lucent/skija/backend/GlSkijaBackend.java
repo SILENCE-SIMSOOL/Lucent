@@ -6,8 +6,8 @@ import java.util.Deque;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL30C;
 
-import com.mojang.blaze3d.opengl.GlTextureView;
-import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.renderpearl.backend.opengl.GlTextureView;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 
 import io.github.humbleui.skija.BackendRenderTarget;
 import io.github.humbleui.skija.BackendTexture;

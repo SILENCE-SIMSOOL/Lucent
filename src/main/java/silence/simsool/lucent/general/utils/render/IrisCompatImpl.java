@@ -1,6 +1,6 @@
 package silence.simsool.lucent.general.utils.render;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import java.lang.reflect.Method;
 
 public class IrisCompatImpl implements IrisCompatibility {

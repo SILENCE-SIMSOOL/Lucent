@@ -9,30 +9,32 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
-import net.minecraft.client.renderer.DynamicUniformStorage;
+import net.minecraft.client.renderer.DynamicGpuDataStorage;
+import net.minecraft.client.renderer.DynamicGpuDataStorageMapped;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
+import silence.simsool.lucent.mixin.accessors.PictureInPictureRendererAccessor;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
 
 public class RoundRectPIPRenderer extends PictureInPictureRenderer<RoundRectPIPRenderer.State> {
 
-	private static final DynamicUniformStorage<DynamicUniformStorage.DynamicUniform> uniformStorage = new DynamicUniformStorage<>(
+	private static final DynamicGpuDataStorageMapped<DynamicGpuDataStorage.DynamicGpuData> uniformStorage = new DynamicGpuDataStorageMapped<>(
 			"Lucent Rounded Rectangle UBO",
 			new Std140SizeCalculator()
 					.putVec4() // u_Rect
@@ -40,7 +42,8 @@ public class RoundRectPIPRenderer extends PictureInPictureRenderer<RoundRectPIPR
 					.putVec4() // u_OutlineColor
 					.putVec4() // u_OutlineWidth (std140 padded)
 					.get(),
-			4
+			4,
+			GpuBuffer.USAGE_UNIFORM
 	);
 
 	private State lastState;
@@ -76,7 +79,7 @@ public class RoundRectPIPRenderer extends PictureInPictureRenderer<RoundRectPIPR
 						RenderSystem.getModelViewMatrixCopy(), new Vector4f(1f, 1f, 1f, 1f), new Vector3f(), new Matrix4f()
 				);
 
-				GpuBufferSlice uniforms = uniformStorage.writeUniform(buffer -> Std140Builder.intoBuffer(buffer)
+				GpuBufferSlice uniforms = uniformStorage.writeData(buffer -> Std140Builder.intoBuffer(buffer)
 						.putVec4(w * 0.5f, h * 0.5f, w, h)
 						.putVec4(state.topLeftRadius * state.scale, state.topRightRadius * state.scale, state.bottomRightRadius * state.scale, state.bottomLeftRadius * state.scale)
 						.putVec4(state.outlineRed, state.outlineGreen, state.outlineBlue, state.outlineAlpha)
@@ -92,12 +95,14 @@ public class RoundRectPIPRenderer extends PictureInPictureRenderer<RoundRectPIPR
 				var indexBuffer = indexStorage.getBuffer(mesh.drawState().indexCount());
 				var renderTarget = mc.gameRenderer.mainRenderTarget();
 
-				GpuTextureView colorTextureView = RenderSystem.outputColorTextureOverride;
+				GpuTextureView colorTextureView = ((PictureInPictureRendererAccessor) this).getTextureView();
+				GpuTextureView depthTextureView = ((PictureInPictureRendererAccessor) this).getDepthTextureView();
 				if (colorTextureView == null) colorTextureView = renderTarget.getColorTextureView();
+				if (depthTextureView == null && renderTarget.hasDepth()) depthTextureView = renderTarget.getDepthTextureView();
 
 				if (colorTextureView != null) {
-					try (var pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Lucent Rounded Rectangle", colorTextureView, java.util.Optional.empty(), renderTarget.useDepth ? (RenderSystem.outputDepthTextureOverride != null ? RenderSystem.outputDepthTextureOverride : renderTarget.getDepthTextureView()) : null, OptionalDouble.empty())) {
-						pass.setPipeline(LucentRenderPipelines.PIPELINE_ROUND_RECT);
+					try (var pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Lucent Rounded Rectangle", colorTextureView, java.util.Optional.empty(), depthTextureView, OptionalDouble.empty())) {
+						pass.setPipeline(RenderSystem.getCompiledPipeline(LucentRenderPipelines.PIPELINE_ROUND_RECT));
 						RenderSystem.bindDefaultUniforms(pass);
 						pass.setUniform("DynamicTransforms", dynamicTransforms);
 						pass.setUniform("u", uniforms);

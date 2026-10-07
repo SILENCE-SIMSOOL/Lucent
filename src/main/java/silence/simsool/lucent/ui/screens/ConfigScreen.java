@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Stack;
 
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
@@ -21,7 +21,6 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Util;
 import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.config.LucentConfig;
 import silence.simsool.lucent.config.ModManager;
@@ -301,7 +300,7 @@ public class ConfigScreen extends Screen {
 
 		@Override
 		public boolean keyPressed(int key, int scancode, int mods) {
-			if (input.isFocused() && (key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER)) {
+			if (input.isFocused() && (key == InputConstants.KEY_RETURN || key == InputConstants.KEY_NUMPADENTER)) {
 				handleCreate();
 				return true;
 			}
@@ -441,8 +440,8 @@ public class ConfigScreen extends Screen {
 		@Override
 		public boolean keyPressed(int key, int scancode, int mods) {
 			if (editing) {
-				if (key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER) { finishEditing(); return true; }
-				if (key == GLFW.GLFW_KEY_ESCAPE) { editing = false; renameBox.setVisible(false); return true; }
+				if (key == InputConstants.KEY_RETURN || key == InputConstants.KEY_NUMPADENTER) { finishEditing(); return true; }
+				if (key == InputConstants.KEY_ESCAPE) { editing = false; renameBox.setVisible(false); return true; }
 				return renameBox.keyPressed(key, scancode, mods);
 			}
 			return false;
@@ -833,7 +832,7 @@ public class ConfigScreen extends Screen {
 	public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick) {
 		float mx = UMouse.getSkijaScaledX(uiScale);
 		float my = UMouse.getSkijaScaledY(uiScale);
-		int btn  = event.button();
+		int btn  = UMouse.getButton(event);
 
 		// KeyBindButton이 대기 중일 때 모든 클릭을 가로챔
 		for (UIWidget w : widgets) {
@@ -961,7 +960,7 @@ public class ConfigScreen extends Screen {
 	@Override
 	public boolean mouseDragged(MouseButtonEvent event, double mouseX, double mouseY) {
 		float mx = UMouse.getSkijaScaledX(uiScale), my = UMouse.getSkijaScaledY(uiScale);
-		int btn  = event.button();
+		int btn  = UMouse.getButton(event);
 
 		if (scrollbarDragging && btn == 0) {
 			scrollOffset = scrollbarThumbOffset(my);
@@ -987,7 +986,7 @@ public class ConfigScreen extends Screen {
 	public boolean mouseReleased(MouseButtonEvent event) {
 		scrollbarDragging = false;
 		float mx = UMouse.getSkijaScaledX(uiScale), my = UMouse.getSkijaScaledY(uiScale);
-		int btn  = event.button();
+		int btn  = UMouse.getButton(event);
 
 		for (UIWidget w : overlayWidgets) {
 			if (!shouldSkipOverlay(w)) {
@@ -1040,35 +1039,35 @@ public class ConfigScreen extends Screen {
 		// waiting 상태인 KeyBindButton에게 먼저 이벤트를 전달
 		for (UIWidget w : widgets) {
 			if (w instanceof KeyBindButton kbb && kbb.isWaiting()) {
-				if (kbb.keyPressed(key, input.scancode(), input.modifiers())) return true;
+				if (kbb.keyPressed(key, 0, input.modifiers())) return true;
 			}
 		}
 		for (UIWidget w : overlayWidgets) {
 			if (w instanceof KeyBindButton kbb && kbb.isWaiting()) {
-				if (kbb.keyPressed(key, input.scancode(), input.modifiers())) return true;
+				if (kbb.keyPressed(key, 0, input.modifiers())) return true;
 			}
 		}
 
-		if (key == GLFW.GLFW_KEY_ESCAPE) {
+		if (key == InputConstants.KEY_ESCAPE) {
 			this.onClose();
 			return true;
 		}
 
-//		if (key == GLFW.GLFW_KEY_TAB || key == GLFW.GLFW_KEY_LEFT) {
+//		if (key == InputConstants.KEY_TAB || key == InputConstants.KEY_LEFT) {
 //			if (!history.isEmpty()) goBack();
 //			return true;
 //		}
 //
-//		if (key == GLFW.GLFW_KEY_RIGHT) {
+//		if (key == InputConstants.KEY_RIGHT) {
 //			if (!forwardHistory.isEmpty()) goForward();
 //			return true;
 //		}
 
 		for (UIWidget w : widgets) {
-			if (w.keyPressed(key, input.scancode(), input.modifiers())) return true;
+			if (w.keyPressed(key, 0, input.modifiers())) return true;
 		}
 		for (UIWidget w : overlayWidgets) {
-			if (!shouldSkipOverlay(w) && w.keyPressed(key, input.scancode(), input.modifiers())) return true;
+			if (!shouldSkipOverlay(w) && w.keyPressed(key, 0, input.modifiers())) return true;
 		}
 		return super.keyPressed(input);
 	}
@@ -1079,20 +1078,20 @@ public class ConfigScreen extends Screen {
 
 		for (UIWidget w : widgets) {
 			if (w instanceof KeyBindButton kbb && kbb.isWaiting()) {
-				if (kbb.keyReleased(key, input.scancode(), input.modifiers())) return true;
+				if (kbb.keyReleased(key, 0, input.modifiers())) return true;
 			}
 		}
 		for (UIWidget w : overlayWidgets) {
 			if (w instanceof KeyBindButton kbb && kbb.isWaiting()) {
-				if (kbb.keyReleased(key, input.scancode(), input.modifiers())) return true;
+				if (kbb.keyReleased(key, 0, input.modifiers())) return true;
 			}
 		}
 
 		for (UIWidget w : widgets) {
-			if (w.keyReleased(key, input.scancode(), input.modifiers())) return true;
+			if (w.keyReleased(key, 0, input.modifiers())) return true;
 		}
 		for (UIWidget w : overlayWidgets) {
-			if (!shouldSkipOverlay(w) && w.keyReleased(key, input.scancode(), input.modifiers())) return true;
+			if (!shouldSkipOverlay(w) && w.keyReleased(key, 0, input.modifiers())) return true;
 		}
 
 		return super.keyReleased(input);
@@ -1363,7 +1362,7 @@ public class ConfigScreen extends Screen {
 		int btnW = 120;
 		ActionButton updateBtn = new ActionButton(sx + itemW - PAD - btnW, currentY + 19, btnW, 36, L10n.translate("lucent.preferences.update"));
 		updateBtn.setOnClick(() -> {
-			Util.getPlatform().openUri(LucentConfig.GITHUB_LINK + "/releases");
+			UDesktop.openBrowse(LucentConfig.GITHUB_LINK + "/releases");
 		});
 		widgets.add(updateBtn);
 

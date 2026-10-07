@@ -25,6 +25,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import silence.simsool.lucent.events.impl.EntityEvent;
 import silence.simsool.lucent.events.impl.LucentEvent;
+import silence.simsool.lucent.general.utils.render.RoundRectPIPRenderer;
 
 @Mixin(Minecraft.class)
 public class MixinMinecraft {
@@ -90,4 +91,8 @@ public class MixinMinecraft {
 		LucentEvent.RIGHT_CLICK_POST_EVENT.invoker().onRightClickPost(event);
 	}
 
+	@Inject(method = "renderFrame", at = @At("RETURN"))
+	private void lucent$onRenderFrameEnd(boolean tick, CallbackInfo ci) {
+		RoundRectPIPRenderer.clear();
+	}
 }
