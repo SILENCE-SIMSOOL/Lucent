@@ -20,7 +20,7 @@ import silence.simsool.lucent.events.impl.GUIEvent;
 public class MixinItemStack {
 
 	@Inject(method = "getTooltipLines", at = @At("RETURN"), cancellable = true)
-	private void onGetTooltipLines(TooltipContext context, @Nullable Player player, TooltipFlag flags, CallbackInfoReturnable<List<Component>> cir) {
+	private void lucent$onGetTooltipLines(TooltipContext context, @Nullable Player player, TooltipFlag flags, CallbackInfoReturnable<List<Component>> cir) {
 		List<Component> list = cir.getReturnValue();
 		if (list != null && mc.player != null) {
 			GUIEvent.TooltipEvent event = new GUIEvent.TooltipEvent((ItemStack) (Object) this, list, context, flags, player);

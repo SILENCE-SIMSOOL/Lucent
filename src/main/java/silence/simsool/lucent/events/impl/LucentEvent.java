@@ -190,7 +190,7 @@ public class LucentEvent {
 		IChatEvent.class, listeners -> event -> {
 			for (IChatEvent listener : listeners) {
 				listener.onChat(event);
-				if (event.isCanceled()) break;
+				// if (event.isCanceled()) break;
 			}
 		}
 	);

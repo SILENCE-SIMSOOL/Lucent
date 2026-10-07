@@ -13,13 +13,10 @@ public class PrimitiveRenderer {
 	private static final int[] EDGES = { 0, 1, 1, 5, 5, 4, 4, 0, 3, 2, 2, 6, 6, 7, 7, 3, 0, 3, 1, 2, 5, 6, 4, 7 };
 
 	public static void renderLineBox(PoseStack.Pose pose, VertexConsumer buffer, AABB aabb, float r, float g, float b, float a, float thickness) {
-		float x0 = (float) aabb.minX;
-		float y0 = (float) aabb.minY;
-		float z0 = (float) aabb.minZ;
-		float x1 = (float) aabb.maxX;
-		float y1 = (float) aabb.maxY;
-		float z1 = (float) aabb.maxZ;
+		renderLineBox(pose, buffer, (float) aabb.minX, (float) aabb.minY, (float) aabb.minZ, (float) aabb.maxX, (float) aabb.maxY, (float) aabb.maxZ, r, g, b, a, thickness);
+	}
 
+	public static void renderLineBox(PoseStack.Pose pose, VertexConsumer buffer, float x0, float y0, float z0, float x1, float y1, float z1, float r, float g, float b, float a, float thickness) {
 		float[] corners = { x0, y0, z0, x1, y0, z0, x1, y1, z0, x0, y1, z0, x0, y0, z1, x1, y0, z1, x1, y1, z1, x0, y1, z1 };
 
 		for (int i = 0; i < EDGES.length; i += 2) {

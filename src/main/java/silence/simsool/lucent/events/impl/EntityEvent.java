@@ -34,6 +34,11 @@ import silence.simsool.lucent.general.utils.Pair;
 
 public final class EntityEvent {
 
+	public static volatile boolean hasRenderEntityAllowListeners = false;
+	public static volatile boolean hasRenderEntityPreListeners = false;
+	public static volatile boolean hasExtractRenderStatePreListeners = false;
+	public static volatile boolean hasExtractRenderStatePostListeners = false;
+
 	public static final Event<IEntityJoinEvent> ENTITY_JOIN_EVENT = createArrayBacked(
 		IEntityJoinEvent.class, listeners -> event -> {
 			for (IEntityJoinEvent listener : listeners) {

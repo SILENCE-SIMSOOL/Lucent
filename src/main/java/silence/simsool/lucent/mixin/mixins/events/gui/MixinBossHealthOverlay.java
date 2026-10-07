@@ -14,7 +14,7 @@ import silence.simsool.lucent.events.impl.LucentEvent;
 public abstract class MixinBossHealthOverlay {
 
 	@Inject(method = "extractBar(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IILnet/minecraft/world/BossEvent;)V", at = @At("HEAD"), cancellable = true)
-	private void onExtractBar(GuiGraphicsExtractor guiGraphics, int i, int j, BossEvent bossBar, CallbackInfo ci) {
+	private void lucent$onExtractBar(GuiGraphicsExtractor guiGraphics, int i, int j, BossEvent bossBar, CallbackInfo ci) {
 		LucentEvent.RenderBossBarEvent event = new LucentEvent.RenderBossBarEvent(bossBar);
 		LucentEvent.BOSS_BAR_RENDER_EVENT.invoker().onRenderBossBar(event);
 		if (event.isCanceled()) ci.cancel();

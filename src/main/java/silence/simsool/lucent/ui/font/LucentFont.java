@@ -22,6 +22,10 @@ public class LucentFont {
 		return name;
 	}
 
+	public byte[] getBytes() {
+		return cachedBytes;
+	}
+
 	public synchronized ByteBuffer buffer() {
 		if (cachedBytes == null) {
 			throw new IllegalStateException("Font bytes not cached for font: " + name);

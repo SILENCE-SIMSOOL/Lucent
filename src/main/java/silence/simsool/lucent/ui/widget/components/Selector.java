@@ -10,8 +10,8 @@ import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UColor;
 import silence.simsool.lucent.ui.utils.UIColors;
 import silence.simsool.lucent.ui.utils.ULayout;
-import silence.simsool.lucent.ui.utils.nvg.Fonts;
-import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
+import silence.simsool.lucent.ui.utils.skija.Fonts;
+import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 import silence.simsool.lucent.ui.widget.UIWidget;
 
 public class Selector extends UIWidget {
@@ -55,44 +55,44 @@ public class Selector extends UIWidget {
 
 	@Override
 	protected void renderWidget(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
-		NVGRenderer.push();
+		SkijaRenderer.push();
 		dropdownAnim = UAnimation.stepProgress(dropdownAnim, isOpen, 12f, delta);
 
 		int bg = UColor.withAlpha(UIColors.PURE_BLACK, 40);
 		int border = isOpen ? UIColors.ACCENT_BLUE : (hovered ? UColor.withAlpha(UIColors.ACCENT_BLUE, 180) : UIColors.ITEM_BORDER);
 
-		NVGRenderer.rect(x, y, width, height, bg, 8f);
-		NVGRenderer.outlineRect(x, y, width, height, 1, border, 8f);
+		SkijaRenderer.rect(x, y, width, height, bg, 8f);
+		SkijaRenderer.outlineRect(x, y, width, height, 1, border, 8f);
 
 		String currentText = displayOptions.isEmpty() ? "" : displayOptions.get(selectedIndex);
 		int textAreaW = width - PADDING * 2 - ARROW_W - 4;
 		String clipped = fitText(currentText, textAreaW, Fonts.PRETENDARD_MEDIUM);
 		
 		int ty = y + (height - 14) / 2;
-		NVGRenderer.text(clipped, x + PADDING, ty, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_PRIMARY, 14f);
+		SkijaRenderer.text(clipped, x + PADDING, ty, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_PRIMARY, 14f);
 
 		drawChevron(x + width - PADDING - 4, y + height / 2, dropdownAnim);
-		NVGRenderer.pop();
+		SkijaRenderer.pop();
 	}
 
 	private void drawChevron(float cx, float cy, float openProgress) {
 		float size = 5f;
 		float angle = UAnimation.lerp(0, (float)Math.PI, openProgress);
 		
-		NVGRenderer.push();
-		NVGRenderer.translate(cx, cy);
-		NVGRenderer.rotate(angle);
+		SkijaRenderer.push();
+		SkijaRenderer.translate(cx, cy);
+		SkijaRenderer.rotate(angle);
 		
-		NVGRenderer.line(-size, -size/2, 0, size/2, 1.5f, UIColors.TEXT_SECONDARY);
-		NVGRenderer.line(0, size/2, size, -size/2, 1.5f, UIColors.TEXT_SECONDARY);
+		SkijaRenderer.line(-size, -size/2, 0, size/2, 1.5f, UIColors.TEXT_SECONDARY);
+		SkijaRenderer.line(0, size/2, size, -size/2, 1.5f, UIColors.TEXT_SECONDARY);
 		
-		NVGRenderer.pop();
+		SkijaRenderer.pop();
 	}
 
 	@Override
 	public void renderOverlay(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
 		if (dropdownAnim <= 0.01f) return;
-		NVGRenderer.push();
+		SkijaRenderer.push();
 		int visibleCount = Math.min(options.size(), MAX_VISIBLE);
 		int itemHeight = this.height;
 		int totalH = visibleCount * itemHeight;
@@ -101,9 +101,9 @@ public class Selector extends UIWidget {
 		int dx = x;
 		int dy = y + height + 2;
 
-		NVGRenderer.pushScissor(dx, dy, width, visibleH);
-		NVGRenderer.rect(dx, dy, width, visibleH, dropdownBgColor, 10f);
-		NVGRenderer.outlineRect(dx, dy, width, visibleH, 1, borderColor, 10f);
+		SkijaRenderer.pushScissor(dx, dy, width, visibleH);
+		SkijaRenderer.rect(dx, dy, width, visibleH, dropdownBgColor, 10f);
+		SkijaRenderer.outlineRect(dx, dy, width, visibleH, 1, borderColor, 10f);
 
 		for (int i = 0; i < visibleCount; i++) {
 			int idx = i + scrollOffset;
@@ -113,18 +113,18 @@ public class Selector extends UIWidget {
 			boolean isSelected = (idx == selectedIndex);
 			boolean isItemHovered = (hoveredItem == idx);
 
-			if (i < visibleCount - 1) NVGRenderer.rect(dx + 4, iy + itemHeight - 1, width - 8, 1, separatorColor);
+			if (i < visibleCount - 1) SkijaRenderer.rect(dx + 4, iy + itemHeight - 1, width - 8, 1, separatorColor);
 
 			if (isSelected || isItemHovered) {
 				int targetBg = isSelected ? UColor.withAlpha(UIColors.ACCENT_BLUE, 100) : itemHoverColor;
-				if (i == 0) NVGRenderer.rect(dx, iy, width, itemHeight, targetBg, 10, 10, 0, 0);
-				else if (i == visibleCount - 1) NVGRenderer.rect(dx, iy, width, itemHeight, targetBg, 0, 0, 10, 10);
-				else NVGRenderer.rect(dx, iy, width, itemHeight, targetBg);
+				if (i == 0) SkijaRenderer.rect(dx, iy, width, itemHeight, targetBg, 10, 10, 0, 0);
+				else if (i == visibleCount - 1) SkijaRenderer.rect(dx, iy, width, itemHeight, targetBg, 0, 0, 10, 10);
+				else SkijaRenderer.rect(dx, iy, width, itemHeight, targetBg);
 			}
 
 			String optText = fitText(displayOptions.get(idx), width - PADDING * 2, Fonts.PRETENDARD_MEDIUM);
 			int iTextY = iy + (itemHeight - (int)FONT_SIZE) / 2;
-			NVGRenderer.text(optText, dx + PADDING, iTextY, Fonts.PRETENDARD_MEDIUM, textColor, FONT_SIZE);
+			SkijaRenderer.text(optText, dx + PADDING, iTextY, Fonts.PRETENDARD_MEDIUM, textColor, FONT_SIZE);
 
 		}
 
@@ -134,10 +134,10 @@ public class Selector extends UIWidget {
 			int thumbH = Math.max(16, (int)(trackH * thumbRatio));
 			float scrollT = (float) scrollOffset / (options.size() - MAX_VISIBLE);
 			int thumbY = dy + 4 + (int)((trackH - thumbH) * scrollT);
-			NVGRenderer.rect(dx + width - 4, thumbY, 3, thumbH, 0xFF666666, 2f);
+			SkijaRenderer.rect(dx + width - 4, thumbY, 3, thumbH, 0xFF666666, 2f);
 		}
 
-		NVGRenderer.popScissor();
+		SkijaRenderer.popScissor();
 
 		hoveredItem = -1;
 		for (int i = 0; i < visibleCount; i++) {
@@ -148,14 +148,14 @@ public class Selector extends UIWidget {
 				break;
 			}
 		}
-		NVGRenderer.pop();
+		SkijaRenderer.pop();
 	}
 
 	private String fitText(String text, int maxWidth, LucentFont font) {
-		if (NVGRenderer.textWidth(text, font, FONT_SIZE) <= maxWidth) return text;
+		if (SkijaRenderer.textWidth(text, font, FONT_SIZE) <= maxWidth) return text;
 		String suffix = "...";
 		String current = text;
-		while (current.length() > 0 && NVGRenderer.textWidth(current + suffix, font, FONT_SIZE) > maxWidth) {
+		while (current.length() > 0 && SkijaRenderer.textWidth(current + suffix, font, FONT_SIZE) > maxWidth) {
 			current = current.substring(0, current.length() - 1);
 		}
 		return current + suffix;

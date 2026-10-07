@@ -6,7 +6,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UColor;
 import silence.simsool.lucent.ui.utils.UIColors;
-import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
+import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 import silence.simsool.lucent.ui.widget.UIWidget;
 
 public class ToggleButton extends UIWidget {
@@ -27,7 +27,7 @@ public class ToggleButton extends UIWidget {
 
 	@Override
 	protected void renderWidget(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
-		NVGRenderer.push();
+		SkijaRenderer.push();
 		
 		float target = value ? 1.0f : 0.0f;
 		animProgress = animProgress + (target - animProgress) * ANIM_SPEED * delta * 2.5f;
@@ -55,11 +55,11 @@ public class ToggleButton extends UIWidget {
 		float thumbX = UAnimation.lerp(minX, maxX, animProgress);
 		float thumbY = y + height / 2.0f;
 
-		NVGRenderer.rect(x, y, width, height, trackColor, height / 2.0f);
-		NVGRenderer.dropShadow(thumbX - expandedRadius, thumbY - expandedRadius, expandedRadius * 2, expandedRadius * 2, 4f, 0f, expandedRadius);
-		NVGRenderer.circle(thumbX, thumbY, expandedRadius, UIColors.PURE_WHITE);
+		SkijaRenderer.rect(x, y, width, height, trackColor, height / 2.0f);
+		SkijaRenderer.dropShadow(thumbX - expandedRadius, thumbY - expandedRadius, expandedRadius * 2, expandedRadius * 2, 4f, 0f, expandedRadius);
+		SkijaRenderer.circle(thumbX, thumbY, expandedRadius, UIColors.PURE_WHITE);
 		
-		NVGRenderer.pop();
+		SkijaRenderer.pop();
 	}
 
 	@Override

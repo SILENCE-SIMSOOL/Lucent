@@ -26,7 +26,7 @@ import silence.simsool.lucent.general.utils.useful.UScreen;
 public class MixinClientPacketListener {
 
 	@Inject(method = "handleOpenScreen", at = @At("HEAD"), cancellable = true)
-	private void onHandleOpenScreen(ClientboundOpenScreenPacket packet, CallbackInfo ci) {
+	private void lucent$onHandleOpenScreen(ClientboundOpenScreenPacket packet, CallbackInfo ci) {
 		GUIEvent.GUIOpenPreEvent event = new GUIEvent.GUIOpenPreEvent(packet);
 		GUIEvent.OPEN_PRE.EVENT.invoker().onOpenPre(event);
 		if (event.isClosed()) {
@@ -38,7 +38,7 @@ public class MixinClientPacketListener {
 	}
 
 	@Inject(method = "handleContainerSetSlot", at = @At("TAIL"))
-	private void onHandleContainerSetSlot(ClientboundContainerSetSlotPacket packet, CallbackInfo ci) {
+	private void lucent$onHandleContainerSetSlot(ClientboundContainerSetSlotPacket packet, CallbackInfo ci) {
 		if (UScreen.getScreen() instanceof AbstractContainerScreen<?> container) {
 			GUIEvent.SlotUpdateEvent event = new GUIEvent.SlotUpdateEvent(UScreen.getScreen(), packet, container.getMenu());
 			GUIEvent.SLOT.Update.EVENT.invoker().onSlotUpdate(event);
@@ -46,7 +46,7 @@ public class MixinClientPacketListener {
 	}
 
 	@WrapOperation(method = "handleBundlePacket", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/Packet;handle(Lnet/minecraft/network/PacketListener;)V"))
-	private void onHandleBundlePacket(Packet<?> packet, PacketListener listener, Operation<Void> original) {
+	private void lucent$onHandleBundlePacket(Packet<?> packet, PacketListener listener, Operation<Void> original) {
 		PacketEvent.ReceiveEvent event = new PacketEvent.ReceiveEvent(packet);
 		PacketEvent.RECEIVE.invoker().onReceivePacket(event);
 		if (event.isCanceled()) return;
@@ -54,7 +54,7 @@ public class MixinClientPacketListener {
 	}
 
 	@WrapOperation(method = "handleTakeItemEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/item/ItemEntity;getItem()Lnet/minecraft/world/item/ItemStack;"))
-	private ItemStack onItemPickupEventNormal(ItemEntity instance, Operation<ItemStack> original) {
+	private ItemStack lucent$onItemPickupEventNormal(ItemEntity instance, Operation<ItemStack> original) {
 		ItemStack stack = original.call(instance);
 		LucentEvent.ITEM_PICKUP_EVENT.invoker().onItemPickup(new LucentEvent.ItemPickupEvent(instance, instance.getId()));
 		return stack;

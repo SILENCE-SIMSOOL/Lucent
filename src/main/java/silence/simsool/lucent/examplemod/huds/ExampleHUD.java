@@ -7,14 +7,14 @@ import silence.simsool.lucent.general.enums.RenderType;
 import silence.simsool.lucent.general.models.abstracts.LucentHUD;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
 import silence.simsool.lucent.ui.utils.UIColors;
-import silence.simsool.lucent.ui.utils.nvg.Fonts;
-import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
+import silence.simsool.lucent.ui.utils.skija.Fonts;
+import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 
 public class ExampleHUD extends LucentHUD {
 
 	public ExampleHUD() {
 		super(
-				"chatting", // (Required): Name to be saved in the config
+				"lucent_examplehud", // (Required): Name to be saved in the config
 				ExampleMod.class, // (Optional): Depends on the activation status of the specified mod class. If no class is specified, isEnabled() and disable() must be overridden.
 				0.01f, 0.05f, // (Required): Initial position
 				1.0f, // (Required): Initial scale
@@ -22,10 +22,10 @@ public class ExampleHUD extends LucentHUD {
 		);
 	}
 
-	// (Required): Set the rendering type. Use NANOVG for NVG pipelines (NVGRenderer); otherwise, use MINECRAFT.
+	// (Required): Set the rendering type. Use SKIJA for Skija pipelines (SkijaRenderer); otherwise, use MINECRAFT.
 	@Override
 	public RenderType getRenderType() {
-		return RenderType.NANOVG;
+		return RenderType.SKIJA;
 		// return RenderType.MINECRAFT;
 	}
 
@@ -70,8 +70,8 @@ public class ExampleHUD extends LucentHUD {
 		float rx = getRenderX(), ry = getRenderY();
 		float sw = getScaledWidth(), sh = getScaledHeight();
 		float fs = 14f * scale;
-		NVGRenderer.rect(rx, ry, sw, sh, UIColors.withAlpha(UIColors.PURE_BLACK, 130), 4f * scale);
-		NVGRenderer.text(text, rx + 8 * scale, ry + (sh - fs) / 2f, Fonts.PRETENDARD, UIColors.PURE_WHITE, fs);
+		SkijaRenderer.rect(rx, ry, sw, sh, UIColors.withAlpha(UIColors.PURE_BLACK, 130), 4f * scale);
+		SkijaRenderer.text(text, rx + 8 * scale, ry + (sh - fs) / 2f, Fonts.PRETENDARD, UIColors.PURE_WHITE, fs);
 	}
 
 }

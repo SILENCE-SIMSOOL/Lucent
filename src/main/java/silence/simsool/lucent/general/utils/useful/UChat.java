@@ -129,13 +129,74 @@ public class UChat {
 	}
 
 	// --- Color Utils ---
-	public static String cleanColor(String in) { 
-		return in.replaceAll("(?i)\\u00A7.", "");
+//	public static String cleanColor(String in) { 
+//		return in.replaceAll("(?i)\\u00A7.", "");
+//	}
+//
+//	public static String applyColor(String text) {
+//		return text.replace("&&", "\u0000").replaceAll("&([0-9a-fA-Fk-orK-OR])", "§$1").replace("\u0000", "&");
+//	}
+
+	/**
+	 * Fast Clean Color
+	 *
+	 * Removes Minecraft color codes without using regular expressions.
+	 * This avoids regex overhead and reduces unnecessary allocations.
+	 *
+	 * @author SimSool
+	 */
+	public static String cleanColor(String in) {
+		int first = in.indexOf('\u00A7'); if (first == -1) return in;
+		char[] result = new char[in.length()];
+		in.getChars(0, first, result, 0);
+		int len = first;
+		for (int i = first; i < in.length(); i++) {
+			if (in.charAt(i) == '\u00A7') {
+				i++;
+				continue;
+			}
+			result[len++] = in.charAt(i);
+		}
+		return new String(result, 0, len);
 	}
 
+	/**
+	 * Fast Apply Color
+	 *
+	 * Applies Minecraft color codes without using regular expressions.
+	 * Handles escaped ampersands (&&) while avoiding regex overhead
+	 * and unnecessary intermediate String allocations.
+	 *
+	 * @author SimSool
+	 */
 	public static String applyColor(String text) {
-		if (text == null) return null;
-		return text.replace("&&", "\u0000").replaceAll("&([0-9a-fA-Fk-orK-OR])", "§$1").replace("\u0000", "&");
+		int first = text.indexOf('&'); if (first == -1) return text;
+		char[] result = new char[text.length()];
+		text.getChars(0, first, result, 0);
+		int len = first;
+		for (int i = first; i < text.length(); i++) {
+			char c = text.charAt(i);
+			if (c == '&' && i + 1 < text.length()) {
+				char next = text.charAt(i + 1);
+				if (next == '&') {
+					result[len++] = '&';
+					i++;
+					continue;
+				}
+				if (
+						(next >= '0' && next <= '9') || (next >= 'a' && next <= 'f') ||
+						(next >= 'A' && next <= 'F') || (next >= 'k' && next <= 'o') ||
+						(next >= 'K' && next <= 'O') || next == 'r' || next == 'R'
+				) {
+					result[len++] = '§';
+					result[len++] = next;
+					i++;
+					continue;
+				}
+			}
+			result[len++] = c;
+		}
+		return new String(result, 0, len);
 	}
 
 	// --- Component ---

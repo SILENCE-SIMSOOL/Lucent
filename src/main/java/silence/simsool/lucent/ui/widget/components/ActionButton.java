@@ -4,8 +4,8 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UColor;
 import silence.simsool.lucent.ui.utils.UIColors;
-import silence.simsool.lucent.ui.utils.nvg.Fonts;
-import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
+import silence.simsool.lucent.ui.utils.skija.Fonts;
+import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 import silence.simsool.lucent.ui.widget.UIWidget;
 
 public class ActionButton extends UIWidget {
@@ -29,19 +29,19 @@ public class ActionButton extends UIWidget {
 
 		// Subtle lift/glow on hover
 		if (hoverAnim > 0) {
-			NVGRenderer.rect(x - hoverAnim * 1, y - hoverAnim * 1, width + hoverAnim * 2, height + hoverAnim * 2, UColor.withAlpha(UIColors.ACCENT_BLUE, (int)(hoverAnim * 20)), 9f);
+			SkijaRenderer.rect(x - hoverAnim * 1, y - hoverAnim * 1, width + hoverAnim * 2, height + hoverAnim * 2, UColor.withAlpha(UIColors.ACCENT_BLUE, (int)(hoverAnim * 20)), 9f);
 		}
 
-		NVGRenderer.rect(x, y, width, height, bgColor, 8f);
-		NVGRenderer.outlineRect(x, y, width, height, 1, borderColor, 8f);
+		SkijaRenderer.rect(x, y, width, height, bgColor, 8f);
+		SkijaRenderer.outlineRect(x, y, width, height, 1, borderColor, 8f);
 
 		if (label == null || label.isEmpty()) {
 			float is = 18f;
-			NVGRenderer.text(DEFAULT_ICON, x + (width - is) / 2f, y + (height - is) / 2f + 1f, Fonts.MATERIAL_ICONS_ROUND, textColor, is);
+			SkijaRenderer.text(DEFAULT_ICON, x + (width - is) / 2f, y + (height - is) / 2f + 1f, Fonts.MATERIAL_ICONS_ROUND, textColor, is);
 		} else {
-			float tw = NVGRenderer.textWidth(label, Fonts.PRETENDARD_MEDIUM, 14f);
+			float tw = SkijaRenderer.textWidth(label, Fonts.PRETENDARD_MEDIUM, 14f);
 			float ty = y + (height - 14f) / 2f;
-			NVGRenderer.text(label, x + (width - tw) / 2f, ty, Fonts.PRETENDARD_MEDIUM, textColor, 14f);
+			SkijaRenderer.text(label, x + (width - tw) / 2f, ty, Fonts.PRETENDARD_MEDIUM, textColor, 14f);
 		}
 	}
 

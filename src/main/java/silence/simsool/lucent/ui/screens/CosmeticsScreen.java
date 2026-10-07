@@ -8,10 +8,6 @@ import java.util.UUID;
 
 import org.joml.Matrix3x2fStack;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.nanovg.NanoVG;
-
-import com.mojang.blaze3d.opengl.GlTexture;
-import com.mojang.blaze3d.textures.GpuTexture;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
@@ -21,7 +17,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import silence.simsool.lucent.config.LucentConfig;
 import silence.simsool.lucent.config.ModManager;
-import silence.simsool.lucent.general.models.data.nvg.NVGImageEntry;
 import silence.simsool.lucent.general.utils.MinecraftColor;
 import silence.simsool.lucent.general.utils.useful.UDesktop;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
@@ -31,9 +26,9 @@ import silence.simsool.lucent.init.PremiumCosmetics;
 import silence.simsool.lucent.ui.utils.UAnimation;
 import silence.simsool.lucent.ui.utils.UIColors;
 import silence.simsool.lucent.ui.utils.URender;
-import silence.simsool.lucent.ui.utils.nvg.Fonts;
-import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
-import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
+import silence.simsool.lucent.ui.utils.skija.Fonts;
+import silence.simsool.lucent.ui.utils.skija.Image;
+import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 
 public class CosmeticsScreen extends Screen {
 
@@ -57,7 +52,7 @@ public class CosmeticsScreen extends Screen {
 	private final ModManager moduleManager;
 	private String currentCategory = "Wings"; // Hats, Wings, Capes
 
-	private final Map<Identifier, NVGImageEntry> nvgImageCache = new HashMap<>();
+	private final Map<Identifier, Image> cosmeticImageCache = new HashMap<>();
 
 	private long openTime = -1L;
 
@@ -80,7 +75,7 @@ public class CosmeticsScreen extends Screen {
 			return;
 		}
 
-		float standardScale = NVGRenderer.getStandardGuiScale();
+		float standardScale = SkijaRenderer.getStandardGuiScale();
 		if (standardScale <= 0f) standardScale = 1f;
 		float screenW = UDisplay.getScreenWidth() / standardScale;
 		float screenH = UDisplay.getScreenHeight() / standardScale;
@@ -123,42 +118,27 @@ public class CosmeticsScreen extends Screen {
 	public void onClose() {
 		PremiumCosmetics.isPreviewActive = false;
 
-		for (NVGImageEntry entry : nvgImageCache.values()) {
-			NanoVG.nvgDeleteImage(NVGRenderer.getVG(), entry.nvgImageHandle);
+		for (Image entry : cosmeticImageCache.values()) {
+			if (entry != null) entry.close();
 		}
-		nvgImageCache.clear();
+		cosmeticImageCache.clear();
 
 		super.onClose();
 	}
 
-	private int getOrCreateNvgImage(Identifier id, int glId, int w, int h) {
-		if (id == null || glId == -1) return -1;
-		NVGImageEntry entry = nvgImageCache.get(id);
-		if (entry != null && entry.glId == glId) {
-			return entry.nvgImageHandle;
-		}
-		if (entry != null) {
-			NanoVG.nvgDeleteImage(NVGRenderer.getVG(), entry.nvgImageHandle);
-			nvgImageCache.remove(id);
-		}
-		int handle = NVGRenderer.createNVGImage(glId, w, h);
-		if (handle != -1) {
-			nvgImageCache.put(id, new NVGImageEntry(glId, handle));
-		}
-		return handle;
-	}
-
-	private int getGlTextureId(Identifier id) {
-		if (id == null) return -1;
-		try {
-			var tex = mc.getTextureManager().getTexture(id);
-			if (tex == null) return -1;
-			GpuTexture gpuTex = tex.getTexture();
-			if (gpuTex instanceof GlTexture glTex) return glTex.glId();
-			return -1;
-		} catch (Throwable t) {
-			return -1;
-		}
+	private Image getOrCreateCosmeticImage(Identifier id) {
+		if (id == null) return null;
+		return cosmeticImageCache.computeIfAbsent(id, k -> {
+			try {
+				var resource = mc.getResourceManager().getResource(k);
+				if (resource.isPresent()) {
+					try (var in = resource.get().open()) {
+						return new Image(k.toString(), in.readAllBytes());
+					}
+				}
+			} catch (Exception ignored) {}
+			return null;
+		});
 	}
 
 	@Override
@@ -180,20 +160,20 @@ public class CosmeticsScreen extends Screen {
 		float elapsed = (float)(System.currentTimeMillis() - startTime);
 		openAnimationProgress = Math.min(1f, elapsed / 400f);
 
-		NVGPIPRenderer.draw(graphics, 0, 0, width, height, () -> {
-			float gs  = NVGRenderer.getStandardGuiScale();
-			float smx = UMouse.getNvgScaledX(uiScale);
-			float smy = UMouse.getNvgScaledY(uiScale);
+		SkijaRenderer.draw(graphics, 0, 0, width, height, () -> {
+			float gs  = SkijaRenderer.getStandardGuiScale();
+			float smx = UMouse.getSkijaScaledX(uiScale);
+			float smy = UMouse.getSkijaScaledY(uiScale);
 
-			NVGRenderer.push();
+			SkijaRenderer.push();
 			
 			// Open Animation
 			float ease = UAnimation.Easing.spring(openAnimationProgress);
-			NVGRenderer.translate(width / 2f, height / 2f);
-			NVGRenderer.scale(0.9f + 0.1f * ease, 0.9f + 0.1f * ease);
-			NVGRenderer.translate(-width / 2f, -height / 2f);
-			NVGRenderer.globalAlpha(UAnimation.clamp(openAnimationProgress * 1.5f, 0f, 1f));
-			NVGRenderer.scale(gs * uiScale, gs * uiScale);
+			SkijaRenderer.translate(width / 2f, height / 2f);
+			SkijaRenderer.scale(0.9f + 0.1f * ease, 0.9f + 0.1f * ease);
+			SkijaRenderer.translate(-width / 2f, -height / 2f);
+			SkijaRenderer.globalAlpha(UAnimation.clamp(openAnimationProgress * 1.5f, 0f, 1f));
+			SkijaRenderer.scale(gs * uiScale, gs * uiScale);
 
 			// 1. Draw Frame
 			drawFrame();
@@ -207,7 +187,7 @@ public class CosmeticsScreen extends Screen {
 			// 4. Draw Album Grid
 			renderItemAlbum(smx, smy);
 
-			NVGRenderer.pop();
+			SkijaRenderer.pop();
 		});
 
 		if (mc.player != null && openTime < System.currentTimeMillis()) {
@@ -268,16 +248,16 @@ public class CosmeticsScreen extends Screen {
 
 	private void drawFrame() {
 		int round = 20;
-		NVGRenderer.dropShadow(winX, winY, WINDOW_W, WINDOW_H, 30f, 0f, round);
-		NVGRenderer.rect(winX, winY, WINDOW_W, WINDOW_H, 0xD9151821, round);
-		NVGRenderer.outlineRect(winX, winY, WINDOW_W, WINDOW_H, 1.5f, 0x1AFFFFFF, round);
+		SkijaRenderer.dropShadow(winX, winY, WINDOW_W, WINDOW_H, 30f, 0f, round);
+		SkijaRenderer.rect(winX, winY, WINDOW_W, WINDOW_H, 0xD9151821, round);
+		SkijaRenderer.outlineRect(winX, winY, WINDOW_W, WINDOW_H, 1.5f, 0x1AFFFFFF, round);
 
-		NVGRenderer.line(winX + LEFT_W, winY + 40, winX + LEFT_W, winY + WINDOW_H - 40, 1f, 0x10FFFFFF);
+		SkijaRenderer.line(winX + LEFT_W, winY + 40, winX + LEFT_W, winY + WINDOW_H - 40, 1f, 0x10FFFFFF);
 	}
 
 	private void renderHeaderAndTabs(float smx, float smy) {
 		int ix = winX + PAD;
-		NVGRenderer.text("Wardrobe", ix, winY + 30f, Fonts.PRETENDARD_SEMIBOLD, UIColors.PURE_WHITE, 22f);
+		SkijaRenderer.text("Wardrobe", ix, winY + 30f, Fonts.PRETENDARD_SEMIBOLD, UIColors.PURE_WHITE, 22f);
 		
 		int tabX = winX + 300;
 		int tabY = winY + 28;
@@ -295,10 +275,10 @@ public class CosmeticsScreen extends Screen {
 		int bg = active ? 0xFF3182F6 : (hov ? 0x1AFFFFFF : 0x0AFFFFFF);
 		int fg = active ? UIColors.PURE_WHITE : (hov ? UIColors.TEXT_PRIMARY : UIColors.TEXT_SECONDARY);
 		
-		NVGRenderer.rect(x, y, w, h, bg, 16f);
+		SkijaRenderer.rect(x, y, w, h, bg, 16f);
 		
-		float tw = NVGRenderer.textWidth(label, Fonts.PRETENDARD_MEDIUM, 13f);
-		NVGRenderer.text(label, x + (w - tw) / 2f, y + (h - 13f) / 2f, Fonts.PRETENDARD_MEDIUM, fg, 13f);
+		float tw = SkijaRenderer.textWidth(label, Fonts.PRETENDARD_MEDIUM, 13f);
+		SkijaRenderer.text(label, x + (w - tw) / 2f, y + (h - 13f) / 2f, Fonts.PRETENDARD_MEDIUM, fg, 13f);
 	}
 
 	private void renderPlayerShowcase(float smx, float smy) {
@@ -310,8 +290,8 @@ public class CosmeticsScreen extends Screen {
 		float px = sx + sw / 2f;
 		float py = sy + sh / 2f - 20f;
 		
-		NVGRenderer.circle(px, py, 110f, 0x083182F6);
-		NVGRenderer.circle(px, py, 70f, 0x0B3182F6);
+		SkijaRenderer.circle(px, py, 110f, 0x083182F6);
+		SkijaRenderer.circle(px, py, 70f, 0x0B3182F6);
 
 		boolean isPremium = PremiumCosmetics.isPremium(mc.getUser().getProfileId());
 		String btnText = isPremium ? "Edit Custom Cosmetic" : "Get Premium Wardrobe";
@@ -323,10 +303,10 @@ public class CosmeticsScreen extends Screen {
 
 		boolean hov = smx >= bx && smx <= bx + btnW && smy >= by && smy <= by + btnH;
 		int btnBg = hov ? 0xFF1B64DA : 0xFF3182F6;
-		NVGRenderer.rect(bx, by, btnW, btnH, btnBg, 12f);
+		SkijaRenderer.rect(bx, by, btnW, btnH, btnBg, 12f);
 		
-		float tw = NVGRenderer.textWidth(btnText, Fonts.PRETENDARD_SEMIBOLD, 14f);
-		NVGRenderer.text(btnText, bx + (btnW - tw) / 2f, by + (btnH - 14f) / 2f, Fonts.PRETENDARD_SEMIBOLD, UIColors.PURE_WHITE, 14f);
+		float tw = SkijaRenderer.textWidth(btnText, Fonts.PRETENDARD_SEMIBOLD, 14f);
+		SkijaRenderer.text(btnText, bx + (btnW - tw) / 2f, by + (btnH - 14f) / 2f, Fonts.PRETENDARD_SEMIBOLD, UIColors.PURE_WHITE, 14f);
 
 		int bW = (sw - 30) / 2;
 		int backX = sx + 10;
@@ -336,15 +316,15 @@ public class CosmeticsScreen extends Screen {
 
 		boolean hovBack = smx >= backX && smx <= backX + bW && smy >= bY && smy <= bY + bH;
 		int backBg = hovBack ? 0x15FFFFFF : 0x08FFFFFF;
-		NVGRenderer.rect(backX, bY, bW, bH, backBg, 8f);
-		float btw = NVGRenderer.textWidth("Back", Fonts.PRETENDARD_MEDIUM, 13f);
-		NVGRenderer.text("Back", backX + (bW - btw) / 2f, bY + (bH - 13f) / 2f, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_SECONDARY, 13f);
+		SkijaRenderer.rect(backX, bY, bW, bH, backBg, 8f);
+		float btw = SkijaRenderer.textWidth("Back", Fonts.PRETENDARD_MEDIUM, 13f);
+		SkijaRenderer.text("Back", backX + (bW - btw) / 2f, bY + (bH - 13f) / 2f, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_SECONDARY, 13f);
 
 		boolean hovClose = smx >= closeX && smx <= closeX + bW && smy >= bY && smy <= bY + bH;
 		int closeBg = hovClose ? 0x15FFFFFF : 0x08FFFFFF;
-		NVGRenderer.rect(closeX, bY, bW, bH, closeBg, 8f);
-		float ctw = NVGRenderer.textWidth("Close", Fonts.PRETENDARD_MEDIUM, 13f);
-		NVGRenderer.text("Close", closeX + (bW - ctw) / 2f, bY + (bH - 13f) / 2f, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_SECONDARY, 13f);
+		SkijaRenderer.rect(closeX, bY, bW, bH, closeBg, 8f);
+		float ctw = SkijaRenderer.textWidth("Close", Fonts.PRETENDARD_MEDIUM, 13f);
+		SkijaRenderer.text("Close", closeX + (bW - ctw) / 2f, bY + (bH - 13f) / 2f, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_SECONDARY, 13f);
 	}
 
 	private void renderItemAlbum(float smx, float smy) {
@@ -396,52 +376,51 @@ public class CosmeticsScreen extends Screen {
 			border = hov ? 0x2AFFFFFF : 0x10FFFFFF;
 		}
 
-		NVGRenderer.rect(x, y, w, h, bg, 16f);
-		NVGRenderer.outlineRect(x, y, w, h, 1.5f, border, 16f);
+		SkijaRenderer.rect(x, y, w, h, bg, 16f);
+		SkijaRenderer.outlineRect(x, y, w, h, 1.5f, border, 16f);
 
 		if (mode.equals("none")) {
-			float tw = NVGRenderer.textWidth("None", Fonts.PRETENDARD_SEMIBOLD, 15f);
-			NVGRenderer.text("None", x + (w - tw) / 2f, y + (h - 40) / 2f, Fonts.PRETENDARD_SEMIBOLD, UIColors.TEXT_SECONDARY, 15f);
+			float tw = SkijaRenderer.textWidth("None", Fonts.PRETENDARD_SEMIBOLD, 15f);
+			SkijaRenderer.text("None", x + (w - tw) / 2f, y + (h - 40) / 2f, Fonts.PRETENDARD_SEMIBOLD, UIColors.TEXT_SECONDARY, 15f);
 		}
 		else {
 			if (equipped) {
-				float tw = NVGRenderer.textWidth("Equipped", Fonts.PRETENDARD_SEMIBOLD, 14f);
-				NVGRenderer.text("Equipped", x + w - tw - 12, y + 12, Fonts.PRETENDARD_SEMIBOLD, MinecraftColor.GREEN.getRGB(), 14f);
+				float tw = SkijaRenderer.textWidth("Equipped", Fonts.PRETENDARD_SEMIBOLD, 14f);
+				SkijaRenderer.text("Equipped", x + w - tw - 12, y + 12, Fonts.PRETENDARD_SEMIBOLD, MinecraftColor.GREEN.getRGB(), 14f);
 			}
 			Identifier wingId = PremiumCosmetics.getCosmeticTexturePreview("wings", mode);
 			if (wingId != null) {
-				int wingGlId = getGlTextureId(wingId);
-				int nvgWingImg = wingGlId != -1 ? getOrCreateNvgImage(wingId, wingGlId, 64, 64) : -1;
+				Image wingImg = getOrCreateCosmeticImage(wingId);
 
-				if (nvgWingImg != -1) {
+				if (wingImg != null) {
 					float cx = x + w / 2f;
 					float cy = y + (h - 40) / 2f;
 					float cardScale = 2.0f;
 
-					NVGRenderer.push();
-					NVGRenderer.translate(cx, cy);
-					NVGRenderer.image(nvgWingImg, 64, 64, 24, 0, 24, 32, -24f, -24f * cardScale, 35f * cardScale, 40f * cardScale, 0f);
-					NVGRenderer.pop();
+					SkijaRenderer.push();
+					SkijaRenderer.translate(cx, cy);
+					SkijaRenderer.image(wingImg, 64, 64, 24, 0, 24, 32, -24f, -24f * cardScale, 35f * cardScale, 40f * cardScale, 0f);
+					SkijaRenderer.pop();
 				}
 			}
 		}
 
-		float tw = NVGRenderer.textWidth(name, Fonts.PRETENDARD_MEDIUM, 13f);
+		float tw = SkijaRenderer.textWidth(name, Fonts.PRETENDARD_MEDIUM, 13f);
 		int fontColor = selected ? 0xFF3182F6 : (equipped ? 0xFF3182F6 : UIColors.TEXT_PRIMARY);
-		NVGRenderer.text(name, x + (w - tw) / 2f, y + h - 38, Fonts.PRETENDARD_MEDIUM, fontColor, 13f);
+		SkijaRenderer.text(name, x + (w - tw) / 2f, y + h - 38, Fonts.PRETENDARD_MEDIUM, fontColor, 13f);
 
 		if (!mode.equals("none")) {
 			int priceVal = PremiumCosmetics.getCosmeticPrice(currentCategory.toLowerCase(), mode);
 			String price = "$" + String.format("%.2f", (float) priceVal);
-			float ptw = NVGRenderer.textWidth(price, Fonts.PRETENDARD_SEMIBOLD, 11f);
-			NVGRenderer.text(price, x + (w - ptw) / 2f, y + h - 21, Fonts.PRETENDARD_SEMIBOLD, UIColors.TEXT_SECONDARY, 11f);
+			float ptw = SkijaRenderer.textWidth(price, Fonts.PRETENDARD_SEMIBOLD, 11f);
+			SkijaRenderer.text(price, x + (w - ptw) / 2f, y + h - 21, Fonts.PRETENDARD_SEMIBOLD, UIColors.TEXT_SECONDARY, 11f);
 		}
 	}
 
 	@Override
 	public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick) {
-		float mx = UMouse.getNvgScaledX(uiScale);
-		float my = UMouse.getNvgScaledY(uiScale);
+		float mx = UMouse.getSkijaScaledX(uiScale);
+		float my = UMouse.getSkijaScaledY(uiScale);
 
 		// Category Tabs Click
 		int tabX = winX + 300;

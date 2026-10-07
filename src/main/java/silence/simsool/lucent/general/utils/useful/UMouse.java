@@ -2,7 +2,7 @@ package silence.simsool.lucent.general.utils.useful;
 
 import static silence.simsool.lucent.Lucent.mc;
 
-import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
+import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 
 public class UMouse {
 
@@ -22,18 +22,26 @@ public class UMouse {
 		return (float) mc.mouseHandler.getScaledYPos(UDisplay.getWindow());
 	}
 
+	public static float getSkijaScaledX(float scale) {
+		return (getX() / (SkijaRenderer.getStandardGuiScale() * scale));
+	}
+
+	public static float getSkijaScaledY(float scale) {
+		return (getY() / (SkijaRenderer.getStandardGuiScale() * scale));
+	}
+
 	public static float getNvgScaledX(float scale) {
-		return (getX() / (NVGRenderer.getStandardGuiScale() * scale));
+		return getSkijaScaledX(scale);
 	}
 
 	public static float getNvgScaledY(float scale) {
-		return (getY() / (NVGRenderer.getStandardGuiScale() * scale));
+		return getSkijaScaledY(scale);
 	}
 
 	public static boolean isAreaHovered(float x, float y, float w, float h, boolean scaled) {
 		float mx = getX(); float my = getY();
 		if (scaled) {
-			float scale = (float) NVGRenderer.getStandardGuiScale();
+			float scale = (float) SkijaRenderer.getStandardGuiScale();
 			return mx / scale >= x && mx / scale <= x + w && my / scale >= y && my / scale <= y + h;
 		}
 		return mx >= x && mx <= x + w && my >= y && my <= y + h;
@@ -46,7 +54,7 @@ public class UMouse {
 	public static boolean isAreaHovered(float x, float y, float w, boolean scaled) {
 		float mx = getX(); float my = getY();
 		if (scaled) {
-			float scale = (float) NVGRenderer.getStandardGuiScale();
+			float scale = (float) SkijaRenderer.getStandardGuiScale();
 			return mx / scale >= x && mx / scale <= x + w && my / scale >= y;
 		}
 		return mx >= x && mx <= x + w && my >= y;

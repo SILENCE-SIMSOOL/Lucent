@@ -7,17 +7,17 @@ import java.net.http.HttpResponse;
 
 import org.lwjgl.glfw.GLFW;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vulkan.VulkanDevice;
 import com.mojang.brigadier.Command;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.PictureInPictureRendererRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
 import silence.simsool.lucent.config.ModManager;
 import silence.simsool.lucent.config.api.LucentAPI;
 import silence.simsool.lucent.events.LucentEventRegister;
@@ -28,6 +28,8 @@ import silence.simsool.lucent.examplemod.huds.ExampleHUD;
 import silence.simsool.lucent.general.managers.LucentManagerRegister;
 import silence.simsool.lucent.general.utils.ClientHandler;
 import silence.simsool.lucent.general.utils.LucentUtils;
+import silence.simsool.lucent.general.utils.notification.NotificationCommand;
+import silence.simsool.lucent.general.utils.notification.NotificationRenderer;
 import silence.simsool.lucent.general.utils.render.IrisCompatibility;
 import silence.simsool.lucent.general.utils.render.ItemRenderer;
 import silence.simsool.lucent.general.utils.render.Render3D;
@@ -35,18 +37,20 @@ import silence.simsool.lucent.general.utils.render.RoundRectPIPRenderer;
 import silence.simsool.lucent.general.utils.useful.UChat;
 import silence.simsool.lucent.general.utils.useful.ULog;
 import silence.simsool.lucent.general.utils.useful.UScreen;
+import silence.simsool.lucent.general.utils.useful.USound;
 import silence.simsool.lucent.hud.HUDManager;
-import silence.simsool.lucent.mixin.accessors.GpuDeviceAccessor;
-import silence.simsool.lucent.ui.manager.LucentResourceManager;
-import silence.simsool.lucent.ui.utils.nvg.Fonts;
-import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
 import silence.simsool.lucent.init.PremiumCosmetics;
+import silence.simsool.lucent.mods.Translucent3DRenderFixMod;
+import silence.simsool.lucent.skija.compositor.SkijaCompositor;
+import silence.simsool.lucent.skija.natives.SkijaNatives;
+import silence.simsool.lucent.ui.manager.LucentResourceManager;
+import silence.simsool.lucent.ui.utils.skija.Fonts;
 
 public class Lucent implements ClientModInitializer {
 
 	public static final String ID = "lucent";
 	public static final String NAME = "Lucent";
-	public static final String VERSION = "1.4.7";
+	public static final String VERSION = "1.5.6";
 	public static String LATEST_VERSION = "Fetching...";
 
 	public static Minecraft mc = Minecraft.getInstance();
@@ -62,7 +66,8 @@ public class Lucent implements ClientModInitializer {
 	));
 
 	public static boolean devMode = false;
-	public static boolean warningVulkan = false;
+	public static boolean preview = false;
+	public static final Identifier PREVIEW_BACKGROUND = LucentUtils.id("preview.png");
 
 	static {
 		updateLatestVersion();
@@ -71,28 +76,27 @@ public class Lucent implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		LOG.info("Lucent library initializing..");
+		SkijaNatives.ensure();
 		PremiumCosmetics.init();
 
 		Fonts.initAsync();
+		USound.LucentSounds.Alert.preloadAsync();
 		LucentEventRegister.initialize();
 		LucentManagerRegister.registerAll();
 		ClientHandler.init();
 		Render3D.init();
 		IrisCompatibility.init();
 
+		config.register(new Translucent3DRenderFixMod());
+
+		ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
+			SkijaCompositor.INSTANCE.shutdown();
+		});
+
 		if (devMode) {
 			config.registerExampleMods();
 			LucentAPI.registerHUD(config, new ExampleHUD());
-			//config.setTitle("YOU CAN CHANGE TITLE");
-			//config.setTitleFont(Fonts.PRETENDARD_SEMIBOLD);
-			//config.setTitleSize(2.0f);
-			//config.setThemeColor(false);
-			//config.setTitleColor(UIColors.PURE_WHITE);
 		}
-
-		PictureInPictureRendererRegistry.register(context ->
-			new NVGPIPRenderer()
-		);
 
 		PictureInPictureRendererRegistry.register(context ->
 			new RoundRectPIPRenderer()
@@ -104,20 +108,13 @@ public class Lucent implements ClientModInitializer {
 
 		LucentEvent.INIT_FINISHED_EVENT.register(() -> {
 			config.loadGlobalConfig();
+			ModManager.cleanupUnusedProfiles();
 			config.loadConfigs();
 		});
 
 		LucentEvent.RESOURCES_READY_EVENT.register(() -> {
 			LucentResourceManager.loadLucentIcons();
 			LucentResourceManager.loadModIcons(config);
-		});
-
-		LucentEvent.SERVER_JOIN_EVENT.register(() -> {
-			if (((GpuDeviceAccessor) RenderSystem.getDevice()).getBackend() instanceof VulkanDevice) {
-				if (warningVulkan) return;
-				warningVulkan = true;
-				UChat.chat("\n §cLucent does not currently support Vulkan. Please go to Minecraft Video Settings, change the Graphics API to Default or OpenGL, and restart the game.\n");
-			}
 		});
 
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
@@ -148,6 +145,8 @@ public class Lucent implements ClientModInitializer {
 					})
 				)
 			);
+
+			NotificationCommand.register(dispatcher);
 		});
 
 		InputEvent.KEY.register(event -> {
@@ -168,6 +167,9 @@ public class Lucent implements ClientModInitializer {
 
 		GUIEvent.RenderHUD.EVENT.register(event -> {
 			hudManager.render(event.graphics);
+			if (UScreen.getScreen() == null) {
+				NotificationRenderer.render(event.graphics);
+			}
 		});
 
 		LOG.info("Successfully loaded Lucent!");

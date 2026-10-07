@@ -14,7 +14,7 @@ import silence.simsool.lucent.events.impl.LucentEvent.ParticleSpawnEvent;
 public class MixinParticleEngin {
 
 	@Inject(method = "add", at = @At("HEAD"), cancellable = true)
-	private void addParticle(Particle particle, CallbackInfo ci) {
+	private void lucent$addParticle(Particle particle, CallbackInfo ci) {
 		ParticleSpawnEvent event = new ParticleSpawnEvent(particle);
 		LucentEvent.PARTICLE_SPAWN_EVENT.invoker().onParticleSpawn(event);
 		if (event.isCanceled()) ci.cancel();

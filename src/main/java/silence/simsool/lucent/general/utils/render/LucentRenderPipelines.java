@@ -16,6 +16,9 @@ import silence.simsool.lucent.Lucent;
 
 public class LucentRenderPipelines {
 
+	private static DepthStencilState NO_DEPTH = new DepthStencilState(CompareOp.ALWAYS_PASS, false);
+	private static ColorTargetState TRANSLUCENT = new ColorTargetState(BlendFunction.TRANSLUCENT);
+
 	public static final RenderPipeline LINES = RenderPipelines.register(
 		RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
 			.withLocation(Lucent.ID + "/lines_opaque")
@@ -27,7 +30,7 @@ public class LucentRenderPipelines {
 		RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
 			.withLocation(Lucent.ID + "/lines_translucent")
 			.withCull(false)
-			.withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+			.withColorTargetState(TRANSLUCENT)
 			.build()
 	);
 
@@ -35,15 +38,14 @@ public class LucentRenderPipelines {
 		RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
 			.withLocation(Lucent.ID + "/lines_esp")
 			.withCull(false)
-			.withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, true))
 			.build()
 	);
 
 	public static final RenderPipeline LINES_TRANSLUCENT_ESP = RenderPipelines.register(
 		RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
 			.withLocation(Lucent.ID + "/lines_translucent_esp")
-			.withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-			.withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
+			.withColorTargetState(TRANSLUCENT)
+			.withDepthStencilState(NO_DEPTH)
 			.withCull(false)
 			.build()
 	);
@@ -58,15 +60,14 @@ public class LucentRenderPipelines {
 	public static final RenderPipeline FILLED_TRANSLUCENT = RenderPipelines.register(
 		RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
 			.withLocation(Lucent.ID + "/quads_translucent")
-			.withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-			.withCull(true)
+			.withColorTargetState(TRANSLUCENT)
+			.withCull(false)
 			.build()
 	);
 
 	public static final RenderPipeline FILLED_ESP = RenderPipelines.register(
 		RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
 			.withLocation(Lucent.ID + "/quads_esp")
-			.withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, true))
 			.withCull(false)
 			.build()
 	);
@@ -74,8 +75,8 @@ public class LucentRenderPipelines {
 	public static final RenderPipeline FILLED_TRANSLUCENT_ESP = RenderPipelines.register(
 		RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
 			.withLocation(Lucent.ID + "/quads_translucent_esp")
-			.withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-			.withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
+			.withColorTargetState(TRANSLUCENT)
+			.withDepthStencilState(NO_DEPTH)
 			.withCull(false)
 			.build()
 	);
@@ -88,7 +89,7 @@ public class LucentRenderPipelines {
 			.withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR)
 			.withPrimitiveTopology(PrimitiveTopology.QUADS)
 			.withBindGroupLayout(BindGroupLayout.builder().withUniform("u", UniformType.UNIFORM_BUFFER).build())
-			.withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+			.withColorTargetState(TRANSLUCENT)
 			.build()
 	);
 

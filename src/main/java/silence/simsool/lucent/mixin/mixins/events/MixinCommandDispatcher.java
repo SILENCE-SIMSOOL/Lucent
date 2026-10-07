@@ -21,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
 public class MixinCommandDispatcher<S> {
 
 	@Inject(method = "getCompletionSuggestions(Lcom/mojang/brigadier/ParseResults;I)Ljava/util/concurrent/CompletableFuture;", at = @At(value = "INVOKE", target = "Ljava/lang/String;toLowerCase(Ljava/util/Locale;)Ljava/lang/String;"), cancellable = true)
-	public void getCompletionSuggestions(ParseResults<S> parse, int cursor, CallbackInfoReturnable<CompletableFuture<Suggestions>> cir, @Local(ordinal = 1) int start, @Local(ordinal = 0) String fullInput, @Local(ordinal = 1) String beforeCursor) {
+	public void lucent$getCompletionSuggestions(ParseResults<S> parse, int cursor, CallbackInfoReturnable<CompletableFuture<Suggestions>> cir, @Local(ordinal = 1) int start, @Local(ordinal = 0) String fullInput, @Local(ordinal = 1) String beforeCursor) {
 		if (!beforeCursor.contains(" ")) return;
 		SuggestionsBuilder suggestionsBuilder = buildFromEvent(start, fullInput, beforeCursor, new ArrayList<>());
 		if (suggestionsBuilder == null) return;
@@ -30,7 +30,7 @@ public class MixinCommandDispatcher<S> {
 	}
 
 	@ModifyReturnValue(method = "getCompletionSuggestions(Lcom/mojang/brigadier/ParseResults;I)Ljava/util/concurrent/CompletableFuture;", at = @At(value = "RETURN"))
-	public CompletableFuture<Suggestions> getCompletionSuggestionsWIthExisting(CompletableFuture<Suggestions> original, @Local(ordinal = 1) int start, @Local(ordinal = 0) String fullInput, @Local(ordinal = 1) String beforeCursor) {
+	public CompletableFuture<Suggestions> lucent$getCompletionSuggestionsWIthExisting(CompletableFuture<Suggestions> original, @Local(ordinal = 1) int start, @Local(ordinal = 0) String fullInput, @Local(ordinal = 1) String beforeCursor) {
 		if (beforeCursor.contains(" ")) return original;
 		return original.thenApply(suggestions -> {
 			ArrayList<String> suggestionList = new ArrayList<>(suggestions.getList().stream()

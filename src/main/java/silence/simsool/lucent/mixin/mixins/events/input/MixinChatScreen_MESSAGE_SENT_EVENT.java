@@ -12,7 +12,7 @@ import silence.simsool.lucent.events.impl.LucentEvent;
 public class MixinChatScreen_MESSAGE_SENT_EVENT {
 
 	@Inject(method = "handleChatInput", at = @At("HEAD"), cancellable = true)
-	private void onHandleChatInput(String message, boolean addToHistory, CallbackInfo ci) {
+	private void lucent$onHandleChatInput(String message, boolean addToHistory, CallbackInfo ci) {
 		LucentEvent.MessageSentEvent event = new LucentEvent.MessageSentEvent(message);
 		LucentEvent.MESSAGE_SENT_EVENT.invoker().onMessageSent(event);
 		if (event.isCanceled()) ci.cancel();

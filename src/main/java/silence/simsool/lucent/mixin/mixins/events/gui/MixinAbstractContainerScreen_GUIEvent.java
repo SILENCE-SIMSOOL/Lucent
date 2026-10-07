@@ -34,7 +34,7 @@ public abstract class MixinAbstractContainerScreen_GUIEvent {
 	@Shadow @Nullable protected Slot hoveredSlot;
 
 	@Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
-	private void onMouseClicked(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
+	private void lucent$onMouseClicked(MouseButtonEvent event, boolean doubleClick, CallbackInfoReturnable<Boolean> cir) {
 		if (event.button() == 2 && this.hoveredSlot != null) {
 			AbstractContainerScreen<?> screen = (AbstractContainerScreen<?>) (Object) this;
 			GUIEvent.SlotClickEvent clickEvent = new GUIEvent.SlotClickEvent(this.hoveredSlot, this.hoveredSlot.index, event.button(), ContainerInput.CLONE, screen.getMenu(), screen);
@@ -46,7 +46,7 @@ public abstract class MixinAbstractContainerScreen_GUIEvent {
 	}
 
 	@Inject(method = "removed", at = @At("HEAD"), cancellable = false)
-	public void onRemoved(CallbackInfo ci) {
+	public void lucent$onRemoved(CallbackInfo ci) {
 		Screen self = (Screen) (Object) this;
 		AbstractContainerMenu menu = ((AbstractContainerScreen<?>) (Object) this).getMenu();
 		GUIEvent.GUICloseEvent event = new GUIEvent.GUICloseEvent(self, menu);
@@ -55,7 +55,7 @@ public abstract class MixinAbstractContainerScreen_GUIEvent {
 	}
 
 	@Inject(method = "extractContents", at = @At("TAIL"))
-	public void onRenderContents(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+	public void lucent$onRenderContents(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
 		Screen self = (Screen) (Object) this;
 
 		GUIEvent.CONTAINER.All.EVENT.invoker().onContainer(
@@ -75,7 +75,7 @@ public abstract class MixinAbstractContainerScreen_GUIEvent {
 	}
 
 	@Inject(method = "slotClicked", at = @At("HEAD"), cancellable = true)
-	private void onSlotClicked(Slot slot, int slotId, int button, ContainerInput clickType, CallbackInfo ci) {
+	private void lucent$onSlotClicked(Slot slot, int slotId, int button, ContainerInput clickType, CallbackInfo ci) {
 		AbstractContainerScreen<?> screen = (AbstractContainerScreen<?>) (Object) this;
 
 		if (slot == null) {
@@ -98,7 +98,7 @@ public abstract class MixinAbstractContainerScreen_GUIEvent {
 	}
 
 	@WrapOperation(method = "extractSlots", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;extractSlot(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/world/inventory/Slot;II)V"))
-	private void onRenderSlot(AbstractContainerScreen<?> instance, GuiGraphicsExtractor guiGraphics, Slot slot, int i, int j, Operation<Void> original) {
+	private void lucent$onRenderSlot(AbstractContainerScreen<?> instance, GuiGraphicsExtractor guiGraphics, Slot slot, int i, int j, Operation<Void> original) {
 		GUIEvent.RenderSlotPreEvent preEvent = new GUIEvent.RenderSlotPreEvent(slot, guiGraphics, instance);
 		GUIEvent.SLOT.RenderPre.EVENT.invoker().onSlotRenderPre(preEvent);
 		if (preEvent.isCanceled()) return;
