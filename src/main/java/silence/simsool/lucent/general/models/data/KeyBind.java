@@ -213,9 +213,6 @@ public class KeyBind {
 		if (!isBound()) return false;
 		if (isKey()) {
 			int key = keyCode;
-			if (key >= 32 && key <= 348) {
-				key = fromGlfwKey(key);
-			}
 			if (key <= 0 || key >= 512) return false;
 			try {
 				return InputConstants.isKeyDown(key);

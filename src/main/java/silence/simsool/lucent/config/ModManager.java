@@ -304,9 +304,6 @@ public class ModManager {
 						kb.keyCode = KeyBind.fromGlfwKey(kb.keyCode);
 					}
 					kb.mods = KeyBind.fromGlfwMods(kb.mods);
-					if (kb.mouseButton == 3) {
-						kb.mouseButton = KeyBind.MOUSE_RIGHT;
-					}
 				} else {
 					if (kb.keyCode <= 0) {
 						kb.keyCode = InputConstants.UNKNOWN.getValue();

@@ -8,6 +8,7 @@ import net.minecraft.client.input.KeyEvent;
 import com.mojang.blaze3d.platform.InputConstants;
 import silence.simsool.lucent.general.models.interfaces.events.inputevent.IMouseInputEvent;
 import silence.simsool.lucent.general.models.interfaces.events.inputevent.IKeyInputEvent;
+import silence.simsool.lucent.general.utils.useful.UMouse;
 import silence.simsool.lucent.mixin.accessors.KeyMappingAccessor;
 
 public final class InputEvent {
@@ -32,7 +33,7 @@ public final class InputEvent {
 
 	public static boolean matchesMouse(KeyMapping keyMapping, int button) {
 		InputConstants.Key key = ((KeyMappingAccessor) keyMapping).getKey();
-		return key.getType() == InputConstants.Type.MOUSE && key.getValue() == button;
+		return key.getType() == InputConstants.Type.MOUSE && UMouse.toLucentButton(key.getValue()) == button;
 	}
 
 	public static class MouseInputEvent {

@@ -7,12 +7,17 @@ import java.util.Objects;
 import org.joml.Matrix3x2f;
 
 import com.mojang.blaze3d.platform.Lighting;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
+import net.minecraft.client.renderer.state.gui.BlitRenderState;
 import net.minecraft.client.renderer.state.gui.GuiItemRenderState;
 import net.minecraft.client.renderer.state.gui.GuiRenderState;
 import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
@@ -20,6 +25,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import silence.simsool.lucent.mixin.accessors.PictureInPictureRendererAccessor;
 
 public class ItemRenderer extends PictureInPictureRenderer<ItemRenderer.State> {
 	private State lastState;
@@ -41,7 +47,14 @@ public class ItemRenderer extends PictureInPictureRenderer<ItemRenderer.State> {
 
 	@Override
 	protected void blitTexture(State element, GuiRenderState state) {
-		super.blitTexture(element, state);
+		state.addBlitToCurrentLayer(
+				new BlitRenderState(
+						RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA,
+						TextureSetup.singleTexture(((PictureInPictureRendererAccessor) this).getTextureView(), RenderSystem.getSamplerCache().getRepeat(FilterMode.LINEAR)),
+						element.pose(), element.x0(), element.y0(), element.x0() + 16, element.y0() + 16, 0.0f, 1.0f, 1.0f,
+						0.0f, -1, element.scissorArea(), null
+				)
+		);
 	}
 
 	@Override
