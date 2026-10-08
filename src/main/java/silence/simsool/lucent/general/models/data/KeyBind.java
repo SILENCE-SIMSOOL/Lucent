@@ -81,8 +81,16 @@ public class KeyBind {
 	public boolean isKeyDown() {
 		if (!isBound()) return false;
 		long window = UDisplay.getWindow().handle();
-		if (isKey()) return GLFW.glfwGetKey(window, keyCode) == GLFW.GLFW_PRESS;
-		if (isMouse()) return GLFW.glfwGetMouseButton(window, mouseButton) == GLFW.GLFW_PRESS;
+		if (isKey()) {
+			int key = keyCode;
+			if (key == 6) key = GLFW.GLFW_KEY_C;
+			if (key < GLFW.GLFW_KEY_SPACE || key > GLFW.GLFW_KEY_LAST) return false;
+			return GLFW.glfwGetKey(window, key) == GLFW.GLFW_PRESS;
+		}
+		if (isMouse()) {
+			if (mouseButton < 0 || mouseButton > GLFW.GLFW_MOUSE_BUTTON_LAST) return false;
+			return GLFW.glfwGetMouseButton(window, mouseButton) == GLFW.GLFW_PRESS;
+		}
 		return false;
 	}
 
