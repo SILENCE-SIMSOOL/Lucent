@@ -42,8 +42,8 @@ public class RoundRectPIPRenderer extends PictureInPictureRenderer<RoundRectPIPR
 					.putVec4() // u_OutlineColor
 					.putVec4() // u_OutlineWidth (std140 padded)
 					.get(),
-			4,
-			GpuBuffer.USAGE_UNIFORM
+			GpuBuffer.USAGE_UNIFORM,
+			4
 	);
 
 	private State lastState;
