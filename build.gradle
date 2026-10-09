@@ -217,3 +217,20 @@ task generateCustomOutputs {
 }
 
 build.finalizedBy(generateCustomOutputs)
+sourceSets {
+	performanceTest {
+		compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+		runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+	}
+}
+
+// Run with -PskijaNativePath=<native directory> to include native HUD pixel comparisons.
+tasks.register('performanceRegression', JavaExec) {
+	dependsOn performanceTestClasses
+	classpath = sourceSets.performanceTest.runtimeClasspath
+	mainClass = 'silence.simsool.lucent.PerformanceRegression'
+	if (project.hasProperty('skijaNativePath')) {
+		systemProperty 'skija.library.path', project.property('skijaNativePath')
+	}
+}
+check.dependsOn performanceRegression

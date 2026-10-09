@@ -7,6 +7,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.Set;
 
@@ -26,10 +28,12 @@ import silence.simsool.lucent.skija.compositor.SkijaCompositor;
 import silence.simsool.lucent.ui.screens.EditHUDScreen;
 import silence.simsool.lucent.ui.utils.URender;
 import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
+import silence.simsool.lucent.ui.utils.skija.Fonts;
 
 public class HUDManager {
 
 	private final List<LucentHUD> huds = new ArrayList<>();
+	private final Map<File, JsonObject> loadedConfigs = new HashMap<>();
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private boolean cachedHasSkija = false;
 	private final List<Object> currentSkijaCacheKey = new ArrayList<>();
@@ -40,10 +44,19 @@ public class HUDManager {
 		if (currentGraphics == null) return;
 		for (LucentHUD hud : huds) {
 			if (hud.isEnabled() && hud.getRenderType() == RenderType.SKIJA) {
-				hud.draw(currentGraphics);
+				SkijaCompositor.INSTANCE.drawCachedHud(hud, hudKey(hud), UDisplay.getWidth(), UDisplay.getHeight(), () -> hud.draw(currentGraphics));
 			}
 		}
 	};
+
+	private Object hudKey(LucentHUD hud) {
+		Object key = hud.getRenderCacheKey();
+		return key == null ? null : List.of(key, hud.x, hud.y, hud.scale, hud.alignment,
+			UDisplay.getWidth(), UDisplay.getHeight(), UDisplay.getGuiScaledWidth(),
+			UDisplay.getGuiScaledHeight(), Fonts.getRevision(),
+			LucentHUD.isEditHudOpen, UDisplay.isDebugScreen()
+		);
+	}
 
 	public HUDManager() {}
 
@@ -61,10 +74,16 @@ public class HUDManager {
 	private void load(LucentHUD hud) {
 		ModManager manager = hud.getParentManager();
 		File file = manager.getHudConfigFile();
-		if (!file.exists()) return;
-
-		try (BufferedReader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
-			JsonObject root = GSON.fromJson(reader, JsonObject.class);
+		try {
+			JsonObject root = loadedConfigs.computeIfAbsent(file, path -> {
+				if (path.exists()) {
+					try (BufferedReader reader = Files.newBufferedReader(path.toPath(), StandardCharsets.UTF_8)) {
+						JsonObject json = GSON.fromJson(reader, JsonObject.class);
+						if (json != null) return json;
+					} catch (Exception ignored) {}
+				}
+				return new JsonObject();
+			});
 			if (root == null || !root.has("huds")) return;
 
 			JsonObject hudsJson = root.getAsJsonObject("huds");
@@ -125,15 +144,21 @@ public class HUDManager {
 			this.currentGraphics = graphics;
 			currentSkijaCacheKey.clear();
 			boolean canCache = true;
+			boolean active = false;
 			for (LucentHUD hud : huds) {
 				if (!hud.isEnabled() || hud.getRenderType() != RenderType.SKIJA) continue;
-				Object key = hud.getRenderCacheKey();
+				active = true;
+				Object key = hudKey(hud);
 				if (key == null) {
 					canCache = false;
-					break;
+					continue;
 				}
 				currentSkijaCacheKey.add(hud);
 				currentSkijaCacheKey.add(key);
+			}
+			if (!active) {
+				hasValidLastSkijaCache = false;
+				return;
 			}
 			if (canCache && !currentSkijaCacheKey.isEmpty() && hasValidLastSkijaCache
 					&& currentSkijaCacheKey.equals(lastSkijaCacheKey)
@@ -156,9 +181,11 @@ public class HUDManager {
 
 
 	public void loadAll() {
+		loadedConfigs.clear();
 		for (LucentHUD hud : huds) {
 			load(hud);
 		}
+		loadedConfigs.clear();
 	}
 
 	public void save() {
@@ -172,6 +199,7 @@ public class HUDManager {
 
 	public void save(ModManager manager) {
 		File file = manager.getHudConfigFile();
+		loadedConfigs.remove(file);
 		if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
 
 		JsonObject root = null;

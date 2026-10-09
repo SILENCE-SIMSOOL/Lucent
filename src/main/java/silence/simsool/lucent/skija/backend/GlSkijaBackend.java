@@ -1,7 +1,7 @@
 package silence.simsool.lucent.skija.backend;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL30C;
@@ -26,7 +26,7 @@ public class GlSkijaBackend implements SkijaBackend {
 	private static final int GL_RGBA8 = 0x8058;
 
 	private DirectContext cachedContext = null;
-	private final Deque<Integer> fbos = new ArrayDeque<>();
+	private final Map<GpuTextureView, Integer> fbos = new IdentityHashMap<>();
 
 	@Override
 	public String getDisplayName() {
@@ -74,10 +74,7 @@ public class GlSkijaBackend implements SkijaBackend {
 		GL30C.glFramebufferTexture2D(GL30C.GL_FRAMEBUFFER, GL30C.GL_COLOR_ATTACHMENT0, GL11C.GL_TEXTURE_2D, glId, 0);
 		GL30C.glBindFramebuffer(GL30C.GL_FRAMEBUFFER, prevFbo);
 
-		fbos.addLast(fbo);
-		while (fbos.size() > 2) {
-			GL30C.glDeleteFramebuffers(fbos.removeFirst());
-		}
+		fbos.put(view, fbo);
 
 		BackendRenderTarget rt = BackendRenderTarget.makeGL(w, h, 0, 0, fbo, GL_RGBA8);
 		return Surface.wrapBackendRenderTarget(getContext(), rt, SurfaceOrigin.BOTTOM_LEFT, ColorType.RGBA_8888, null);
@@ -96,10 +93,15 @@ public class GlSkijaBackend implements SkijaBackend {
 	}
 
 	@Override
+	public void releaseTarget(GpuTextureView view) {
+		Integer fbo = fbos.remove(view);
+		if (fbo != null) GL30C.glDeleteFramebuffers(fbo);
+	}
+
+	@Override
 	public void dispose() {
-		while (!fbos.isEmpty()) {
-			GL30C.glDeleteFramebuffers(fbos.removeFirst());
-		}
+		for (int fbo : fbos.values()) GL30C.glDeleteFramebuffers(fbo);
+		fbos.clear();
 		if (cachedContext != null) {
 			cachedContext.close();
 			cachedContext = null;

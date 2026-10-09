@@ -527,6 +527,13 @@ public class ConfigScreen extends Screen {
 
 	private class SettingRowWidget extends UIWidget {
 		private final String label, description;
+		private final List<DescriptionRun> descriptionRuns = new ArrayList<>();
+		private float descriptionWidth = -1;
+		private float descriptionFontSize;
+		private int descriptionColor;
+		private int descriptionFontRevision = -1;
+
+		private record DescriptionRun(String text, float x, float y, int color) {}
 
 		public SettingRowWidget(int x, int y, int w, int h, String label, String desc) {
 			super(x, y, w, h);
@@ -545,13 +552,24 @@ public class ConfigScreen extends Screen {
 
 		private void renderDescription(String text, float sx, float sy, float maxW, float fontSize) {
 			if (text == null || text.isEmpty()) return;
-			// && → placeholder
-			String processed = text.replace("&&", "\u0001");
-			String[] lines = processed.split("\\n", -1);
-			float lineH = fontSize + 3f;
-			float curY2 = sy;
-			// 한 줄이 maxW 초과하면 워드랩
-			for (String line : lines) curY2 = renderColorLine(line, sx, curY2, maxW, fontSize, lineH, UIColors.TEXT_SECONDARY);
+			int revision = Fonts.getRevision();
+			if (descriptionWidth != maxW || descriptionFontSize != fontSize
+					|| descriptionColor != UIColors.TEXT_SECONDARY || descriptionFontRevision != revision) {
+				descriptionRuns.clear();
+				descriptionWidth = maxW;
+				descriptionFontSize = fontSize;
+				descriptionColor = UIColors.TEXT_SECONDARY;
+				descriptionFontRevision = revision;
+				String processed = text.replace("&&", "\u0001");
+				float lineH = fontSize + 3f;
+				float lineY = 0;
+				for (String line : processed.split("\\n", -1)) {
+					lineY = renderColorLine(line, 0, lineY, maxW, fontSize, lineH, descriptionColor);
+				}
+			}
+			for (DescriptionRun run : descriptionRuns) {
+				SkijaRenderer.text(run.text(), sx + run.x(), sy + run.y(), Fonts.PRETENDARD_LIGHT, run.color(), fontSize);
+			}
 		}
 
 		private float renderColorLine(String line, float sx, float sy, float maxW, float fontSize, float lineH, int defaultColor) {
@@ -569,21 +587,21 @@ public class ConfigScreen extends Screen {
 					if (w > maxW && lineBuffer.length() > 1) {
 						lineBuffer.deleteCharAt(lineBuffer.length() - 1);
 						i--;
-						SkijaRenderer.text(lineBuffer.toString(), currentX, currentY, Fonts.PRETENDARD_LIGHT, lineColor, fontSize);
+						descriptionRuns.add(new DescriptionRun(lineBuffer.toString(), currentX, currentY, lineColor));
 						currentX = sx;
 						currentY += lineH;
 						lineBuffer.setLength(0);
 					}
 				}
 				if (lineBuffer.length() > 0) {
-					SkijaRenderer.text(lineBuffer.toString(), currentX, currentY, Fonts.PRETENDARD_LIGHT, seg.color, fontSize);
+					descriptionRuns.add(new DescriptionRun(lineBuffer.toString(), currentX, currentY, seg.color));
 					currentX += SkijaRenderer.textWidth(lineBuffer.toString(), Fonts.PRETENDARD_LIGHT, fontSize);
 					lineColor = seg.color;
 					lineBuffer.setLength(0);
 				}
 			}
 			if (lineBuffer.length() > 0) {
-				SkijaRenderer.text(lineBuffer.toString(), currentX, currentY, Fonts.PRETENDARD_LIGHT, lineColor, fontSize);
+				descriptionRuns.add(new DescriptionRun(lineBuffer.toString(), currentX, currentY, lineColor));
 				currentX += SkijaRenderer.textWidth(lineBuffer.toString(), Fonts.PRETENDARD_LIGHT, fontSize);
 			}
 			return currentY + lineH;
@@ -1300,7 +1318,8 @@ public class ConfigScreen extends Screen {
 		// 3. UI Blur Strength
 		widgets.add(new SettingRowWidget(sx, currentY, itemW, 74, L10n.translate("lucent.preferences.ui_blur_strength"), L10n.translate("lucent.preferences.ui_blur_strength.desc")));
 		Slider blurSlider = new Slider(sx + itemW - PAD - 320, currentY + 25, 320, 24, 0, 20, 1, LucentConfig.uiBlurStrength);
-		blurSlider.setOnChange(v -> { LucentConfig.uiBlurStrength = (float)(double)v; Lucent.config.saveGlobalConfig(); });
+		blurSlider.setOnChange(v -> LucentConfig.uiBlurStrength = (float)(double)v);
+		blurSlider.setOnRelease(v -> Lucent.config.saveGlobalConfig());
 		widgets.add(blurSlider);
 		currentY += 84;
 

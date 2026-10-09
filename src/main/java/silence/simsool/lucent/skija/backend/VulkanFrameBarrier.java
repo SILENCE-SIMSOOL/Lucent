@@ -38,6 +38,10 @@ public class VulkanFrameBarrier {
 	}
 
 	public void order(long image) {
+		order(image, 0L);
+	}
+
+	public void order(long image, long secondImage) {
 		if (!ready) {
 			try {
 				init();
@@ -63,18 +67,21 @@ public class VulkanFrameBarrier {
 					.flags(VK10.VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 			VK10.vkBeginCommandBuffer(cmd, begin);
 
-			VkImageMemoryBarrier.Buffer barrier = VkImageMemoryBarrier.calloc(1, stack);
-			barrier.get(0).sType(VK10.VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER)
+			int count = secondImage == 0L ? 1 : 2;
+			VkImageMemoryBarrier.Buffer barrier = VkImageMemoryBarrier.calloc(count, stack);
+			for (int i = 0; i < count; i++) {
+				barrier.get(i).sType(VK10.VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER)
 					.srcAccessMask(VK10.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK10.VK_ACCESS_TRANSFER_WRITE_BIT)
 					.dstAccessMask(VK10.VK_ACCESS_SHADER_READ_BIT)
 					.oldLayout(VK10.VK_IMAGE_LAYOUT_GENERAL)
 					.newLayout(VK10.VK_IMAGE_LAYOUT_GENERAL)
 					.srcQueueFamilyIndex(VK10.VK_QUEUE_FAMILY_IGNORED)
 					.dstQueueFamilyIndex(VK10.VK_QUEUE_FAMILY_IGNORED)
-					.image(image);
-			barrier.get(0).subresourceRange()
+					.image(i == 0 ? image : secondImage);
+				barrier.get(i).subresourceRange()
 					.aspectMask(VK10.VK_IMAGE_ASPECT_COLOR_BIT)
 					.baseMipLevel(0).levelCount(1).baseArrayLayer(0).layerCount(1);
+			}
 
 			VK10.vkCmdPipelineBarrier(
 					cmd,
@@ -130,6 +137,10 @@ public class VulkanFrameBarrier {
 			}
 		}
 		ready = true;
+	}
+
+	public void waitForIdle() {
+		VK10.vkDeviceWaitIdle(device);
 	}
 
 	public void dispose() {

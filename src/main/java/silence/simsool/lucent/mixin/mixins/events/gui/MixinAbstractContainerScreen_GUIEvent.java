@@ -11,11 +11,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
@@ -23,7 +23,6 @@ import net.minecraft.world.item.ItemStack;
 import silence.simsool.lucent.events.impl.GUIEvent;
 import silence.simsool.lucent.events.impl.LucentEvent;
 import silence.simsool.lucent.general.enums.DropType;
-import silence.simsool.lucent.general.utils.useful.UMouse;
 
 @Mixin(AbstractContainerScreen.class)
 public abstract class MixinAbstractContainerScreen_GUIEvent {

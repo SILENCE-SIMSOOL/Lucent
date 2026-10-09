@@ -2,6 +2,8 @@ package silence.simsool.lucent.skija.compositor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import org.joml.Matrix3x2f;
@@ -18,6 +20,9 @@ import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.DirectContext;
 import io.github.humbleui.skija.Matrix33;
 import io.github.humbleui.skija.Surface;
+import io.github.humbleui.skija.Picture;
+import io.github.humbleui.skija.PictureRecorder;
+import io.github.humbleui.types.Rect;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.state.gui.BlitRenderState;
@@ -41,8 +46,10 @@ public class SkijaCompositor {
 		GpuTexture texture;
 		GpuTextureView view;
 		Surface surface;
+		SkijaBackend owner;
 		int width = 0;
 		int height = 0;
+		long lastUsed;
 
 		Target(String name) {
 			this.name = name;
@@ -53,10 +60,12 @@ public class SkijaCompositor {
 		}
 
 		void ensure(SkijaBackend backend, int w, int h) {
+			lastUsed = System.nanoTime();
 			if (matches(w, h)) return;
 			close();
 			texture = RenderSystem.getDevice().createTexture(name, UI_TEXTURE_USAGE, GpuFormat.RGBA8_UNORM, w, h, 1, 1);
 			view = RenderSystem.getDevice().createTextureView(texture);
+			owner = backend;
 			surface = backend.wrapTarget(view);
 			surface.getCanvas().clear(0);
 			width = w;
@@ -69,6 +78,7 @@ public class SkijaCompositor {
 				surface = null;
 			}
 			if (view != null) {
+				if (owner != null) owner.releaseTarget(view);
 				view.close();
 				view = null;
 			}
@@ -76,6 +86,7 @@ public class SkijaCompositor {
 				texture.close();
 				texture = null;
 			}
+			owner = null;
 			width = 0;
 			height = 0;
 		}
@@ -102,6 +113,75 @@ public class SkijaCompositor {
 	private long profileBlitQueueNs = 0;
 
 	private final List<Consumer<Canvas>> batch = new ArrayList<>();
+
+	private static final long IDLE_NANOS = 5_000_000_000L;
+	private final Map<Object, HudPicture> hudPictures = new IdentityHashMap<>();
+
+	private static class HudPicture {
+		Object key;
+		Picture picture;
+		long lastUsed;
+
+		void close() {
+			if (picture != null) picture.close();
+			picture = null;
+		}
+	}
+
+	public void drawCachedHud(Object hud, Object key, int width, int height, Runnable draw) {
+		if (key == null) {
+			HudPicture old = hudPictures.remove(hud);
+			if (old != null) enqueue(canvas -> old.close());
+			draw.run();
+			return;
+		}
+		HudPicture cached = hudPictures.computeIfAbsent(hud, ignored -> new HudPicture());
+		cached.lastUsed = System.nanoTime();
+		if (cached.picture != null && key.equals(cached.key)) {
+			enqueue(canvas -> canvas.drawPicture(cached.picture));
+			return;
+		}
+		int from = batch.size();
+		draw.run();
+		List<Consumer<Canvas>> commands = new ArrayList<>(batch.subList(from, batch.size()));
+		batch.subList(from, batch.size()).clear();
+		enqueue(canvas -> {
+			try (PictureRecorder recorder = new PictureRecorder()) {
+				Canvas recording = recorder.beginRecording(Rect.makeWH(width, height));
+				for (Consumer<Canvas> command : commands) command.accept(recording);
+				Picture picture = recorder.finishRecordingAsPicture();
+				cached.close();
+				cached.picture = picture;
+				cached.key = key;
+			}
+			canvas.drawPicture(cached.picture);
+		});
+	}
+
+	private void releaseIdleTargets() {
+		long now = System.nanoTime();
+		boolean releaseHud = hudTarget.surface != null && now - hudTarget.lastUsed > IDLE_NANOS;
+		boolean releaseOverlay = overlayTarget.surface != null && now - overlayTarget.lastUsed > IDLE_NANOS;
+		if (releaseHud || releaseOverlay) {
+			SkijaBackend backend = SkijaBackends.getActive();
+			if (backend != null) backend.saveState();
+			try {
+				if (backend != null) backend.waitForIdle();
+				if (releaseHud) {
+					hudTarget.close();
+					hudCacheValid = false;
+				}
+				if (releaseOverlay) overlayTarget.close();
+			} finally {
+				if (backend != null) backend.restoreState();
+			}
+		}
+		hudPictures.values().removeIf(cached -> {
+			if (now - cached.lastUsed <= IDLE_NANOS) return false;
+			cached.close();
+			return true;
+		});
+	}
 
 	public boolean hasContent() {
 		return !batch.isEmpty();
@@ -161,6 +241,7 @@ public class SkijaCompositor {
 			hudReuseRequested = false;
 			hudReuseFallback = null;
 			if (hudCacheValid && hudTarget.matches(w, h)) {
+				hudTarget.lastUsed = System.nanoTime();
 				addBlit(guiRenderState, backend, hudTarget.view, window.getGuiScaledWidth(), window.getGuiScaledHeight());
 				if (PROFILE && ++profileReusedHudFrames == 3000) {
 					Lucent.LOG.info("Skija HUD cache reused 3000 frames");
@@ -205,6 +286,7 @@ public class SkijaCompositor {
 	}
 
 	public void composite(GuiRenderState guiRenderState) {
+		releaseIdleTargets();
 		if (!SkijaNatives.isReady()) {
 			discard();
 			return;
@@ -225,6 +307,8 @@ public class SkijaCompositor {
 			return;
 		}
 
+		GpuTextureView renderedHud = null;
+		GpuTextureView renderedOverlay = null;
 		long profileStart = PROFILE ? System.nanoTime() : 0;
 		backend.saveState();
 		try {
@@ -239,12 +323,14 @@ public class SkijaCompositor {
 
 			if (hudSplit > 0) {
 				hudTarget.ensure(backend, w, h);
+				renderedHud = hudTarget.view;
 				render(backend, hudTarget, pose, 0, hudSplit);
 			}
 
 			int overlayFrom = Math.max(0, hudSplit);
 			if (batch.size() > overlayFrom) {
 				overlayTarget.ensure(backend, w, h);
+				renderedOverlay = overlayTarget.view;
 				render(backend, overlayTarget, pose, overlayFrom, Integer.MAX_VALUE);
 				if (!screenBlitted && overlayTarget.view != null) {
 					addTopmostBlit(guiRenderState, backend, overlayTarget.view, window.getGuiScaledWidth(), window.getGuiScaledHeight());
@@ -253,6 +339,10 @@ public class SkijaCompositor {
 		} catch (Throwable t) {
 			Lucent.LOG.error("Skija compositing failed: " + t.getMessage());
 		} finally {
+			long beforeBarrier = PROFILE ? System.nanoTime() : 0;
+			if (renderedHud != null) backend.orderWritesBeforeRead(renderedHud, renderedOverlay);
+			else if (renderedOverlay != null) backend.orderWriteBeforeRead(renderedOverlay);
+			if (PROFILE) profileBarrierNs += System.nanoTime() - beforeBarrier;
 			if (PROFILE) profileTotalNs += System.nanoTime() - profileStart;
 			if (PROFILE && ++profileFrames == 300) {
 				Lucent.LOG.info("Skija CPU avg (us/frame): total={}, clear={}, draw={}, submit={}, barrier={}, blitQueue={}",
@@ -301,9 +391,6 @@ public class SkijaCompositor {
 			canvas.restoreToCount(baseSave);
 		}
 
-		long beforeBarrier = PROFILE ? System.nanoTime() : 0;
-		backend.orderWriteBeforeRead(view);
-		if (PROFILE) profileBarrierNs += System.nanoTime() - beforeBarrier;
 		if (target == hudTarget) hudCacheValid = true;
 	}
 
@@ -360,6 +447,8 @@ public class SkijaCompositor {
 			hudCacheValid = false;
 			hudTarget.close();
 			overlayTarget.close();
+			hudPictures.values().forEach(HudPicture::close);
+			hudPictures.clear();
 			SkijaBackends.reset();
 		} catch (Throwable t) {
 			Lucent.LOG.warn("Skija shutdown failed: " + t.getMessage());
