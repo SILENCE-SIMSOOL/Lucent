@@ -78,7 +78,6 @@ public class Render3D {
 			MultiBufferSource.BufferSource bufferSource = (MultiBufferSource.BufferSource) event.context.consumers();
 			if (bufferSource == null) {
 				clearAll();
-				RoundRectPIPRenderer.clear();
 				return;
 			}
 
@@ -99,7 +98,6 @@ public class Render3D {
 			renderQueuedTexts(matrix, bufferSource, camera);
 
 			clearAll();
-			RoundRectPIPRenderer.clear();
 		});
 	}
 

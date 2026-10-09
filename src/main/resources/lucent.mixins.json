@@ -8,6 +8,7 @@
 	"mixins": [],
 	"client": [
 		"accessors.BeaconBeamAccessor",
+		"accessors.GuiGraphicsAccessor",
 		"accessors.InventoryScreenAccessor",
 		"accessors.KeyMappingAccessor",
 		"mixins.events.entity.MixinEntityRenderDispatcher_ExtractRenderStatePre",

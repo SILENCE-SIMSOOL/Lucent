@@ -3,8 +3,6 @@ package silence.simsool.lucent.general.utils.render;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DepthTestFunction;
-import com.mojang.blaze3d.shaders.UniformType;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 
 import net.minecraft.client.renderer.RenderPipelines;
@@ -78,15 +76,20 @@ public class LucentRenderPipelines {
 			.build()
 	);
 
-	public static final RenderPipeline PIPELINE_ROUND_RECT = RenderPipelines.register(
-		RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
-			.withLocation(Identifier.fromNamespaceAndPath(Lucent.ID, "pipeline/round_rect"))
-			.withFragmentShader(Identifier.fromNamespaceAndPath(Lucent.ID, "core/round_rect"))
-			.withVertexShader(Identifier.fromNamespaceAndPath(Lucent.ID, "core/round_rect"))
-			.withVertexFormat(DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS)
-			.withUniform("u", UniformType.UNIFORM_BUFFER)
-			.withBlend(BlendFunction.TRANSLUCENT)
-			.build()
-	);
+	public static final RenderPipeline PIPELINE_ROUND_RECT = roundRect("round_rect", RenderPipelines.GUI_SNIPPET);
+	public static final RenderPipeline PIPELINE_ROUND_RECT_TEXTURED = roundRect("round_rect_textured", RenderPipelines.GUI_TEXTURED_SNIPPET);
+	public static final RenderPipeline PIPELINE_ROUND_RECT_SHADOW = roundRect("round_rect_shadow", RenderPipelines.GUI_SNIPPET);
+
+	private static RenderPipeline roundRect(String name, RenderPipeline.Snippet snippet) {
+		return RenderPipelines.register(
+			RenderPipeline.builder(snippet)
+				.withLocation(Identifier.fromNamespaceAndPath(Lucent.ID, "pipeline/" + name))
+				.withFragmentShader(Identifier.fromNamespaceAndPath(Lucent.ID, "core/" + name))
+				.withVertexShader(Identifier.fromNamespaceAndPath(Lucent.ID, "core/round_rect"))
+				.withVertexFormat(RoundedRectRenderer.FORMAT, VertexFormat.Mode.QUADS)
+				.withBlend(BlendFunction.TRANSLUCENT)
+				.build()
+		);
+	}
 
 }

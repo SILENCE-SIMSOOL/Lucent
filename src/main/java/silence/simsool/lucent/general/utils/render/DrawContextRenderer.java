@@ -86,7 +86,7 @@ public class DrawContextRenderer {
 	}
 
 	private static void submitRoundedRect(
-			GuiGraphics guiGraphics,
+			GuiGraphics context,
 			int x0, int y0, int x1, int y1,
 			int topLeftColor, int topRightColor, int bottomRightColor, int bottomLeftColor,
 			RoundedOptions options
@@ -99,12 +99,27 @@ public class DrawContextRenderer {
 		int outlineColor = options.outline != null ? options.outline.color : 0;
 		float outlineWidth = options.outline != null ? options.outline.width : 0.0f;
 
-		RoundRectPIPRenderer.submit(
-				guiGraphics, x0, y0, x1, y1,
-				topLeftColor, topRightColor, bottomRightColor, bottomLeftColor,
-				topLeftRadius, topRightRadius, bottomRightRadius, bottomLeftRadius,
-				outlineColor, outlineWidth
-		);
+		if (outlineWidth > 0.0f && (outlineColor & 0xFF000000) != 0) {
+			RoundedRectRenderer.submit(
+					context, x0, y0, x1, y1,
+					outlineColor, outlineColor, outlineColor, outlineColor,
+					topLeftRadius, topRightRadius, bottomRightRadius, bottomLeftRadius,
+					outlineWidth
+			);
+		}
+		if (((topLeftColor | topRightColor | bottomRightColor | bottomLeftColor) & 0xFF000000) != 0) {
+			RoundedRectRenderer.submit(
+					context,
+					x0 + outlineWidth, y0 + outlineWidth,
+					x1 - outlineWidth, y1 - outlineWidth,
+					topLeftColor, topRightColor, bottomRightColor, bottomLeftColor,
+					Math.max(0.0f, topLeftRadius - outlineWidth),
+					Math.max(0.0f, topRightRadius - outlineWidth),
+					Math.max(0.0f, bottomRightRadius - outlineWidth),
+					Math.max(0.0f, bottomLeftRadius - outlineWidth),
+					0.0f
+			);
+		}
 	}
 
 	private static int[] gradientCorners(int startColor, int endColor, GradientDirection direction) {
