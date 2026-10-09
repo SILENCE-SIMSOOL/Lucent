@@ -140,6 +140,20 @@ public class VulkanSkijaBackend implements SkijaBackend {
 	}
 
 	@Override
+	public void orderWritesBeforeRead(GpuTextureView first, GpuTextureView second) {
+		if (first.texture() instanceof VulkanGpuTexture texture && barrier != null) {
+			long secondImage = second != null && second.texture() instanceof VulkanGpuTexture other ? other.vkImage() : 0L;
+			barrier.order(texture.vkImage(), secondImage);
+		}
+	}
+
+	@Override
+	public void waitForIdle() {
+		getContext().flushAndSubmit(true);
+		barrier.waitForIdle();
+	}
+
+	@Override
 	public void dispose() {
 		if (barrier != null) {
 			barrier.dispose();

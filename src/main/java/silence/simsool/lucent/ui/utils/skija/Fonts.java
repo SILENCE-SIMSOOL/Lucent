@@ -1,7 +1,6 @@
 package silence.simsool.lucent.ui.utils.skija;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,14 +18,14 @@ import silence.simsool.lucent.ui.font.LucentFont;
 
 public class Fonts {
 	//public static LucentFont PRETENDARD_EXTRALIGHT;
-	public static LucentFont PRETENDARD_LIGHT;
-	public static LucentFont PRETENDARD;
-	public static LucentFont PRETENDARD_MEDIUM;
-	public static LucentFont PRETENDARD_SEMIBOLD;
-	public static LucentFont PRETENDARD_BOLD;
-	public static LucentFont PRETENDARD_EXTRABOLD;
-	public static LucentFont MATERIAL_ICONS;
-	public static LucentFont MATERIAL_ICONS_ROUND;
+	public static volatile LucentFont PRETENDARD_LIGHT;
+	public static volatile LucentFont PRETENDARD;
+	public static volatile LucentFont PRETENDARD_MEDIUM;
+	public static volatile LucentFont PRETENDARD_SEMIBOLD;
+	public static volatile LucentFont PRETENDARD_BOLD;
+	public static volatile LucentFont PRETENDARD_EXTRABOLD;
+	public static volatile LucentFont MATERIAL_ICONS;
+	public static volatile LucentFont MATERIAL_ICONS_ROUND;
 
 	private static final File FONT_DIR = new File(OSUtils.getLucentDir(), "resources/fonts");
 	private static final String GITHUB_RAW_BASE_URL = "https://raw.githubusercontent.com/SILENCE-SIMSOOL/FontManager/main/";
@@ -36,6 +35,11 @@ public class Fonts {
 	private static FontCollection fontCollection;
 
 	private static boolean initialized = false;
+	private static volatile int revision;
+
+	public static int getRevision() {
+		return revision;
+	}
 
 	public static synchronized TypefaceFontProvider getFontProvider() {
 		if (fontProvider == null) {
@@ -54,15 +58,15 @@ public class Fonts {
 		return fontCollection;
 	}
 
-	public static void initAsync() {
+	public static synchronized void initAsync() {
 		if (initialized) return;
 		initialized = true;
 
 		new Thread(() -> {
 			try {
 				if (!FONT_DIR.exists()) FONT_DIR.mkdirs();
-				prepareFontFiles();
 				loadFont();
+				prepareFontFiles();
 				Lucent.LOG.info("All fonts initialized asynchronously.");
 			} catch (Exception e) {
 				Lucent.LOG.error("Failed to initialize fonts asynchronously: " + e.getMessage());
@@ -72,14 +76,14 @@ public class Fonts {
 
 	private static void prepareFontFiles() {
 		FontList[] fontsToLoad = {
-			FontList.PRETENDARD_LIGHT,
 			FontList.PRETENDARD,
+			FontList.MATERIAL_ICONS,
+			FontList.MATERIAL_ICONS_ROUND,
 			FontList.PRETENDARD_MEDIUM,
 			FontList.PRETENDARD_SEMIBOLD,
+			FontList.PRETENDARD_LIGHT,
 			FontList.PRETENDARD_BOLD,
-			FontList.PRETENDARD_EXTRABOLD,
-			FontList.MATERIAL_ICONS,
-			FontList.MATERIAL_ICONS_ROUND
+			FontList.PRETENDARD_EXTRABOLD
 		};
 
 		for (FontList font : fontsToLoad) {
@@ -89,6 +93,7 @@ public class Fonts {
 			if (!fontFile.exists()) {
 				Lucent.LOG.info("Font missing: " + fileName + ". Starting download...");
 				downloadFont(font.getRelativePath(), fontFile);
+				loadFont(font);
 			}
 		}
 	}
@@ -101,7 +106,7 @@ public class Fonts {
 			throw new RuntimeException("Critical: Font file still missing after preparation - " + fileName);
 		}
 
-		return new LucentFont(font.toString(), new FileInputStream(fontFile));
+		return new LucentFont(font.toString(), fontFile.toPath());
 	}
 
 	private static void downloadFont(String relativePath, File dest) {
@@ -117,17 +122,34 @@ public class Fonts {
 	}
 
 	public static void loadFont() {
+		loadFont(FontList.PRETENDARD);
+		loadFont(FontList.MATERIAL_ICONS);
+		loadFont(FontList.MATERIAL_ICONS_ROUND);
+		loadFont(FontList.PRETENDARD_MEDIUM);
+		loadFont(FontList.PRETENDARD_SEMIBOLD);
+		loadFont(FontList.PRETENDARD_LIGHT);
+		loadFont(FontList.PRETENDARD_BOLD);
+		loadFont(FontList.PRETENDARD_EXTRABOLD);
+	}
+
+	private static void loadFont(FontList font) {
+		if (!new File(FONT_DIR, font.getFileName()).isFile()) return;
 		try {
-			PRETENDARD_LIGHT      = getFontFromList(FontList.PRETENDARD_LIGHT);
-			PRETENDARD            = getFontFromList(FontList.PRETENDARD);
-			PRETENDARD_MEDIUM     = getFontFromList(FontList.PRETENDARD_MEDIUM);
-			PRETENDARD_SEMIBOLD   = getFontFromList(FontList.PRETENDARD_SEMIBOLD);
-			PRETENDARD_BOLD       = getFontFromList(FontList.PRETENDARD_BOLD);
-			PRETENDARD_EXTRABOLD  = getFontFromList(FontList.PRETENDARD_EXTRABOLD);
-			MATERIAL_ICONS        = getFontFromList(FontList.MATERIAL_ICONS);
-			MATERIAL_ICONS_ROUND  = getFontFromList(FontList.MATERIAL_ICONS_ROUND);
+			LucentFont loaded = getFontFromList(font);
+			switch (font) {
+				case PRETENDARD -> PRETENDARD = loaded;
+				case MATERIAL_ICONS -> MATERIAL_ICONS = loaded;
+				case MATERIAL_ICONS_ROUND -> MATERIAL_ICONS_ROUND = loaded;
+				case PRETENDARD_MEDIUM -> PRETENDARD_MEDIUM = loaded;
+				case PRETENDARD_SEMIBOLD -> PRETENDARD_SEMIBOLD = loaded;
+				case PRETENDARD_LIGHT -> PRETENDARD_LIGHT = loaded;
+				case PRETENDARD_BOLD -> PRETENDARD_BOLD = loaded;
+				case PRETENDARD_EXTRABOLD -> PRETENDARD_EXTRABOLD = loaded;
+				default -> { return; }
+			}
+			revision++;
 		} catch (Exception e) {
-			Lucent.LOG.error("Critical error during font loading: " + e.getMessage());
+			Lucent.LOG.error("Failed to load font " + font + ": " + e.getMessage());
 		}
 	}
 
@@ -143,7 +165,10 @@ public class Fonts {
 			try {
 				byte[] bytes = f.getBytes();
 				if (bytes == null || bytes.length == 0) return null;
-				Typeface tf = FontMgr.getDefault().makeFromData(Data.makeFromBytes(bytes));
+				Typeface tf;
+				try (Data data = Data.makeFromBytes(bytes)) {
+					tf = FontMgr.getDefault().makeFromData(data);
+				}
 				if (tf != null) {
 					getFontProvider().registerTypeface(tf, f.getName());
 				}
