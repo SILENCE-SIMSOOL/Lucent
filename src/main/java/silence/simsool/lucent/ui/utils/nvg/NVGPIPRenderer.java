@@ -21,12 +21,15 @@ import net.minecraft.client.renderer.MultiBufferSource;
 
 public class NVGPIPRenderer extends PictureInPictureRenderer<NVGPIPRenderer.NVGRenderState> {
 
+	private Object renderedCacheKey;
+
 	public NVGPIPRenderer(MultiBufferSource.BufferSource vertexConsumers) {
 		super(vertexConsumers);
 	}
 
 	@Override
 	protected void renderToTexture(NVGRenderState state, PoseStack poseStack) {
+		renderedCacheKey = null;
 		GpuTextureView colorTex = RenderSystem.outputColorTextureOverride; if (colorTex == null) return;
 		GpuDevice device = RenderSystem.getDevice(); if (!(device instanceof GlDevice glDevice)) return;
 
@@ -49,11 +52,17 @@ public class NVGPIPRenderer extends PictureInPictureRenderer<NVGPIPRenderer.NVGR
 		NVGRenderer.beginFrame(width, height);
 		state.renderContent.run();
 		NVGRenderer.endFrame();
+		renderedCacheKey = state.cacheKey;
 
 		GlStateManager._disableDepthTest();
 		GlStateManager._disableCull();
 		GlStateManager._enableBlend();
 		GlStateManager._blendFuncSeparate(770, 771, 1, 0);
+	}
+
+	@Override
+	protected boolean textureIsReadyToBlit(NVGRenderState state) {
+		return state.cacheKey != null && state.cacheKey.equals(renderedCacheKey);
 	}
 
 	@Override
@@ -72,10 +81,14 @@ public class NVGPIPRenderer extends PictureInPictureRenderer<NVGPIPRenderer.NVGR
 	}
 
 	public static void draw(GuiGraphics graphics, int x, int y, int width, int height, Runnable renderContent) {
+		draw(graphics, x, y, width, height, renderContent, null);
+	}
+
+	public static void draw(GuiGraphics graphics, int x, int y, int width, int height, Runnable renderContent, Object cacheKey) {
 		ScreenRectangle scissor = graphics.scissorStack.peek();
 		Matrix3x2f pose = new Matrix3x2f(graphics.pose());
 		ScreenRectangle bounds = createBounds(x, y, x + width, y + height, pose, scissor);
-		NVGRenderState state = new NVGRenderState(x, y, width, height, scissor, bounds, renderContent);
+		NVGRenderState state = new NVGRenderState(x, y, width, height, scissor, bounds, renderContent, cacheKey);
 		graphics.guiRenderState.submitPicturesInPictureState(state);
 	}
 
@@ -89,8 +102,14 @@ public class NVGPIPRenderer extends PictureInPictureRenderer<NVGPIPRenderer.NVGR
 		private final ScreenRectangle scissor;
 		private final ScreenRectangle bounds;
 		public final Runnable renderContent;
+		private final Object cacheKey;
 
 		public NVGRenderState(int x, int y, int width, int height, ScreenRectangle scissor, ScreenRectangle bounds, Runnable renderContent) {
+			this(x, y, width, height, scissor, bounds, renderContent, null);
+		}
+
+		private NVGRenderState(int x, int y, int width, int height, ScreenRectangle scissor, ScreenRectangle bounds, Runnable renderContent, Object cacheKey) {
+			this.cacheKey = cacheKey;
 			this.x = x;
 			this.y = y;
 			this.width = width;

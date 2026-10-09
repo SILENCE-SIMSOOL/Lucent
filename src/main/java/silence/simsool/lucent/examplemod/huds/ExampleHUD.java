@@ -41,6 +41,19 @@ public class ExampleHUD extends LucentHUD {
 		return 24;
 	}
 
+	// (Optional): Return a key that changes whenever the HUD's rendered content changes. Return null to redraw every frame.
+	@Override
+	public Object getRenderCacheKey() {
+		// Use values that affect the HUD output. The HUD is redrawn when any value changes.
+		// return List.of(mc.getFps(), mc.player.position());
+
+		// Return null when the HUD changes every frame or cannot be represented by a stable key.
+		// return null;
+
+		// Use a constant key when the HUD content never changes. The cached rendering is reused.
+		return true;
+	}
+
 // (Optional): Set the visibility of the HUD rendering. Recommended when conditions other than the module's activation status are needed.
 //	@Override
 //	public boolean isEnabled() {

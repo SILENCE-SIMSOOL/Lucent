@@ -1,5 +1,7 @@
 package silence.simsool.lucent.init;
 
+import static silence.simsool.lucent.Lucent.mc;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,7 +25,6 @@ import com.google.gson.JsonParser;
 import com.mojang.blaze3d.platform.NativeImage;
 
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
@@ -61,6 +62,7 @@ public class PremiumCosmetics {
 	public static boolean isPreviewActive = false;
 	public static final Map<String, String> localPreviews = new ConcurrentHashMap<>();
 
+	private static final Map<Identifier, Identifier> textureCache = new ConcurrentHashMap<>();
 	private static final Map<String, Identifier> forcedTextureCache = new ConcurrentHashMap<>();
 	private static final Map<String, Identifier> previewTextureCache = new ConcurrentHashMap<>();
 	private static final String PRICES_URL = "https://gist.githubusercontent.com/SILENCE-SIMSOOL/fca65e88b36c057898fd8f47ad9f5230/raw/lucent_cosmetics_prices.json";
@@ -189,6 +191,7 @@ public class PremiumCosmetics {
 				setting.resolvedTexture = null;
 			}
 		}
+		textureCache.clear();
 		forcedTextureCache.clear();
 		previewTextureCache.clear();
 	}
@@ -202,6 +205,13 @@ public class PremiumCosmetics {
 			return setting.resolvedTexture;
 		}
 
+		Identifier id = Identifier.fromNamespaceAndPath(Lucent.ID, "cosmetics_" + type.toLowerCase() + "_" + setting.mode.toLowerCase());
+		Identifier shared = textureCache.get(id);
+		if (shared != null) {
+			setting.resolvedTexture = shared;
+			return shared;
+		}
+
 		String filename = setting.mode.toLowerCase() + "_" + type.toLowerCase() + ".png";
 		File cosmeticFile = new File(OSUtils.getLucentDir(), "resources/cosmetics/" + type.toLowerCase() + "/" + filename);
 
@@ -211,11 +221,11 @@ public class PremiumCosmetics {
 		}
 
 		try {
-			Identifier id = Identifier.fromNamespaceAndPath(Lucent.ID, "cosmetics_" + type.toLowerCase() + "_" + setting.mode.toLowerCase());
 			try (InputStream is = new FileInputStream(cosmeticFile)) {
 				NativeImage nativeImage = NativeImage.read(is);
 				DynamicTexture dynamicTexture = new DynamicTexture(() -> id.toString(), nativeImage);
-				Minecraft.getInstance().getTextureManager().register(id, dynamicTexture);
+				mc.getTextureManager().register(id, dynamicTexture);
+				textureCache.put(id, id);
 				setting.resolvedTexture = id;
 				return id;
 			}
@@ -280,7 +290,7 @@ public class PremiumCosmetics {
 					zipIn.closeEntry();
 				}
 			}
-			clearTextureCache();
+			mc.execute(PremiumCosmetics::clearTextureCache);
 			Lucent.LOG.info("Cosmetics resource download complete!");
 
 		} catch (Exception e) {
@@ -364,7 +374,7 @@ public class PremiumCosmetics {
 		if (cosmeticName.equalsIgnoreCase("wings") && !LucentConfig.renderPremiumWings) return null;
 		if (cosmeticName.equalsIgnoreCase("hat") && !LucentConfig.renderPremiumHats) return null;
 		if (cosmeticName.equalsIgnoreCase("cape") && !LucentConfig.renderPremiumCapes) return null;
-		if (isPreviewActive && uuid.equals(Minecraft.getInstance().getUser().getProfileId())) {
+		if (isPreviewActive && uuid.equals(mc.getUser().getProfileId())) {
 			String mode = localPreviews.get(cosmeticName);
 			if (mode == null || mode.isEmpty() || mode.equalsIgnoreCase("none")) {
 				return new CosmeticSetting(false, "");
@@ -404,7 +414,7 @@ public class PremiumCosmetics {
 			try (InputStream is = new FileInputStream(cosmeticFile)) {
 				NativeImage nativeImage = NativeImage.read(is);
 				DynamicTexture dynamicTexture = new DynamicTexture(() -> id.toString(), nativeImage);
-				Minecraft.getInstance().getTextureManager().register(id, dynamicTexture);
+				mc.getTextureManager().register(id, dynamicTexture);
 				forcedTextureCache.put(key, id);
 				return id;
 			}
@@ -434,7 +444,7 @@ public class PremiumCosmetics {
 			try (InputStream is = new FileInputStream(cosmeticFile)) {
 				NativeImage nativeImage = NativeImage.read(is);
 				DynamicTexture dynamicTexture = new DynamicTexture(() -> id.toString(), nativeImage);
-				Minecraft.getInstance().getTextureManager().register(id, dynamicTexture);
+				mc.getTextureManager().register(id, dynamicTexture);
 				previewTextureCache.put(key, id);
 				return id;
 			}

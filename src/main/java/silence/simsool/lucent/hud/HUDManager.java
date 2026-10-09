@@ -7,6 +7,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.Set;
 
@@ -25,10 +27,12 @@ import silence.simsool.lucent.general.utils.useful.UScreen;
 import silence.simsool.lucent.ui.screens.EditHUDScreen;
 import silence.simsool.lucent.ui.utils.URender;
 import silence.simsool.lucent.ui.utils.nvg.NVGPIPRenderer;
+import silence.simsool.lucent.ui.utils.nvg.Fonts;
 
 public class HUDManager {
 
 	private final List<LucentHUD> huds = new ArrayList<>();
+	private final Map<File, JsonObject> loadedConfigs = new HashMap<>();
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private boolean cachedHasNanoVG = false;
 
@@ -48,10 +52,16 @@ public class HUDManager {
 	private void load(LucentHUD hud) {
 		ModManager manager = hud.getParentManager();
 		File file = manager.getHudConfigFile();
-		if (!file.exists()) return;
-
-		try (BufferedReader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
-			JsonObject root = GSON.fromJson(reader, JsonObject.class);
+		try {
+			JsonObject root = loadedConfigs.computeIfAbsent(file, path -> {
+				if (path.exists()) {
+					try (BufferedReader reader = Files.newBufferedReader(path.toPath(), StandardCharsets.UTF_8)) {
+						JsonObject json = GSON.fromJson(reader, JsonObject.class);
+						if (json != null) return json;
+					} catch (Exception ignored) {}
+				}
+				return new JsonObject();
+			});
 			if (root == null || !root.has("huds")) return;
 
 			JsonObject hudsJson = root.getAsJsonObject("huds");
@@ -109,13 +119,31 @@ public class HUDManager {
 
 		// nano draw
 		if (cachedHasNanoVG) {
+			List<Object> keys = new ArrayList<>();
+			boolean active = false;
+			boolean cacheable = true;
+			for (LucentHUD hud : huds) {
+				if (!hud.isEnabled() || hud.getRenderType() != RenderType.NANOVG) continue;
+				active = true;
+				Object key = hud.getRenderCacheKey();
+				if (key == null) {
+					cacheable = false;
+				} else {
+					keys.add(List.of(hud, key, hud.x, hud.y, hud.scale, hud.alignment));
+				}
+			}
+			if (!active) return;
+			Object cacheKey = cacheable ? List.of(List.copyOf(keys), Fonts.getRevision(),
+				UDisplay.getWidth(), UDisplay.getHeight(), UDisplay.getGuiScaledWidth(), UDisplay.getGuiScaledHeight(),
+				LucentHUD.isEditHudOpen, UDisplay.isDebugScreen()
+			) : null;
 			NVGPIPRenderer.draw(graphics, 0, 0, UDisplay.getWidth(), UDisplay.getHeight(), () -> {
 				for (LucentHUD hud : huds) {
 					if (hud.isEnabled() && hud.getRenderType() == RenderType.NANOVG) {
 						hud.draw(graphics);
 					}
 				}
-			});
+			}, cacheKey);
 		}
 	}
 
@@ -142,9 +170,11 @@ public class HUDManager {
 //	}
 
 	public void loadAll() {
+		loadedConfigs.clear();
 		for (LucentHUD hud : huds) {
 			load(hud);
 		}
+		loadedConfigs.clear();
 	}
 
 	public void save() {
@@ -158,6 +188,7 @@ public class HUDManager {
 
 	public void save(ModManager manager) {
 		File file = manager.getHudConfigFile();
+		loadedConfigs.remove(file);
 		if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
 
 		JsonObject root = null;
@@ -194,5 +225,4 @@ public class HUDManager {
 	private void updateNanoVGStatus() {
 		this.cachedHasNanoVG = huds.stream().anyMatch(h -> h.getRenderType() == RenderType.NANOVG);
 	}
-
 }
