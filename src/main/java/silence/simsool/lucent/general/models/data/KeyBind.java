@@ -81,16 +81,8 @@ public class KeyBind {
 	public boolean isKeyDown() {
 		if (!isBound()) return false;
 		long window = UDisplay.getWindow().handle();
-		if (isKey()) {
-			int key = keyCode;
-			if (key == 6) key = GLFW.GLFW_KEY_C;
-			if (key < GLFW.GLFW_KEY_SPACE || key > GLFW.GLFW_KEY_LAST) return false;
-			return GLFW.glfwGetKey(window, key) == GLFW.GLFW_PRESS;
-		}
-		if (isMouse()) {
-			if (mouseButton < 0 || mouseButton > GLFW.GLFW_MOUSE_BUTTON_LAST) return false;
-			return GLFW.glfwGetMouseButton(window, mouseButton) == GLFW.GLFW_PRESS;
-		}
+		if (isKey()) return GLFW.glfwGetKey(window, keyCode) == GLFW.GLFW_PRESS;
+		if (isMouse()) return GLFW.glfwGetMouseButton(window, mouseButton) == GLFW.GLFW_PRESS;
 		return false;
 	}
 
@@ -136,6 +128,9 @@ public class KeyBind {
 	 * for special keys that GLFW doesn't name, and finally "Key{code}" as a last resort.
 	 */
 	private static String glfwKeyName(int key) {
+		if (key < GLFW.GLFW_KEY_SPACE || key > GLFW.GLFW_KEY_LAST) {
+			return "Key" + key;
+		}
 		String glfwName = GLFW.glfwGetKeyName(key, 0);
 		if (glfwName != null && !glfwName.isEmpty()) {
 			return glfwName.toUpperCase();

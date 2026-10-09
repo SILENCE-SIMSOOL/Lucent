@@ -1,14 +1,10 @@
 package silence.simsool.lucent.general.utils.render;
 
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.pipeline.BindGroupLayout;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.CompareOp;
-import com.mojang.blaze3d.shaders.UniformType;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
@@ -81,16 +77,19 @@ public class LucentRenderPipelines {
 			.build()
 	);
 
-	public static final RenderPipeline PIPELINE_ROUND_RECT = RenderPipelines.register(
-		RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
-			.withLocation(Identifier.fromNamespaceAndPath(Lucent.ID, "pipeline/round_rect"))
-			.withFragmentShader(Identifier.fromNamespaceAndPath(Lucent.ID, "core/round_rect"))
-			.withVertexShader(Identifier.fromNamespaceAndPath(Lucent.ID, "core/round_rect"))
-			.withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR)
-			.withPrimitiveTopology(PrimitiveTopology.QUADS)
-			.withBindGroupLayout(BindGroupLayout.builder().withUniform("u", UniformType.UNIFORM_BUFFER).build())
-			.withColorTargetState(TRANSLUCENT)
-			.build()
-	);
+	public static final RenderPipeline PIPELINE_ROUND_RECT = roundRect("round_rect", RenderPipelines.GUI_SNIPPET);
+	public static final RenderPipeline PIPELINE_ROUND_RECT_TEXTURED = roundRect("round_rect_textured", RenderPipelines.GUI_TEXTURED_SNIPPET);
+	public static final RenderPipeline PIPELINE_ROUND_RECT_SHADOW = roundRect("round_rect_shadow", RenderPipelines.GUI_SNIPPET);
+
+	private static RenderPipeline roundRect(String name, RenderPipeline.Snippet snippet) {
+		return RenderPipelines.register(
+			RenderPipeline.builder(snippet)
+				.withLocation(Identifier.fromNamespaceAndPath(Lucent.ID, "pipeline/" + name))
+				.withFragmentShader(Identifier.fromNamespaceAndPath(Lucent.ID, "core/" + name))
+				.withVertexShader(Identifier.fromNamespaceAndPath(Lucent.ID, "core/round_rect"))
+				.withVertexBinding(0, RoundedRectRenderer.FORMAT)
+				.build()
+		);
+	}
 
 }

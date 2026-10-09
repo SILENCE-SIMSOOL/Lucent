@@ -33,7 +33,6 @@ import silence.simsool.lucent.general.utils.notification.NotificationRenderer;
 import silence.simsool.lucent.general.utils.render.IrisCompatibility;
 import silence.simsool.lucent.general.utils.render.ItemRenderer;
 import silence.simsool.lucent.general.utils.render.Render3D;
-import silence.simsool.lucent.general.utils.render.RoundRectPIPRenderer;
 import silence.simsool.lucent.general.utils.useful.UChat;
 import silence.simsool.lucent.general.utils.useful.ULog;
 import silence.simsool.lucent.general.utils.useful.UScreen;
@@ -50,7 +49,7 @@ public class Lucent implements ClientModInitializer {
 
 	public static final String ID = "lucent";
 	public static final String NAME = "Lucent";
-	public static final String VERSION = "1.5.9";
+	public static final String VERSION = "1.5.10";
 	public static String LATEST_VERSION = "Fetching...";
 
 	public static Minecraft mc = Minecraft.getInstance();
@@ -97,10 +96,6 @@ public class Lucent implements ClientModInitializer {
 			config.registerExampleMods();
 			LucentAPI.registerHUD(config, new ExampleHUD());
 		}
-
-		PictureInPictureRendererRegistry.register(context ->
-			new RoundRectPIPRenderer()
-		);
 
 		PictureInPictureRendererRegistry.register(context ->
 			new ItemRenderer()

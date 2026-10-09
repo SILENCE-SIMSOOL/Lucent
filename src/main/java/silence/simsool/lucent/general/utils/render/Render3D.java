@@ -109,7 +109,6 @@ public class Render3D {
 			SubmitNodeCollector submitNodeCollector = event.context.submitNodeCollector();
 			if (submitNodeCollector == null) {
 				clearAll();
-				RoundRectPIPRenderer.clear();
 				return;
 			}
 
@@ -128,7 +127,6 @@ public class Render3D {
 			renderQueuedTexts(matrix, submitNodeCollector, camera);
 
 			clearAll();
-			RoundRectPIPRenderer.clear();
 		});
 	}
 
