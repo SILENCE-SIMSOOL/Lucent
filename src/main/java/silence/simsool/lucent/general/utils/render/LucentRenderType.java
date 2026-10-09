@@ -62,4 +62,5 @@ public class LucentRenderType {
 			.setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING)
 			.createRenderSetup()
 	);
+
 }

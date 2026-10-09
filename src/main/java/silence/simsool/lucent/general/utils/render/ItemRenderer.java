@@ -8,14 +8,15 @@ import org.joml.Matrix3x2f;
 
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.renderpearl.api.textures.FilterMode;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
 import net.minecraft.client.renderer.state.gui.BlitRenderState;
 import net.minecraft.client.renderer.state.gui.GuiItemRenderState;
@@ -35,7 +36,7 @@ public class ItemRenderer extends PictureInPictureRenderer<ItemRenderer.State> {
 	}
 
 	@Override
-	protected void renderToTexture(State state, PoseStack poseStack, net.minecraft.client.renderer.SubmitNodeCollector submitNodeCollector) {
+	protected void renderToTexture(State state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector) {
 		this.lastState = state;
 		poseStack.scale(1f, -1f, -1f);
 

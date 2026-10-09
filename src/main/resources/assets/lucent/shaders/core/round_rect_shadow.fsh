@@ -32,15 +32,8 @@ float roundedRectSDF(vec2 p, vec2 halfSize, float r) {
 void main() {
 	float r = clamp(cornerRadius(v_Offset, v_Radii), 0.0, min(v_HalfSize.x, v_HalfSize.y));
 	float d = roundedRectSDF(v_Offset, v_HalfSize, r);
-	float aa = max(fwidth(d), 0.75);
-
-	float alpha;
-	if (v_EdgeWidth > 0.0) {
-		float inner = d + v_EdgeWidth;
-		alpha = clamp(0.5 - d / aa, 0.0, 1.0) * clamp(inner / aa + 0.5, 0.0, 1.0);
-	} else {
-		alpha = clamp(0.5 - d / aa, 0.0, 1.0);
-	}
+	float blur = max(v_EdgeWidth, 0.001);
+	float alpha = clamp(0.5 - d / blur, 0.0, 1.0);
 
 	if (alpha <= 0.0) {
 		discard;

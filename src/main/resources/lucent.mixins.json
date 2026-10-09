@@ -13,7 +13,6 @@
 		"accessors.KeyMappingAccessor",
 		"accessors.LevelRendererAccessor",
 		"accessors.PictureInPictureRendererAccessor",
-		"accessors.RenderPipelinesAccessor",
 		"MixinPreparedFrame_FIX_TRANS_3DRENDER",
 		"mixins.events.entity.MixinEntityRenderDispatcher_ExtractRenderStatePre",
 		"mixins.events.entity.MixinEntityRenderer_RenderEntityEvent",

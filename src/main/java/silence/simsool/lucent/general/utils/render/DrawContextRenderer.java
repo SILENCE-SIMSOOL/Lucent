@@ -99,12 +99,29 @@ public class DrawContextRenderer {
 		int outlineColor = options.outline != null ? options.outline.color : 0;
 		float outlineWidth = options.outline != null ? options.outline.width : 0.0f;
 
-		RoundRectPIPRenderer.submit(
-				guiGraphics, x0, y0, x1, y1,
-				topLeftColor, topRightColor, bottomRightColor, bottomLeftColor,
-				topLeftRadius, topRightRadius, bottomRightRadius, bottomLeftRadius,
-				outlineColor, outlineWidth
-		);
+		if (outlineWidth > 0.0f && (outlineColor & 0xFF000000) != 0) {
+			if (((topLeftColor | topRightColor | bottomRightColor | bottomLeftColor) & 0xFF000000) != 0) {
+				RoundedRectRenderer.submit(
+						guiGraphics, x0, y0, x1, y1,
+						topLeftColor, topRightColor, bottomRightColor, bottomLeftColor,
+						topLeftRadius, topRightRadius, bottomRightRadius, bottomLeftRadius,
+						0.0f
+				);
+			}
+			RoundedRectRenderer.submit(
+					guiGraphics, x0, y0, x1, y1,
+					outlineColor, outlineColor, outlineColor, outlineColor,
+					topLeftRadius, topRightRadius, bottomRightRadius, bottomLeftRadius,
+					outlineWidth
+			);
+		} else {
+			RoundedRectRenderer.submit(
+					guiGraphics, x0, y0, x1, y1,
+					topLeftColor, topRightColor, bottomRightColor, bottomLeftColor,
+					topLeftRadius, topRightRadius, bottomRightRadius, bottomLeftRadius,
+					0.0f
+			);
+		}
 	}
 
 	private static int[] gradientCorners(int startColor, int endColor, GradientDirection direction) {

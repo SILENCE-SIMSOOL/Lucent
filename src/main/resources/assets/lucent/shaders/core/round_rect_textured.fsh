@@ -8,6 +8,8 @@ layout(std140) uniform DynamicTransforms {
     vec3 ModelOffset;
 };
 
+uniform sampler2D Sampler0;
+
 layout(location = 0) in vec4 vertexColor;
 layout(location = 1) in vec2 v_Offset;
 layout(location = 2) flat in vec2 v_HalfSize;
@@ -46,5 +48,7 @@ void main() {
 		discard;
 	}
 
-	fragColor = vec4(vertexColor.rgb, vertexColor.a * alpha) * ColorModulator;
+	vec2 uv = (v_Offset / v_HalfSize) * 0.5 + 0.5;
+	vec4 texColor = texture(Sampler0, uv);
+	fragColor = texColor * vec4(vertexColor.rgb, vertexColor.a * alpha) * ColorModulator;
 }

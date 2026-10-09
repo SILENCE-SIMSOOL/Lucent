@@ -1,7 +1,9 @@
 package silence.simsool.lucent.general.models.data;
 
+import static silence.simsool.lucent.Lucent.mc;
+
 import com.mojang.blaze3d.platform.InputConstants;
-import silence.simsool.lucent.Lucent;
+
 import silence.simsool.lucent.general.utils.useful.UMouse;
 
 /**
@@ -222,10 +224,10 @@ public class KeyBind {
 		}
 		if (isMouse()) {
 			if (UMouse.isButtonDown(mouseButton)) return true;
-			if (Lucent.mc != null && Lucent.mc.mouseHandler != null) {
-				if (mouseButton == MOUSE_LEFT) return Lucent.mc.mouseHandler.isLeftPressed();
-				if (mouseButton == MOUSE_RIGHT) return Lucent.mc.mouseHandler.isRightPressed();
-				if (mouseButton == MOUSE_MIDDLE) return Lucent.mc.mouseHandler.isMiddlePressed();
+			if (mc != null && mc.mouseHandler != null) {
+				if (mouseButton == MOUSE_LEFT) return mc.mouseHandler.isLeftPressed();
+				if (mouseButton == MOUSE_RIGHT) return mc.mouseHandler.isRightPressed();
+				if (mouseButton == MOUSE_MIDDLE) return mc.mouseHandler.isMiddlePressed();
 			}
 			return false;
 		}
