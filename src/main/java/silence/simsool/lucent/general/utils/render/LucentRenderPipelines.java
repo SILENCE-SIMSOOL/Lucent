@@ -18,6 +18,7 @@ public class LucentRenderPipelines {
 	public static final RenderPipeline LINES = RenderPipelines.register(
 		RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
 			.withLocation(Lucent.ID + "/lines_opaque")
+			.withColorTargetState(ColorTargetState.DEFAULT)
 			.withCull(false)
 			.build()
 	);
@@ -33,6 +34,8 @@ public class LucentRenderPipelines {
 	public static final RenderPipeline LINES_ESP = RenderPipelines.register(
 		RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
 			.withLocation(Lucent.ID + "/lines_esp")
+			.withColorTargetState(ColorTargetState.DEFAULT)
+			.withDepthStencilState(NO_DEPTH)
 			.withCull(false)
 			.build()
 	);
@@ -49,6 +52,7 @@ public class LucentRenderPipelines {
 	public static final RenderPipeline FILLED = RenderPipelines.register(
 		RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
 			.withLocation(Lucent.ID + "/quads_opaque")
+			.withColorTargetState(ColorTargetState.DEFAULT)
 			.withCull(false)
 			.build()
 	);
@@ -64,6 +68,8 @@ public class LucentRenderPipelines {
 	public static final RenderPipeline FILLED_ESP = RenderPipelines.register(
 		RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
 			.withLocation(Lucent.ID + "/quads_esp")
+			.withColorTargetState(ColorTargetState.DEFAULT)
+			.withDepthStencilState(NO_DEPTH)
 			.withCull(false)
 			.build()
 	);
