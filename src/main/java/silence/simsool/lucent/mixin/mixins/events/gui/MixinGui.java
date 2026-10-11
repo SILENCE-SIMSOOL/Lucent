@@ -1,5 +1,7 @@
 package silence.simsool.lucent.mixin.mixins.events.gui;
 
+import static silence.simsool.lucent.Lucent.mc;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -29,4 +31,9 @@ public class MixinGui {
 		GUIEvent.SLOT.RenderHotbarPost.EVENT.invoker().onHotbarRenderPost(event);
 	}
 
+	@Inject(method = "extractRenderState", at = @At("TAIL"), remap = false)
+	private void lucent$onRenderHUD(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+		if (mc.gui == null || mc.gui.hud == null || mc.gui.hud.isHidden() || mc.level == null || mc.player == null) return;
+		GUIEvent.RenderHUD.EVENT.invoker().onRenderHUD(new GUIEvent.RenderHUD(guiGraphics));
+	}
 }
