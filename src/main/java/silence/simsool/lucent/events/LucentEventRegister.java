@@ -131,10 +131,10 @@ public class LucentEventRegister {
 
 		// ───────────────────────────── GUI Screen ─────────────────────────────
 
-		HudElementRegistry.attachElementBefore(VanillaHudElements.SLEEP, Identifier.fromNamespaceAndPath(Lucent.ID, "hud_element"), (graphics, tickDelta) -> {
-			if (mc.gui == null || mc.gui.hud == null || mc.gui.hud.isHidden() || mc.level == null || mc.player == null) return;
-			GUIEvent.RenderHUD.EVENT.invoker().onRenderHUD(new GUIEvent.RenderHUD(graphics));
-		});
+		// HudElementRegistry.attachElementBefore(VanillaHudElements.SLEEP, Identifier.fromNamespaceAndPath(Lucent.ID, "hud_element"), (graphics, tickDelta) -> {
+		// 	if (mc.gui == null || mc.gui.hud == null || mc.gui.hud.isHidden() || mc.level == null || mc.player == null) return;
+		// 	GUIEvent.RenderHUD.EVENT.invoker().onRenderHUD(new GUIEvent.RenderHUD(graphics));
+		// });
 
 		ScreenEvents.BEFORE_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
 			if (mc.level == null || mc.player == null) return;
