@@ -272,10 +272,9 @@ public class ModManager {
 			public void write(JsonWriter out, KeyBind value) throws IOException {
 				if (value == null) { out.nullValue(); return; }
 				out.beginObject();
-				out.name("key").value(value.keyCode);
+				out.name("key").value(KeyBind.toGlfwKey(value.keyCode));
 				out.name("mouse").value(value.mouseButton);
-				out.name("mods").value(value.mods);
-				out.name("v").value(2);
+				out.name("mods").value(KeyBind.toGlfwMods(value.mods));
 				out.endObject();
 			}
 			@Override
