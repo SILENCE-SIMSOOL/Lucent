@@ -25,7 +25,7 @@ public class MixinGui {
 			ci.cancel();
 	}
 
-	@Inject(method = "extractSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;itemDecorations(Lnet/minecraft/world/item/ItemStack;II)V", shift = At.Shift.AFTER))
+	@Inject(method = "extractSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;itemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;II)V", shift = At.Shift.AFTER))
 	private void lucent$onPostRenderHotbarSlot(GuiGraphicsExtractor guiGraphics, int i, int j, DeltaTracker deltaTracker, Player player, ItemStack itemStack, int k, CallbackInfo ci) {
 		GUIEvent.RenderHotbarPostEvent event = new GUIEvent.RenderHotbarPostEvent(itemStack, i, j, guiGraphics);
 		GUIEvent.SLOT.RenderHotbarPost.EVENT.invoker().onHotbarRenderPost(event);

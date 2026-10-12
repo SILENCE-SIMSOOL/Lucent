@@ -154,12 +154,17 @@ public class EditHUDScreen extends Screen {
 		}
 		SkijaRenderer.draw(guiGraphics, 0, 0, width, height, () -> {
 			float gs = SkijaRenderer.getStandardGuiScale();
+			float vw = UDisplay.getScreenWidth()  / gs;
+			float vh = UDisplay.getScreenHeight() / gs;
+
 			SkijaRenderer.push();
 			SkijaRenderer.scale(gs, gs);
 
 			if (LucentConfig.openAnimation) {
 				SkijaRenderer.globalAlpha(UAnimation.clamp(animP * 1.5f, 0, 1));
 			}
+
+			SkijaRenderer.rect(0, 0, vw, vh, C_DIM);
 
 			for (LucentHUD hud : LucentAPI.getHUDManager().getHUDs()) {
 				if (hud.isEnabled() && hud.getRenderType() == RenderType.SKIJA) {
@@ -404,8 +409,6 @@ public class EditHUDScreen extends Screen {
 		float mx  = UMouse.getSkijaScaledX(1f);
 		float my  = UMouse.getSkijaScaledY(1f);
 
-		SkijaRenderer.rect(0, 0, vw, vh, C_DIM);
-
 		drawCrosshair(vw, vh);
 
 		for (LucentHUD hud : LucentAPI.getHUDManager().getHUDs()) {
@@ -422,9 +425,9 @@ public class EditHUDScreen extends Screen {
 				}
 			}
 		}
+		if (showModsButton)  drawModsButton(vw, vh, mx, my, animP);
 		if (draggingScale != null) drawScaleBadge(draggingScale);
 		if (contextMenuHud != null) drawContextMenu(vw, vh);
-		if (showModsButton)  drawModsButton(vw, vh, mx, my, animP);
 	}
 
 	private void drawModsButton(float vw, float vh, float mx, float my, float animP) {
