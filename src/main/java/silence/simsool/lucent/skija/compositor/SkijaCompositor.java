@@ -137,12 +137,17 @@ public class SkijaCompositor {
 		}
 		HudPicture cached = hudPictures.computeIfAbsent(hud, ignored -> new HudPicture());
 		cached.lastUsed = System.nanoTime();
-		if (cached.picture != null && key.equals(cached.key)) {
-			enqueue(canvas -> canvas.drawPicture(cached.picture));
+		if (key.equals(cached.key)) {
+			if (cached.picture != null) enqueue(canvas -> canvas.drawPicture(cached.picture));
 			return;
 		}
 		int from = batch.size();
 		draw.run();
+		if (batch.size() == from) {
+			if (cached.picture != null) enqueue(canvas -> cached.close());
+			cached.key = key;
+			return;
+		}
 		List<Consumer<Canvas>> commands = new ArrayList<>(batch.subList(from, batch.size()));
 		batch.subList(from, batch.size()).clear();
 		enqueue(canvas -> {

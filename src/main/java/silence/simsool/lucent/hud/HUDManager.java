@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.Set;
@@ -38,13 +39,14 @@ public class HUDManager {
 	private boolean cachedHasSkija = false;
 	private final List<Object> currentSkijaCacheKey = new ArrayList<>();
 	private final List<Object> lastSkijaCacheKey = new ArrayList<>();
+	private final Map<LucentHUD, Object> frameSkijaCacheKeys = new IdentityHashMap<>();
 	private boolean hasValidLastSkijaCache = false;
 	private GuiGraphicsExtractor currentGraphics;
 	private final Runnable drawSkijaHuds = () -> {
 		if (currentGraphics == null) return;
 		for (LucentHUD hud : huds) {
 			if (hud.isEnabled() && hud.getRenderType() == RenderType.SKIJA) {
-				SkijaCompositor.INSTANCE.drawCachedHud(hud, hudKey(hud), UDisplay.getWidth(), UDisplay.getHeight(), () -> hud.draw(currentGraphics));
+				SkijaCompositor.INSTANCE.drawCachedHud(hud, frameSkijaCacheKeys.get(hud), UDisplay.getWidth(), UDisplay.getHeight(), () -> hud.draw(currentGraphics));
 			}
 		}
 	};
@@ -143,12 +145,14 @@ public class HUDManager {
 		if (cachedHasSkija) {
 			this.currentGraphics = graphics;
 			currentSkijaCacheKey.clear();
+			frameSkijaCacheKeys.clear();
 			boolean canCache = true;
 			boolean active = false;
 			for (LucentHUD hud : huds) {
 				if (!hud.isEnabled() || hud.getRenderType() != RenderType.SKIJA) continue;
 				active = true;
 				Object key = hudKey(hud);
+				frameSkijaCacheKeys.put(hud, key);
 				if (key == null) {
 					canCache = false;
 					continue;
