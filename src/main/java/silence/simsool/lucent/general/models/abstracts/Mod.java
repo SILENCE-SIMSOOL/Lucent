@@ -13,13 +13,23 @@ public abstract class Mod {
 	public final String searchTags;
 	public final String icon;
 	public boolean isEnabled = false;
+	public boolean isFavorite = false;
+	public boolean isLocked = false;
 
 	public Mod(String name, String description, String category, String searchTags, String icon) {
+		this(name, description, category, searchTags, icon, false);
+	}
+
+	public Mod(String name, String description, String category, String searchTags, String icon, boolean isLocked) {
 		this.name = name;
 		this.description = description;
 		this.category = category;
 		this.searchTags = searchTags;
 		this.icon = icon;
+		this.isLocked = isLocked;
+		if (isLocked) {
+			this.isEnabled = true;
+		}
 	}
 
 	public void onInitFinished() {}
@@ -53,6 +63,13 @@ public abstract class Mod {
 	public void onItemPickup(LucentEvent.ItemPickupEvent event) {}
 	public void onSound(LucentEvent.SoundEvent event) {}
 	public void onScoreboard(LucentEvent.ScoreboardEvent event) {}
+	public void onTablistUpdate(LucentEvent.TablistUpdateEvent event) {}
+	public void onTabAdd(LucentEvent.TabAddEvent event) {}
+	public void onTabUpdate(LucentEvent.TabUpdateEvent event) {}
+	public void onTabFooter(LucentEvent.TabFooterEvent event) {}
+	public void onTabHeader(LucentEvent.TabHeaderEvent event) {}
+	public void onActionbar(LucentEvent.ActionbarEvent event) {}
+	public void onScoreboardUpdate(LucentEvent.ScoreboardUpdateEvent event) {}
 	public void onUseItemOn(LucentEvent.UseItemOnEvent event) {}
 	public void onUseItem(LucentEvent.UseItemEvent event) {}
 	public void onLeftClickPre(LucentEvent.LeftClickPreEvent event) {}

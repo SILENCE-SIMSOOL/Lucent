@@ -52,7 +52,78 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.InteractionHand;
 
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.ITablistUpdateEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.ITabAddEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.ITabUpdateEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.ITabFooterEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.ITabHeaderEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IActionbarTextEvent;
+import silence.simsool.lucent.general.models.interfaces.events.lucentevent.IScoreboardUpdateEvent;
+import silence.simsool.lucent.general.utils.ScoreboardUtils;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundSetScorePacket;
+import net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Optional;
+
 public class LucentEvent {
+
+	public static final Event<ITablistUpdateEvent> TABLIST_UPDATE_EVENT = createArrayBacked(
+		ITablistUpdateEvent.class, listeners -> event -> {
+			for (ITablistUpdateEvent listener : listeners) {
+				listener.onTablistUpdate(event);
+			}
+		}
+	);
+
+	public static final Event<ITabAddEvent> TAB_ADD_EVENT = createArrayBacked(
+		ITabAddEvent.class, listeners -> event -> {
+			for (ITabAddEvent listener : listeners) {
+				listener.onTabAdd(event);
+			}
+		}
+	);
+
+	public static final Event<ITabUpdateEvent> TAB_UPDATE_EVENT = createArrayBacked(
+		ITabUpdateEvent.class, listeners -> event -> {
+			for (ITabUpdateEvent listener : listeners) {
+				listener.onTabUpdate(event);
+			}
+		}
+	);
+
+	public static final Event<ITabFooterEvent> TAB_FOOTER_EVENT = createArrayBacked(
+		ITabFooterEvent.class, listeners -> event -> {
+			for (ITabFooterEvent listener : listeners) {
+				listener.onTabFooter(event);
+			}
+		}
+	);
+
+	public static final Event<ITabHeaderEvent> TAB_HEADER_EVENT = createArrayBacked(
+		ITabHeaderEvent.class, listeners -> event -> {
+			for (ITabHeaderEvent listener : listeners) {
+				listener.onTabHeader(event);
+			}
+		}
+	);
+
+	public static final Event<IActionbarTextEvent> ACTIONBAR_TEXT_EVENT = createArrayBacked(
+		IActionbarTextEvent.class, listeners -> event -> {
+			for (IActionbarTextEvent listener : listeners) {
+				listener.onActionbar(event);
+			}
+		}
+	);
+
+	public static final Event<IScoreboardUpdateEvent> SCOREBOARD_UPDATE_EVENT = createArrayBacked(
+		IScoreboardUpdateEvent.class, listeners -> event -> {
+			for (IScoreboardUpdateEvent listener : listeners) {
+				listener.onScoreboardUpdate(event);
+			}
+		}
+	);
 
 	public static final Event<IInitFinishedEvent> INIT_FINISHED_EVENT = createArrayBacked(
 		IInitFinishedEvent.class, listeners -> () -> {
@@ -120,7 +191,7 @@ public class LucentEvent {
 		IChatEvent.class, listeners -> event -> {
 			for (IChatEvent listener : listeners) {
 				listener.onChat(event);
-				if (event.isCanceled()) break;
+				// if (event.isCanceled()) break;
 			}
 		}
 	);
@@ -580,9 +651,65 @@ public class LucentEvent {
 
 	public static class ScoreboardEvent {
 		public final String message;
+		public final ClientboundSetPlayerTeamPacket packet;
 
 		public ScoreboardEvent(String message) {
+			this(message, null);
+		}
+
+		public ScoreboardEvent(String message, ClientboundSetPlayerTeamPacket packet) {
 			this.message = message;
+			this.packet = packet;
+		}
+	}
+
+	public static class TabAddEvent {
+		public final String message;
+		public final Component component;
+
+		public TabAddEvent(String message, Component component) {
+			this.message = message;
+			this.component = component;
+		}
+	}
+
+	public static class TabUpdateEvent {
+		public final String message;
+		public final Component component;
+
+		public TabUpdateEvent(String message, Component component) {
+			this.message = message;
+			this.component = component;
+		}
+	}
+
+	public static class TabFooterEvent {
+		public final String message;
+		public final Component component;
+
+		public TabFooterEvent(String message, Component component) {
+			this.message = message;
+			this.component = component;
+		}
+	}
+
+	public static class TabHeaderEvent {
+		public final String message;
+		public final Component component;
+
+		public TabHeaderEvent(String message, Component component) {
+			this.message = message;
+			this.component = component;
+		}
+	}
+
+	public static class ActionbarEvent {
+		public final String message;
+		public final Component component;
+
+		public ActionbarEvent(String message, Component component) {
+			this.message = message;
+			this.component = component;
 		}
 	}
 
@@ -676,6 +803,46 @@ public class LucentEvent {
 
 		public boolean isCanceled() {
 			return canceled;
+		}
+	}
+
+	public static class TablistUpdateEvent {
+		public final ClientboundPlayerInfoUpdatePacket packet;
+		public final EnumSet<ClientboundPlayerInfoUpdatePacket.Action> actions;
+		public final List<ClientboundPlayerInfoUpdatePacket.Entry> entries;
+		public final List<String> lines;
+
+		public TablistUpdateEvent(ClientboundPlayerInfoUpdatePacket packet) {
+			this.packet = packet;
+			this.actions = packet.actions();
+			this.entries = packet.entries();
+			this.lines = new ArrayList<>();
+			if (packet.actions().contains(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME)) {
+				for (ClientboundPlayerInfoUpdatePacket.Entry entry : packet.entries()) {
+					Component displayName = entry.displayName();
+					if (displayName != null) {
+						this.lines.add(displayName.getString());
+					}
+				}
+			}
+		}
+	}
+
+	public static class ScoreboardUpdateEvent {
+		public final ClientboundSetScorePacket packet;
+		public final String owner;
+		public final String objectiveName;
+		public final int score;
+		public final Optional<Component> display;
+		public final String cleanObjective;
+
+		public ScoreboardUpdateEvent(ClientboundSetScorePacket packet) {
+			this.packet = packet;
+			this.owner = packet.owner();
+			this.objectiveName = packet.objectiveName();
+			this.score = packet.score();
+			this.display = packet.display();
+			this.cleanObjective = ScoreboardUtils.cleanSB(packet.objectiveName());
 		}
 	}
 

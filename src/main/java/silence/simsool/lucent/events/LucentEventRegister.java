@@ -18,16 +18,20 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.world.LevelRenderEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import net.minecraft.network.chat.Component;
+import java.util.regex.Pattern;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
 import net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket;
+import net.minecraft.network.protocol.game.ClientboundSetScorePacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.network.protocol.game.ClientboundTabListPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemPacket;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -36,6 +40,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.events.impl.EntityEvent;
@@ -49,6 +54,7 @@ import silence.simsool.lucent.general.utils.useful.UChat;
 public class LucentEventRegister {
 
 	private static int tickCounter = 0;
+	private static final Pattern TEAM_REGEX = Pattern.compile("^team_(\\d+)$");
 	private static final Map<Integer, EntityType<?>> entityTypes = new ConcurrentHashMap<>();
 	private static final Map<Integer, Vec3> entityPos = new ConcurrentHashMap<>();
 
@@ -106,12 +112,11 @@ public class LucentEventRegister {
 			LucentEvent.WORLD_RENDER_LAST.invoker().onRenderWorldLast(new LucentEvent.RenderWorldLastEvent(context, context.worldRenderer(), partialTick));
 		});
 
-		LevelRenderEvents.AFTER_BLOCK_OUTLINE_EXTRACTION.register((worldContext, hitResult) -> {
-			if (mc.level == null || mc.player == null) return true;
+		WorldRenderEvents.AFTER_BLOCK_OUTLINE_EXTRACTION.register((worldContext, hitResult) -> {
+			if (mc.level == null || mc.player == null || hitResult == null || hitResult.getType() == HitResult.Type.MISS) return;
 			LucentEvent.BlockOverlayEvent event = new LucentEvent.BlockOverlayEvent(worldContext, hitResult);
 			LucentEvent.BLOCK_OVERLAY_EVENT.invoker().onBlockOverlay(event);
-			if (event.isCanceled()) worldContext.levelState().blockOutlineRenderState = null;
-			return !event.isCanceled();
+			if (event.isCanceled()) worldContext.worldState().blockOutlineRenderState = null;
 		});
 
 		// ───────────────────────────── GUI Screen ─────────────────────────────
@@ -227,15 +232,67 @@ public class LucentEventRegister {
 			if (event.packet instanceof ClientboundSetPlayerTeamPacket packet) {
 				mc.execute(() -> {
 					if (mc.player == null || mc.level == null) return;
+					if (!TEAM_REGEX.matcher(packet.getName()).matches()) return;
 					packet.getParameters().ifPresent(parameters -> {
 						String prefix = parameters.getPlayerPrefix().getString();
 						String suffix = parameters.getPlayerSuffix().getString();
-						if (!prefix.isEmpty()) {
-							String cleanMsg = UChat.cleanColor(prefix + suffix.trim());
-							LucentEvent.SCOREBOARD_EVENT.invoker().onScoreboard(new LucentEvent.ScoreboardEvent(cleanMsg));
-						}
+						if (prefix.isEmpty()) return;
+						String cleanMsg = UChat.cleanColor(prefix + suffix.trim());
+						LucentEvent.SCOREBOARD_EVENT.invoker().onScoreboard(new LucentEvent.ScoreboardEvent(cleanMsg, packet));
 					});
 				});
+				return;
+			}
+
+			if (event.packet instanceof ClientboundPlayerInfoUpdatePacket packet) {
+				if (packet.actions().contains(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER)) {
+					for (ClientboundPlayerInfoUpdatePacket.Entry entry : packet.entries()) {
+						Component name = entry.displayName();
+						if (name == null) continue;
+						LucentEvent.TAB_ADD_EVENT.invoker().onTabAdd(new LucentEvent.TabAddEvent(UChat.cleanColor(name.getString()), name));
+					}
+					return;
+				}
+				if (packet.actions().contains(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME)) {
+					LucentEvent.TABLIST_UPDATE_EVENT.invoker().onTablistUpdate(new LucentEvent.TablistUpdateEvent(packet));
+					for (ClientboundPlayerInfoUpdatePacket.Entry entry : packet.entries()) {
+						Component name = entry.displayName();
+						if (name == null) continue;
+						LucentEvent.TAB_UPDATE_EVENT.invoker().onTabUpdate(new LucentEvent.TabUpdateEvent(UChat.cleanColor(name.getString()), name));
+					}
+					return;
+				}
+				return;
+			}
+
+			if (event.packet instanceof ClientboundTabListPacket packet) {
+				if (packet.footer() != null) {
+					String footerStr = packet.footer().getString();
+					for (String line : footerStr.split("\n")) {
+						LucentEvent.TAB_FOOTER_EVENT.invoker().onTabFooter(new LucentEvent.TabFooterEvent(line, packet.footer()));
+					}
+				}
+				if (packet.header() != null) {
+					String headerStr = packet.header().getString();
+					for (String line : headerStr.split("\n")) {
+						LucentEvent.TAB_HEADER_EVENT.invoker().onTabHeader(new LucentEvent.TabHeaderEvent(line, packet.header()));
+					}
+				}
+				return;
+			}
+
+			if (event.packet instanceof ClientboundSetActionBarTextPacket packet) {
+				Component text = packet.text();
+				if (text != null) {
+					String message = UChat.cleanColor(text.getString());
+					LucentEvent.ACTIONBAR_TEXT_EVENT.invoker().onActionbar(new LucentEvent.ActionbarEvent(message, text));
+					LucentEvent.ACTIONBAR_EVENT.invoker().onActionBar(new LucentEvent.MessageEvent(text, text.getString(), message));
+				}
+				return;
+			}
+
+			if (event.packet instanceof ClientboundSetScorePacket packet) {
+				LucentEvent.SCOREBOARD_UPDATE_EVENT.invoker().onScoreboardUpdate(new LucentEvent.ScoreboardUpdateEvent(packet));
 				return;
 			}
 		});

@@ -65,6 +65,7 @@ import silence.simsool.lucent.general.enums.Direction;
 import silence.simsool.lucent.general.enums.GradientType;
 import silence.simsool.lucent.general.models.data.nvg.NVGFont;
 import silence.simsool.lucent.general.models.data.nvg.NVGImage;
+import silence.simsool.lucent.general.utils.MinecraftColor;
 import silence.simsool.lucent.general.utils.useful.UDisplay;
 import silence.simsool.lucent.ui.font.LucentFont;
 import silence.simsool.lucent.ui.utils.UIColors;
@@ -742,11 +743,49 @@ public class NVGRenderer {
 	 * @param size  Font size in pixels
 	 */
 	public static void text(String text, float x, float y, LucentFont font, int color, float size) {
+		if (text == null || text.isEmpty()) return;
 		nvgFontSize(vg, size);
 		nvgFontFaceId(vg, getFontID(font));
-		color(color);
-		nvgFillColor(vg, nvgColor);
-		nvgText(vg, x, y + .5f, text);
+
+		if (text.indexOf('§') == -1) {
+			color(color);
+			nvgFillColor(vg, nvgColor);
+			nvgText(vg, x, y + .5f, text);
+			return;
+		}
+
+		float curX = x;
+		int curColor = color;
+		int len = text.length();
+		StringBuilder sb = new StringBuilder();
+
+		for (int i = 0; i < len; i++) {
+			char c = text.charAt(i);
+			if (c == '§' && i + 1 < len) {
+				char code = text.charAt(i + 1);
+				if (MinecraftColor.isColorCode(code)) {
+					if (sb.length() > 0) {
+						String seg = sb.toString();
+						color(curColor);
+						nvgFillColor(vg, nvgColor);
+						nvgText(vg, curX, y + .5f, seg);
+						curX += nvgTextBounds(vg, 0f, 0f, seg, fontBounds);
+						sb.setLength(0);
+					}
+					curColor = MinecraftColor.getColorByCode(code, color);
+					i++;
+					continue;
+				}
+			}
+			sb.append(c);
+		}
+
+		if (sb.length() > 0) {
+			String seg = sb.toString();
+			color(curColor);
+			nvgFillColor(vg, nvgColor);
+			nvgText(vg, curX, y + .5f, seg);
+		}
 	}
 
 	/**
@@ -788,7 +827,7 @@ public class NVGRenderer {
 	 * @param size  Font size in pixels
 	 */
 	public static void centerTextShadow(String text, float x, float y, LucentFont font, int color, float size) {
-		float textWidth = nvgTextBounds(vg, 0f, 0f, text, fontBounds);
+		float textWidth = textWidth(text, font, size);
 		nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
 		textShadow(text, x - textWidth / 2f, y, font, color, size);
 	}
@@ -806,14 +845,63 @@ public class NVGRenderer {
 	 * @param size  Font size in pixels
 	 */
 	public static void textShadow(String text, float x, float y, LucentFont font, int color, float size) {
+		if (text == null || text.isEmpty()) return;
 		nvgFontFaceId(vg, getFontID(font));
 		nvgFontSize(vg, size);
-		color(-16777216);
-		nvgFillColor(vg, nvgColor);
-		nvgText(vg, Math.round(x + 2f), Math.round(y + 2f), text);
-		color(color);
-		nvgFillColor(vg, nvgColor);
-		nvgText(vg, Math.round(x), Math.round(y), text);
+
+		if (text.indexOf('§') == -1) {
+			color(-16777216);
+			nvgFillColor(vg, nvgColor);
+			nvgText(vg, Math.round(x + 2f), Math.round(y + 2f), text);
+			color(color);
+			nvgFillColor(vg, nvgColor);
+			nvgText(vg, Math.round(x), Math.round(y), text);
+			return;
+		}
+
+		float curX = x;
+		int curColor = color;
+		int len = text.length();
+		StringBuilder sb = new StringBuilder();
+
+		for (int i = 0; i < len; i++) {
+			char c = text.charAt(i);
+			if (c == '§' && i + 1 < len) {
+				char code = text.charAt(i + 1);
+				if (MinecraftColor.isColorCode(code)) {
+					if (sb.length() > 0) {
+						String seg = sb.toString();
+						float rx = Math.round(curX);
+						float ry = Math.round(y);
+						color(-16777216);
+						nvgFillColor(vg, nvgColor);
+						nvgText(vg, rx + 2f, ry + 2f, seg);
+						color(curColor);
+						nvgFillColor(vg, nvgColor);
+						nvgText(vg, rx, ry, seg);
+
+						curX += nvgTextBounds(vg, 0f, 0f, seg, fontBounds);
+						sb.setLength(0);
+					}
+					curColor = MinecraftColor.getColorByCode(code, color);
+					i++;
+					continue;
+				}
+			}
+			sb.append(c);
+		}
+
+		if (sb.length() > 0) {
+			String seg = sb.toString();
+			float rx = Math.round(curX);
+			float ry = Math.round(y);
+			color(-16777216);
+			nvgFillColor(vg, nvgColor);
+			nvgText(vg, rx + 2f, ry + 2f, seg);
+			color(curColor);
+			nvgFillColor(vg, nvgColor);
+			nvgText(vg, rx, ry, seg);
+		}
 	}
 
 	/**
@@ -825,9 +913,26 @@ public class NVGRenderer {
 	 * @return Width of the string in pixels
 	 */
 	public static float textWidth(String text, LucentFont font, float size) {
+		if (text == null || text.isEmpty()) return 0f;
 		nvgFontSize(vg, size);
 		nvgFontFaceId(vg, getFontID(font));
-		return nvgTextBounds(vg, 0f, 0f, text, fontBounds);
+		if (text.indexOf('§') == -1) {
+			return nvgTextBounds(vg, 0f, 0f, text, fontBounds);
+		}
+		StringBuilder clean = new StringBuilder();
+		int len = text.length();
+		for (int i = 0; i < len; i++) {
+			char c = text.charAt(i);
+			if (c == '§' && i + 1 < len) {
+				char code = text.charAt(i + 1);
+				if (MinecraftColor.isColorCode(code)) {
+					i++;
+					continue;
+				}
+			}
+			clean.append(c);
+		}
+		return nvgTextBounds(vg, 0f, 0f, clean.toString(), fontBounds);
 	}
 
 	/**

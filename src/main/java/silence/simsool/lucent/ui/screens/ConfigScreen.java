@@ -148,8 +148,16 @@ public class ConfigScreen extends Screen {
 		protected void renderWidget(GuiGraphics ctx, int mx, int my, float delta) {
 			boolean hov = mx >= x && mx <= x + width && my >= y && my <= y + height;
 			int topBg   = hov ? UIColors.CARD_HOVER : UIColors.CARD_BG;
-			int barBg   = mod.isEnabled ? UIColors.ACCENT_BLUE : UIColors.TAB_BG; 
-			if (hov && !mod.isEnabled) barBg = UIColors.withAlphaFloat(UIColors.TAB_BG, 0.6f);
+			int barBg;
+			int activeColor = UIColors.BAR_ON;
+			if (mod.isLocked) {
+				barBg = UColor.darken(activeColor, 0.25f);
+			} else if (mod.isEnabled) {
+				barBg = activeColor;
+			} else {
+				if (hov) barBg = UIColors.withAlphaFloat(UIColors.TAB_BG, 0.6f);
+				else barBg = UIColors.TAB_BG;
+			}
 
 			NVGRenderer.rect(x, y, width, height - BAR_H, topBg, 12, 12, 0, 0);
 			NVGRenderer.rect(x, y + height - BAR_H, width, BAR_H, barBg, 0, 0, 12, 12);
@@ -179,8 +187,11 @@ public class ConfigScreen extends Screen {
 		@Override
 		public boolean mouseClicked(double mx, double my, int btn) {
 			if (btn == 0 && mx >= x && mx <= x + width && my >= y && my <= y + height) {
-				if (mx >= x + width - 36 && my >= y + height - BAR_H) pushNav("Mods", mod, currentCategory);
-				else mod.isEnabled = !mod.isEnabled;
+				if (mod.isLocked || (mx >= x + width - 36 && my >= y + height - BAR_H)) {
+					pushNav("Mods", mod, currentCategory);
+				} else {
+					mod.isEnabled = !mod.isEnabled;
+				}
 				return true;
 			}
 			return false;
@@ -558,12 +569,14 @@ public class ConfigScreen extends Screen {
 	public void removed() {
 		super.removed();
 		if (moduleManager != null) moduleManager.saveConfigs();
+		Lucent.config.saveGlobalConfig();
 	}
 
 	@Override
 	protected void init() {
 		super.init();
 
+		Lucent.config.loadGlobalConfig();
 		LucentResourceManager.loadLucentIcons();
 
 		float standardScale = NVGRenderer.getStandardGuiScale();
@@ -1006,6 +1019,7 @@ public class ConfigScreen extends Screen {
 
 	private void pushNav(String page, Mod mod, String cat) {
 		if (currentSidebarPage.equals("Mods")) moduleManager.saveConfigs();
+		Lucent.config.saveGlobalConfig();
 
 		NavState current = new NavState(currentSidebarPage, currentModSettings, currentCategory, scrollOffset);
 		if (history.isEmpty() || !isSameState(history.peek(), current)) history.push(current);
@@ -1021,6 +1035,7 @@ public class ConfigScreen extends Screen {
 		scrollOffset = 0; // New page starts at top
 
 		if (page.equals("Mods")) moduleManager.loadConfigs();
+		if (page.equals("Preferences")) Lucent.config.loadGlobalConfig();
 
 		refreshUI();
 	}
@@ -1034,6 +1049,7 @@ public class ConfigScreen extends Screen {
 		if (history.isEmpty()) return;
 
 		if (currentSidebarPage.equals("Mods")) moduleManager.saveConfigs();
+		Lucent.config.saveGlobalConfig();
 
 		forwardHistory.push(new NavState(currentSidebarPage, currentModSettings, currentCategory, scrollOffset));
 		NavState prev = history.pop();
@@ -1043,6 +1059,7 @@ public class ConfigScreen extends Screen {
 		scrollOffset = prev.scrollOffset;
 
 		if (currentSidebarPage.equals("Mods")) moduleManager.loadConfigs();
+		if (currentSidebarPage.equals("Preferences")) Lucent.config.loadGlobalConfig();
 
 		refreshUI(true);
 	}
@@ -1051,6 +1068,7 @@ public class ConfigScreen extends Screen {
 		if (forwardHistory.isEmpty()) return;
 
 		if (currentSidebarPage.equals("Mods")) moduleManager.saveConfigs();
+		Lucent.config.saveGlobalConfig();
 
 		history.push(new NavState(currentSidebarPage, currentModSettings, currentCategory, scrollOffset));
 		NavState next = forwardHistory.pop();
@@ -1060,6 +1078,7 @@ public class ConfigScreen extends Screen {
 		scrollOffset = next.scrollOffset;
 
 		if (currentSidebarPage.equals("Mods")) moduleManager.loadConfigs();
+		if (currentSidebarPage.equals("Preferences")) Lucent.config.loadGlobalConfig();
 
 		refreshUI(true);
 	}
@@ -1192,6 +1211,7 @@ public class ConfigScreen extends Screen {
 		ActionButton loadConfig = new ActionButton(sx + btnW + 12, rowY, btnW, 36, L10n.translate("lucent.preferences.load_config"));
 		loadConfig.setOnClick(() -> {
 			Lucent.config.loadConfigs();
+			Lucent.config.loadGlobalConfig();
 			refreshUI();
 		});
 		widgets.add(loadConfig);

@@ -9,6 +9,8 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -54,6 +56,7 @@ public class ModManager {
 	}
 
 	public final List<Mod> modules = new ArrayList<>();
+	private final Map<Class<? extends Mod>, Mod> moduleMap = new ConcurrentHashMap<>();
 	private final File configDirectory;
 	private static String currentProfile = "default";
 
@@ -205,6 +208,7 @@ public class ModManager {
 
 	public void register(Mod module) {
 		modules.add(module);
+		moduleMap.put(module.getClass(), module);
 
 		for (Field field : module.getClass().getDeclaredFields()) {
 			if (field.getType() == KeyBind.class) {
@@ -324,6 +328,34 @@ public class ModManager {
 
 		LucentEvent.SCOREBOARD_EVENT.register(event -> {
 			if (module.isEnabled) module.onScoreboard(event);
+		});
+
+		LucentEvent.TABLIST_UPDATE_EVENT.register(event -> {
+			if (module.isEnabled) module.onTablistUpdate(event);
+		});
+
+		LucentEvent.TAB_ADD_EVENT.register(event -> {
+			if (module.isEnabled) module.onTabAdd(event);
+		});
+
+		LucentEvent.TAB_UPDATE_EVENT.register(event -> {
+			if (module.isEnabled) module.onTabUpdate(event);
+		});
+
+		LucentEvent.TAB_FOOTER_EVENT.register(event -> {
+			if (module.isEnabled) module.onTabFooter(event);
+		});
+
+		LucentEvent.TAB_HEADER_EVENT.register(event -> {
+			if (module.isEnabled) module.onTabHeader(event);
+		});
+
+		LucentEvent.ACTIONBAR_TEXT_EVENT.register(event -> {
+			if (module.isEnabled) module.onActionbar(event);
+		});
+
+		LucentEvent.SCOREBOARD_UPDATE_EVENT.register(event -> {
+			if (module.isEnabled) module.onScoreboardUpdate(event);
 		});
 
 		LucentEvent.USE_ITEM_ON_EVENT.register(event -> {
@@ -481,8 +513,13 @@ public class ModManager {
 
 	@SuppressWarnings("unchecked")
 	public <T extends Mod> T getModule(Class<T> moduleClass) {
+		Mod cached = moduleMap.get(moduleClass);
+		if (cached != null) {
+			return (T) cached;
+		}
 		for (Mod mod : modules) {
 			if (moduleClass.isAssignableFrom(mod.getClass())) {
+				moduleMap.put(moduleClass, mod);
 				return (T) mod;
 			}
 		}
@@ -497,6 +534,7 @@ public class ModManager {
 	public void setModuleEnabled(Class<? extends Mod> moduleClass, boolean enabled) {
 		Mod mod = getModule(moduleClass);
 		if (mod != null) {
+			if (mod.isLocked) return;
 			mod.isEnabled = enabled;
 			saveConfigs();
 		}
@@ -529,7 +567,9 @@ public class ModManager {
 				}
 				
 				JsonObject json = modulesJson.getAsJsonObject(key);
-				if (json.has("isEnabled")) {
+				if (module.isLocked) {
+					module.isEnabled = true;
+				} else if (json.has("isEnabled")) {
 					module.isEnabled = json.get("isEnabled").getAsBoolean();
 				} else {
 					module.isEnabled = false;

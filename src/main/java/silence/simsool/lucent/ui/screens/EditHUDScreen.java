@@ -153,6 +153,8 @@ public class EditHUDScreen extends Screen {
 				NVGRenderer.globalAlpha(UAnimation.clamp(animP * 1.5f, 0, 1));
 			}
 
+			NVGRenderer.rect(0, 0, vw, vh, C_DIM);
+
 			for (LucentHUD hud : LucentAPI.getHUDManager().getHUDs()) {
 				if (hud.isEnabled() && hud.getRenderType() == RenderType.NANOVG) {
 					hud.preview(guiGraphics);
@@ -397,8 +399,6 @@ public class EditHUDScreen extends Screen {
 		float mx  = UMouse.getNvgScaledX(1f);
 		float my  = UMouse.getNvgScaledY(1f);
 
-		NVGRenderer.rect(0, 0, vw, vh, C_DIM);
-
 		drawCrosshair(vw, vh);
 
 		for (LucentHUD hud : LucentAPI.getHUDManager().getHUDs()) {
@@ -415,9 +415,9 @@ public class EditHUDScreen extends Screen {
 				}
 			}
 		}
+		if (showModsButton)  drawModsButton(vw, vh, mx, my, animP);
 		if (draggingScale != null) drawScaleBadge(draggingScale);
 		if (contextMenuHud != null) drawContextMenu(vw, vh);
-		if (showModsButton)  drawModsButton(vw, vh, mx, my, animP);
 	}
 
 	private void drawModsButton(float vw, float vh, float mx, float my, float animP) {
