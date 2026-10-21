@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import silence.simsool.lucent.general.utils.useful.UDesktop;
 import silence.simsool.lucent.ui.utils.UIColors;
@@ -15,7 +16,6 @@ import silence.simsool.lucent.ui.widget.UIWidget;
 public class TextBox extends UIWidget {
 	private String value;
 	private Consumer<String> onChange;
-	private boolean focused = false;
 	private int cursorPosition;
 	private int highlightPosition;
 	private float scrollOffset = 0;
@@ -90,7 +90,7 @@ public class TextBox extends UIWidget {
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
 		if (isMouseOver(mouseX, mouseY)) {
-			focused = true;
+			setFocused(true);
 
 			float clickX = (float) mouseX - (x + 10) + scrollOffset;
 			int bestPos = 0;
@@ -109,7 +109,7 @@ public class TextBox extends UIWidget {
 
 			return true;
 		}
-		focused = false;
+		setFocused(false);
 		scrollOffset = 0;
 		return false;
 	}
@@ -202,7 +202,7 @@ public class TextBox extends UIWidget {
 			return true;
 
 		} else if (key == InputConstants.KEY_RETURN || key == InputConstants.KEY_NUMPADENTER || key == InputConstants.KEY_ESCAPE) {
-			focused = false;
+			setFocused(false);
 			scrollOffset = 0;
 			return true;
 		}
@@ -219,10 +219,15 @@ public class TextBox extends UIWidget {
 
 	@Override
 	protected void onFocusChanged(boolean focused) {
-		this.focused = focused;
-		if (!focused) {
-			scrollOffset = 0;
-		}
+		super.onFocusChanged(focused);
+		try {
+			if (focused) {
+				Minecraft.getInstance().textInputManager().startTextInput(this);
+			} else {
+				Minecraft.getInstance().textInputManager().stopTextInput(this);
+				scrollOffset = 0;
+			}
+		} catch (Exception ignored) {}
 	}
 
 	private void writeText(String text) {
@@ -343,13 +348,5 @@ public class TextBox extends UIWidget {
 
 	public void setOnChange(Consumer<String> onChange) {
 		this.onChange = onChange;
-	}
-
-	public boolean isFocused() {
-		return focused;
-	}
-
-	public void setFocused(boolean focused) {
-		this.focused = focused;
 	}
 }

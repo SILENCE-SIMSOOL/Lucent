@@ -12,7 +12,7 @@ import java.util.Objects;
 import java.util.Stack;
 
 import com.mojang.blaze3d.platform.InputConstants;
-
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -295,7 +295,7 @@ public class ConfigScreen extends Screen {
 
 		@Override
 		public boolean mouseClicked(double mx, double my, int btn) {
-			return input.mouseClicked(mx, my, btn) || createBtn.mouseClicked(mx, my, btn);
+			return input.mouseClicked(mx, my - scrollOffset, btn) || createBtn.mouseClicked(mx, my - scrollOffset, btn);
 		}
 
 		@Override
@@ -670,6 +670,9 @@ public class ConfigScreen extends Screen {
 	@Override
 	public void removed() {
 		super.removed();
+		try {
+			Minecraft.getInstance().textInputManager().stopTextInput();
+		} catch (Exception ignored) {}
 		if (moduleManager != null) moduleManager.saveConfigs();
 		Lucent.config.saveGlobalConfig();
 	}

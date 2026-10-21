@@ -12,6 +12,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -190,6 +192,12 @@ public class PremiumCosmetics {
 			for (CosmeticSetting setting : info.cosmetics.values()) {
 				setting.resolvedTexture = null;
 			}
+		}
+		Set<Identifier> textures = new HashSet<>(textureCache.values());
+		textures.addAll(forcedTextureCache.values());
+		textures.addAll(previewTextureCache.values());
+		for (Identifier texture : textures) {
+			mc.getTextureManager().release(texture);
 		}
 		textureCache.clear();
 		forcedTextureCache.clear();
