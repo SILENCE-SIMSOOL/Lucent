@@ -1,6 +1,7 @@
 package silence.simsool.lucent.general.managers.impl;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import silence.simsool.lucent.events.impl.LucentEvent;
@@ -11,35 +12,32 @@ public class TaskManager {
 	private static final List<Task> serverTasks = new ArrayList<>();
 
 	public static void register() {
-		LucentEvent.TICK_EVENT.register(() -> {
-			synchronized (tasks) {
-				if (tasks.isEmpty()) return;
+		LucentEvent.TICK_EVENT.register(() -> runTasks(tasks));
+		LucentEvent.SERVER_TICK_EVENT.register(() -> runTasks(serverTasks));
+	}
 
-				tasks.removeIf(task -> {
-					if (task.delay <= 0) {
-						task.callback.run();
-						return true;
-					}
+	// 락 안에서는 만료 작업만 분리하고, 콜백은 락 밖에서 실행해 재등록 시 리스트 변경 충돌을 방지
+	private static void runTasks(List<Task> list) {
+		List<Task> due = null;
+
+		synchronized (list) {
+			if (list.isEmpty()) return;
+
+			Iterator<Task> iterator = list.iterator();
+			while (iterator.hasNext()) {
+				Task task = iterator.next();
+				if (task.delay <= 0) {
+					if (due == null) due = new ArrayList<>();
+					due.add(task);
+					iterator.remove();
+				} else {
 					task.delay--;
-					return false;
-				});
+				}
 			}
-		});
+		}
 
-		LucentEvent.SERVER_TICK_EVENT.register(() -> {
-			synchronized (serverTasks) {
-				if (serverTasks.isEmpty()) return;
-
-				serverTasks.removeIf(task -> {
-					if (task.delay <= 0) {
-						task.callback.run();
-						return true;
-					}
-					task.delay--;
-					return false;
-				});
-			}
-		});
+		if (due == null) return;
+		for (Task task : due) task.callback.run();
 	}
 
 	public static void scheduleTask(Runnable callback) {

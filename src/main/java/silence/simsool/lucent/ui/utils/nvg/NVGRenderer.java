@@ -1116,7 +1116,8 @@ public class NVGRenderer {
 	 * @throws Exception If the image cannot be loaded from the given path
 	 */
 	public static Image createImage(String resourcePath) throws Exception {
-		Image image = images.keySet().stream().filter(i -> i.identifier.equals(resourcePath)).findFirst().orElse(new Image(resourcePath));
+		Image image = images.keySet().stream().filter(i -> i.identifier.equals(resourcePath)).findFirst().orElse(null);
+		if (image == null) image = new Image(resourcePath);
 		NVGImage nvgImg = images.computeIfAbsent(image, img -> {
 			int id = 0;
 			try {
@@ -1268,7 +1269,11 @@ public class NVGRenderer {
 		int[] w = new int[1], h = new int[1], channels = new int[1];
 		ByteBuffer buffer = STBImage.stbi_load_from_memory(image.buffer(), w, h, channels, 4);
 		if (buffer == null) throw new NullPointerException("Failed to load image: " + image.identifier);
-		return nvgCreateImageRGBA(vg, w[0], h[0], 0, buffer);
+		try {
+			return nvgCreateImageRGBA(vg, w[0], h[0], 0, buffer);
+		} finally {
+			STBImage.stbi_image_free(buffer);
+		}
 	}
 
 	/**
