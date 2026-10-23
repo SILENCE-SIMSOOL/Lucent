@@ -32,7 +32,8 @@ public class LucentSound {
 	private final String downloadUrl;
 	private volatile int alBuffer = 0;
 	private volatile int dedicatedSource = 0;
-	private volatile boolean loading = false;
+	private CompletableFuture<Void> loadingFuture;
+	private volatile long retryAfter;
 	private volatile ByteBuffer cachedPcm = null;
 	private volatile AudioFormat cachedFormat = null;
 
@@ -46,7 +47,7 @@ public class LucentSound {
 	}
 
 	public void preloadAsync() {
-		CompletableFuture.runAsync(this::ensureLoaded);
+		loadAsync();
 	}
 
 	public void play() {
@@ -58,15 +59,21 @@ public class LucentSound {
 	}
 
 	public void play(float volume, float pitch) {
+		if (mc == null) return;
+		if (!mc.isSameThread()) {
+			mc.execute(() -> play(volume, pitch));
+			return;
+		}
 		if (alBuffer == 0) {
-			if (cachedPcm != null && cachedFormat != null) {
-				uploadToAl();
-			} else {
-				ensureLoaded();
-				if (cachedPcm != null && cachedFormat != null) {
-					uploadToAl();
-				}
+			if (cachedPcm == null || cachedFormat == null) {
+				loadAsync().thenRun(() -> {
+					if (cachedPcm != null && cachedFormat != null) {
+						mc.execute(() -> play(volume, pitch));
+					}
+				});
+				return;
 			}
+			uploadToAl();
 		}
 
 		if (alBuffer == 0) return;
@@ -121,10 +128,17 @@ public class LucentSound {
 		}
 	}
 
-	private synchronized void ensureLoaded() {
+	private synchronized CompletableFuture<Void> loadAsync() {
+		if (loadingFuture != null && !loadingFuture.isDone()) return loadingFuture;
+		if (alBuffer != 0 || cachedPcm != null || (retryAfter != 0 && System.nanoTime() - retryAfter < 0)) {
+			return CompletableFuture.completedFuture(null);
+		}
+		loadingFuture = CompletableFuture.runAsync(this::ensureLoaded);
+		return loadingFuture;
+	}
+
+	private void ensureLoaded() {
 		if (alBuffer != 0 || (cachedPcm != null && cachedFormat != null)) return;
-		if (loading) return;
-		loading = true;
 
 		try {
 			File soundFile = getFile();
@@ -133,20 +147,19 @@ public class LucentSound {
 			}
 
 			if (!soundFile.exists() || soundFile.length() == 0) {
-				loading = false;
 				return;
 			}
 
-			try (InputStream in = new BufferedInputStream(new FileInputStream(soundFile))) {
-				JOrbisAudioStream stream = new JOrbisAudioStream(in);
-				this.cachedPcm = stream.readAll();
+			try (InputStream in = new BufferedInputStream(new FileInputStream(soundFile));
+				 JOrbisAudioStream stream = new JOrbisAudioStream(in)) {
+				ByteBuffer pcm = stream.readAll();
 				this.cachedFormat = stream.getFormat();
-				stream.close();
+				this.cachedPcm = pcm;
 			}
 		} catch (Exception e) {
 			Lucent.LOG.error("Failed to decode sound " + filename + ": " + e.getMessage());
 		} finally {
-			loading = false;
+			if (cachedPcm == null) retryAfter = System.nanoTime() + Duration.ofSeconds(30).toNanos();
 		}
 	}
 

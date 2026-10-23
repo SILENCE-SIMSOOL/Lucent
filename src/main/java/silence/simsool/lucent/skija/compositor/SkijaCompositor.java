@@ -32,6 +32,7 @@ import silence.simsool.lucent.general.utils.useful.UDisplay;
 import silence.simsool.lucent.skija.backend.SkijaBackend;
 import silence.simsool.lucent.skija.backend.SkijaBackends;
 import silence.simsool.lucent.skija.natives.SkijaNatives;
+import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 
 public class SkijaCompositor {
 
@@ -449,11 +450,17 @@ public class SkijaCompositor {
 
 	public void shutdown() {
 		try {
+			if (hudTarget.surface != null || overlayTarget.surface != null) {
+				SkijaBackend backend = SkijaBackends.getActive();
+				if (backend != null) backend.waitForIdle();
+			}
+			discard();
 			hudCacheValid = false;
 			hudTarget.close();
 			overlayTarget.close();
 			hudPictures.values().forEach(HudPicture::close);
 			hudPictures.clear();
+			if (SkijaNatives.isReady()) SkijaRenderer.cleanup();
 			SkijaBackends.reset();
 		} catch (Throwable t) {
 			Lucent.LOG.warn("Skija shutdown failed: " + t.getMessage());
