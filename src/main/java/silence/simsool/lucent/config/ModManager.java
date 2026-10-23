@@ -122,7 +122,6 @@ public class ModManager {
 		currentProfile = profile;
 		saveGlobalConfig();
 		loadConfigs();
-		LucentAPI.getHUDManager().loadAll();
 	}
 
 	public List<String> getProfiles() {
@@ -848,12 +847,16 @@ public class ModManager {
 
 		if (!configFile.exists()) {
 			if (!modules.isEmpty()) saveConfigs();
+			LucentAPI.getHUDManager().loadAll();
 			return;
 		}
 
 		try (BufferedReader reader = Files.newBufferedReader(configFile.toPath(), StandardCharsets.UTF_8)) {
 			JsonObject root = GSON.fromJson(reader, JsonObject.class);
-			if (root == null) return;
+			if (root == null) {
+				LucentAPI.getHUDManager().loadAll();
+				return;
+			}
 			JsonObject modulesJson = root.has("modules") ? root.getAsJsonObject("modules") : new JsonObject();
 
 			for (Mod module : modules) {

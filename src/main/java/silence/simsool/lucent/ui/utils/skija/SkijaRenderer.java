@@ -909,6 +909,10 @@ public class SkijaRenderer {
 	}
 
 	public static void cleanup() {
+		RENDER_PAINT.get().close();
+		RENDER_PAINT.remove();
+		SHADOW_PAINT.get().close();
+		SHADOW_PAINT.remove();
 		blurMaskCache.values().forEach(MaskFilter::close);
 		blurMaskCache.clear();
 		fontCache.values().forEach(Font::close);
