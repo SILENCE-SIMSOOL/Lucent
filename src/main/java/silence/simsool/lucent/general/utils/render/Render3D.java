@@ -126,7 +126,7 @@ public class Render3D {
 			renderQueuedBeaconBeams(matrix, submitNodeCollector, camera);
 			renderQueuedTexts(matrix, submitNodeCollector, camera);
 
-			clearAll();
+			//clearAll(); -> LucentEventRegister EndMain
 		});
 	}
 
@@ -1031,7 +1031,7 @@ public class Render3D {
 	// ==========================================
 	// Internals
 	// ==========================================
-	private static void clearAll() {
+	public static void clearAll() {
 		for (int i = 0; i < 4; i++) {
 			lineBuckets[i].clear();
 			wireBoxBuckets[i].clear();
@@ -1135,16 +1135,12 @@ public class Render3D {
 		for (int i = 0; i < 4; i++) {
 			List<BoxData> filledBoxes = filledBoxBuckets[i];
 			List<CircleData> filledCircles = filledCircleBuckets[i];
-
 			if (filledBoxes.isEmpty() && filledCircles.isEmpty()) continue;
-
 			RenderType renderType = FILL_RENDER_TYPES[i];
-
 			submitNodeCollector.submitCustomGeometry(matrix, renderType, (pose, buffer) -> {
 				double camX = camera.x;
 				double camY = camera.y;
 				double camZ = camera.z;
-
 				// 1. Filled Boxes
 				for (int j = 0; j < filledBoxes.size(); j++) {
 					BoxData box = filledBoxes.get(j);
@@ -1156,7 +1152,6 @@ public class Render3D {
 					float maxZ = (float) (box.aabb.maxZ - camZ);
 					PrimitiveRenderer.addChainedFilledBoxVertices(pose, buffer, minX, minY, minZ, maxX, maxY, maxZ, box.r, box.g, box.b, box.a);
 				}
-
 				// 2. Filled Circles
 				if (!filledCircles.isEmpty()) {
 					Matrix4f matrix4f = pose.pose();
@@ -1165,7 +1160,6 @@ public class Render3D {
 						float cx = (float) (circle.center.x - camX);
 						float cy = (float) (circle.center.y - camY);
 						float cz = (float) (circle.center.z - camZ);
-
 						for (int deg = 0; deg < 360; deg += 2) {
 							int idx1 = deg / 2;
 							int idx2 = (deg + 2) / 2;
@@ -1173,7 +1167,6 @@ public class Render3D {
 							float dz1 = SIN_TABLE[idx1] * circle.radius;
 							float dx2 = COS_TABLE[idx2] * circle.radius;
 							float dz2 = SIN_TABLE[idx2] * circle.radius;
-
 							buffer.addVertex(matrix4f, cx, cy, cz).setColor(circle.r, circle.g, circle.b, circle.a);
 							buffer.addVertex(matrix4f, cx + dx1, cy, cz + dz1).setColor(circle.r, circle.g, circle.b, circle.a);
 							buffer.addVertex(matrix4f, cx + dx2, cy, cz + dz2).setColor(circle.r, circle.g, circle.b, circle.a);
