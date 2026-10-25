@@ -1,7 +1,6 @@
 package silence.simsool.lucent.general.managers.impl;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import silence.simsool.lucent.events.impl.LucentEvent;
@@ -23,17 +22,20 @@ public class TaskManager {
 		synchronized (list) {
 			if (list.isEmpty()) return;
 
-			Iterator<Task> iterator = list.iterator();
-			while (iterator.hasNext()) {
-				Task task = iterator.next();
+			int remaining = 0;
+			int size = list.size();
+			for (int i = 0; i < size; i++) {
+				Task task = list.get(i);
 				if (task.delay <= 0) {
 					if (due == null) due = new ArrayList<>();
 					due.add(task);
-					iterator.remove();
 				} else {
 					task.delay--;
+					if (remaining != i) list.set(remaining, task);
+					remaining++;
 				}
 			}
+			if (remaining != size) list.subList(remaining, size).clear();
 		}
 
 		if (due == null) return;

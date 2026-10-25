@@ -2,6 +2,8 @@ package silence.simsool.lucent.ui.widget.components;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -33,6 +35,10 @@ public class Selector extends UIWidget {
 	private float dropdownAnim = 0f; 
 	private int hoveredItem = -1;
 	private int scrollOffset = 0;
+	private final Map<String, String> fittedTextCache = new HashMap<>();
+	private LucentFont fittedTextFont;
+	private int fittedTextWidth;
+	private int fittedTextFontRevision = -1;
 
 	private Consumer<String> onChange;
 	private Consumer<Integer> onChangeIndex;
@@ -152,13 +158,27 @@ public class Selector extends UIWidget {
 	}
 
 	private String fitText(String text, int maxWidth, LucentFont font) {
-		if (SkijaRenderer.textWidth(text, font, FONT_SIZE) <= maxWidth) return text;
-		String suffix = "...";
-		String current = text;
-		while (current.length() > 0 && SkijaRenderer.textWidth(current + suffix, font, FONT_SIZE) > maxWidth) {
-			current = current.substring(0, current.length() - 1);
+		int revision = Fonts.getRevision();
+		if (font != fittedTextFont || maxWidth != fittedTextWidth || revision != fittedTextFontRevision) {
+			fittedTextCache.clear();
+			fittedTextFont = font;
+			fittedTextWidth = maxWidth;
+			fittedTextFontRevision = revision;
 		}
-		return current + suffix;
+		String cached = fittedTextCache.get(text);
+		if (cached != null) return cached;
+
+		String result = text;
+		if (SkijaRenderer.textWidth(text, font, FONT_SIZE) > maxWidth) {
+			String suffix = "...";
+			String current = text;
+			while (current.length() > 0 && SkijaRenderer.textWidth(current + suffix, font, FONT_SIZE) > maxWidth) {
+				current = current.substring(0, current.offsetByCodePoints(current.length(), -1));
+			}
+			result = current + suffix;
+		}
+		fittedTextCache.put(text, result);
+		return result;
 	}
 
 	@Override
@@ -237,6 +257,7 @@ public class Selector extends UIWidget {
 	}
 
 	public void setOptions(List<String> options) {
+		fittedTextCache.clear();
 		this.options = new ArrayList<>(options);
 		this.displayOptions = new ArrayList<>(options);
 		selectedIndex = 0;
@@ -244,6 +265,7 @@ public class Selector extends UIWidget {
 	}
 
 	public void setOptions(List<String> options, List<String> displayOptions) {
+		fittedTextCache.clear();
 		this.options = new ArrayList<>(options);
 		this.displayOptions = new ArrayList<>(displayOptions);
 		selectedIndex = 0;

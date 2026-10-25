@@ -1,5 +1,8 @@
 package silence.simsool.lucent.skija.backend;
 
+import java.util.IdentityHashMap;
+import java.util.Map;
+
 import org.lwjgl.vulkan.VK;
 import org.lwjgl.vulkan.VK10;
 import org.lwjgl.vulkan.VK12;
@@ -40,6 +43,7 @@ public class VulkanSkijaBackend implements SkijaBackend {
 	private static final int VK_QUEUE_FAMILY_IGNORED = -1;
 	private static final int VK_SHARING_MODE_EXCLUSIVE = 0;
 
+	private final Map<GpuTextureView, BackendRenderTarget> targets = new IdentityHashMap<>();
 	private DirectContext cachedContext = null;
 	private VulkanFrameBarrier barrier = null;
 
@@ -99,9 +103,22 @@ public class VulkanSkijaBackend implements SkijaBackend {
 				1,
 				1
 		);
-		return Surface.wrapBackendRenderTarget(
-				getContext(), renderTarget, SurfaceOrigin.TOP_LEFT, ColorType.RGBA_8888, ColorSpace.getSRGB()
-		);
+		try {
+			Surface surface = Surface.wrapBackendRenderTarget(
+					getContext(), renderTarget, SurfaceOrigin.TOP_LEFT, ColorType.RGBA_8888, ColorSpace.getSRGB()
+			);
+			targets.put(view, renderTarget);
+			return surface;
+		} catch (RuntimeException | Error error) {
+			renderTarget.close();
+			throw error;
+		}
+	}
+
+	@Override
+	public void releaseTarget(GpuTextureView view) {
+		BackendRenderTarget target = targets.remove(view);
+		if (target != null) target.close();
 	}
 
 	@Override
@@ -155,6 +172,8 @@ public class VulkanSkijaBackend implements SkijaBackend {
 
 	@Override
 	public void dispose() {
+		targets.values().forEach(BackendRenderTarget::close);
+		targets.clear();
 		if (barrier != null) {
 			barrier.dispose();
 			barrier = null;

@@ -63,10 +63,7 @@ public class SkijaRenderer {
 	}
 
 	private static void enqueue(Consumer<Canvas> op) {
-		// float alpha = currentAlpha;
-		SkijaCompositor.INSTANCE.enqueue(canvas -> {
-			op.accept(canvas);
-		});
+		SkijaCompositor.INSTANCE.enqueue(op);
 	}
 
 	public static void push() {

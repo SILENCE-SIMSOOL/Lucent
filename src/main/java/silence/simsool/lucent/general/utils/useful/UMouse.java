@@ -5,6 +5,8 @@ import static silence.simsool.lucent.Lucent.mc;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.lwjgl.sdl.SDLMouse;
+
 import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.input.MouseButtonEvent;
@@ -17,6 +19,23 @@ public class UMouse {
 	public static void setButtonPressed(int lucentButton, boolean pressed) {
 		if (pressed) PRESSED_BUTTONS.add(lucentButton);
 		else PRESSED_BUTTONS.remove(lucentButton);
+	}
+
+	public static void updateButtonStates() {
+		if (mc.player == null || mc.level == null || !mc.isWindowActive()) {
+			PRESSED_BUTTONS.clear();
+			return;
+		}
+		int buttons = SDLMouse.SDL_GetMouseState(null, null);
+		PRESSED_BUTTONS.removeIf(button -> {
+			int rawButton = switch (button) {
+				case 0 -> InputConstants.MOUSE_BUTTON_LEFT;
+				case 1 -> InputConstants.MOUSE_BUTTON_RIGHT;
+				case 2 -> InputConstants.MOUSE_BUTTON_MIDDLE;
+				default -> button + 1;
+			};
+			return (buttons & (1 << (rawButton - 1))) == 0;
+		});
 	}
 
 	public static boolean isButtonDown(int lucentButton) {

@@ -1,7 +1,5 @@
 package silence.simsool.lucent.general.models.data;
 
-import static silence.simsool.lucent.Lucent.mc;
-
 import com.mojang.blaze3d.platform.InputConstants;
 import org.lwjgl.sdl.SDLScancode;
 
@@ -362,15 +360,7 @@ public class KeyBind {
 				return false;
 			}
 		}
-		if (isMouse()) {
-			if (UMouse.isButtonDown(mouseButton)) return true;
-			if (mc != null && mc.mouseHandler != null) {
-				if (mouseButton == MOUSE_LEFT) return mc.mouseHandler.isLeftPressed();
-				if (mouseButton == MOUSE_RIGHT) return mc.mouseHandler.isRightPressed();
-				if (mouseButton == MOUSE_MIDDLE) return mc.mouseHandler.isMiddlePressed();
-			}
-			return false;
-		}
+		if (isMouse()) return UMouse.isButtonDown(mouseButton);
 		return false;
 	}
 

@@ -115,7 +115,7 @@ public class CosmeticsScreen extends Screen {
 	}
 
 	@Override
-	public void onClose() {
+	public void removed() {
 		PremiumCosmetics.isPreviewActive = false;
 
 		for (Image entry : cosmeticImageCache.values()) {
@@ -123,7 +123,7 @@ public class CosmeticsScreen extends Screen {
 		}
 		cosmeticImageCache.clear();
 
-		super.onClose();
+		super.removed();
 	}
 
 	private Image getOrCreateCosmeticImage(Identifier id) {

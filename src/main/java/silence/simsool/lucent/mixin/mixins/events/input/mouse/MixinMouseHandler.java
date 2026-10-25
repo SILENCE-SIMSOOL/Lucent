@@ -19,9 +19,9 @@ public class MixinMouseHandler {
 
 	@Inject(method = "onButton", at = @At("HEAD"), cancellable = true)
 	private void lucent$onButton(long handle, MouseButtonInfo rawButtonInfo, int action, CallbackInfo ci) {
-		if (mc.player == null || mc.level == null) return;
 		int lucentButton = UMouse.toLucentButton(rawButtonInfo.button());
 		UMouse.setButtonPressed(lucentButton, action != 0);
+		if (mc.player == null || mc.level == null) return;
 		if (UScreen.isScreenClose()) ModManager.handleMouseInput(lucentButton, action);
 		InputEvent.MouseInputEvent event = new InputEvent.MouseInputEvent(lucentButton, action);
 		InputEvent.MOUSE.invoker().onMouseInput(event);

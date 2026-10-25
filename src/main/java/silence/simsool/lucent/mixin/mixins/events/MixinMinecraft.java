@@ -25,6 +25,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import silence.simsool.lucent.events.impl.EntityEvent;
 import silence.simsool.lucent.events.impl.LucentEvent;
+import silence.simsool.lucent.general.utils.useful.UMouse;
 
 @Mixin(Minecraft.class)
 public class MixinMinecraft {
@@ -32,6 +33,11 @@ public class MixinMinecraft {
 	@Shadow
 	@Nullable
 	public HitResult hitResult;
+
+	@Inject(method = "tick", at = @At("HEAD"))
+	private void lucent$updateMouseButtons(CallbackInfo ci) {
+		UMouse.updateButtonStates();
+	}
 
 	@Inject(at = @At("RETURN"), method = "<init>")
 	private void lucent$onInitFinished(GameConfig gameConfig, CallbackInfo ci) {
