@@ -46,6 +46,7 @@ import silence.simsool.lucent.events.impl.LucentEvent;
 import silence.simsool.lucent.events.impl.PacketEvent;
 import silence.simsool.lucent.general.enums.DropType;
 import silence.simsool.lucent.general.utils.Pair;
+import silence.simsool.lucent.general.utils.render.Render3D;
 import silence.simsool.lucent.general.utils.useful.UChat;
 import silence.simsool.lucent.general.utils.useful.UMouse;
 import silence.simsool.lucent.general.utils.useful.UWorld;
@@ -104,18 +105,15 @@ public class LucentEventRegister {
 			float partialTick = context.deltaTracker().getGameTimeDeltaPartialTick(false);
 			LucentEvent.WORLD_RENDER.invoker().onRenderWorld(new LucentEvent.RenderWorldEvent(context, context.levelRenderer(), partialTick));
 		});
-//
-//		LevelRenderEvents.END_MAIN.register(context -> {
-//			if (mc.level == null || mc.player == null) return;
-//			float partialTick = UWorld.getPartialTick();
-//			LucentEvent.WORLD_RENDER_LAST.invoker().onRenderWorldLast(new LucentEvent.RenderWorldLastEvent(context, context.levelRenderer(), partialTick));
-//		});
 
-		LevelRenderEvents.AFTER_TRANSLUCENT_TERRAIN.register(context -> {
+		LevelRenderEvents.COLLECT_SUBMITS.register(context -> {
 			if (mc.level == null || mc.player == null) return;
 			float partialTick = UWorld.getPartialTick();
-			//LucentEvent.WORLD_RENDER.invoker().onRenderWorld(new LucentEvent.RenderWorldEvent(context, context.levelRenderer(), partialTick));
 			LucentEvent.WORLD_RENDER_LAST.invoker().onRenderWorldLast(new LucentEvent.RenderWorldLastEvent(context, context.levelRenderer(), partialTick));
+		});
+
+		LevelRenderEvents.END_MAIN.register(context -> {
+			Render3D.clearAll();
 		});
 
 		LevelExtractionEvents.AFTER_BLOCK_OUTLINE_EXTRACTION.register((worldContext, hitResult) -> {
