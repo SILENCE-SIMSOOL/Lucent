@@ -26,6 +26,7 @@ import net.minecraft.util.Util;
 import silence.simsool.lucent.Lucent;
 import silence.simsool.lucent.config.LucentConfig;
 import silence.simsool.lucent.config.ModManager;
+import silence.simsool.lucent.guide.GuideTarget;
 import silence.simsool.lucent.events.impl.ConfigEvent;
 import silence.simsool.lucent.general.enums.Align;
 import silence.simsool.lucent.general.models.abstracts.Mod;
@@ -149,6 +150,67 @@ public class ConfigScreen extends Screen {
 		super(Component.literal(L10n.translate("lucent.config.title")));
 		this.moduleManager = moduleManager;
 		this.initialMod = mod;
+	}
+
+
+	/** Read-only guide state and target bounds; the tour uses the same widgets as normal interaction. */
+	public ModManager getGuideManager() { return moduleManager; }
+	public String getGuidePage() { return currentSidebarPage; }
+	public String getGuideQuery() { return searchField == null ? "" : searchField.getValue(); }
+	public boolean isGuideSettingsOpen() { return currentModSettings != null; }
+
+	public GuideTarget getGuideTarget(String name) {
+		float x, y, w, h;
+		if (name.equals("search")) {
+			x = winX + WINDOW_W - 200 - PAD; y = winY + (TOPBAR_H - 32) / 2f; w = 200; h = 32;
+		} else if (name.equals("settings")) {
+			for (UIWidget widget : widgets) {
+				if (widget instanceof ModCardWidget && widget.getY() - scrollOffset >= scissorY
+						&& widget.getY() - scrollOffset + widget.getHeight() <= scissorY + scissorH) {
+					return guideBounds(widget.getX() + widget.getWidth() - 36,
+						(float) (widget.getY() - scrollOffset + widget.getHeight() - 30), 36, 30);
+				}
+			}
+			return null;
+		} else {
+			int offset = switch (name) {
+				case "Mods" -> 96;
+				case "Profiles" -> 132;
+				case "Themes" -> 200;
+				case "Preferences" -> 236;
+				default -> -1;
+			};
+			if (offset < 0) return null;
+			x = winX + 16; y = winY + offset; w = SIDEBAR_W - 32; h = 36;
+		}
+		return guideBounds(x, y, w, h);
+	}
+
+	private GuideTarget guideBounds(float x, float y, float w, float h) {
+		float scale = NVGRenderer.getStandardGuiScale() * uiScale
+			* UDisplay.getGuiScaledWidth() / UDisplay.getScreenWidth();
+		return new GuideTarget(x * scale, y * scale, w * scale, h * scale);
+	}
+
+	/** Keyboard alternative to the highlighted mouse target; never toggles a module. */
+	public void activateGuideTarget(String target) {
+		if (target.equals("search")) {
+			if (!currentSidebarPage.equals("Mods") || currentModSettings != null) pushNav("Mods", null, "All");
+			searchField.setFocused(true);
+			setFocused(searchField);
+		} else if (target.equals("settings")) {
+			if (currentModSettings != null) return;
+			for (UIWidget widget : widgets) {
+				if (widget instanceof ModCardWidget card) {
+					pushNav("Mods", card.mod, currentCategory);
+					return;
+				}
+			}
+			searchField.setValue("");
+			refreshUI();
+		} else if (List.of("Mods", "Profiles", "Themes", "Preferences").contains(target)) {
+			pushNav(target, null, "All");
+		}
 	}
 
 	private record ColorSegment(String text, int color) {}
