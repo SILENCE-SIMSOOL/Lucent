@@ -7,6 +7,7 @@ import org.lwjgl.glfw.GLFW;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import silence.simsool.lucent.general.utils.useful.UDesktop;
+import silence.simsool.lucent.ui.font.LucentFont;
 import silence.simsool.lucent.ui.utils.UIColors;
 import silence.simsool.lucent.ui.utils.skija.Fonts;
 import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
@@ -19,6 +20,10 @@ public class TextBox extends UIWidget {
 	private int cursorPosition;
 	private int highlightPosition;
 	private float scrollOffset = 0;
+	private String measuredValue;
+	private LucentFont measuredFont;
+	private int measuredFontRevision = -1;
+	private float[] prefixWidths;
 
 	private static class TextState {
 		final String value;
@@ -87,24 +92,47 @@ public class TextBox extends UIWidget {
 		SkijaRenderer.popScissor();
 	}
 
+	private int closestCursorPosition(float clickX) {
+		LucentFont font = Fonts.PRETENDARD_MEDIUM;
+		int revision = Fonts.getRevision();
+		if (measuredValue != value || measuredFont != font || measuredFontRevision != revision) {
+			prefixWidths = new float[value.length() + 1];
+			for (int i = 0; i <= value.length(); i++) {
+				prefixWidths[i] = clampCursor(i) == i
+					? SkijaRenderer.textWidth(value.substring(0, i), font, 14f) : Float.NaN;
+			}
+			measuredValue = value;
+			measuredFont = font;
+			measuredFontRevision = revision;
+		}
+		int bestPos = 0;
+		float minDiff = Float.MAX_VALUE;
+		for (int i = 0; i < prefixWidths.length; i++) {
+			float diff = Math.abs(prefixWidths[i] - clickX);
+			if (diff < minDiff) {
+				minDiff = diff;
+				bestPos = i;
+			}
+		}
+		return bestPos;
+	}
+
+	private int clampCursor(int position) {
+		int pos = Math.max(0, Math.min(position, value.length()));
+		if (pos > 0 && pos < value.length()
+				&& Character.isHighSurrogate(value.charAt(pos - 1)) && Character.isLowSurrogate(value.charAt(pos))) {
+			pos--;
+		}
+		return pos;
+	}
+
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
 		if (isMouseOver(mouseX, mouseY)) {
 			focused = true;
 
 			float clickX = (float) mouseX - (x + 10) + scrollOffset;
-			int bestPos = 0;
-			float minDiff = Float.MAX_VALUE;
-
-			for (int i = 0; i <= value.length(); i++) {
-				float w = SkijaRenderer.textWidth(value.substring(0, i), Fonts.PRETENDARD_MEDIUM, 14f);
-				float diff = Math.abs(w - clickX);
-				if (diff < minDiff) {
-					minDiff = diff;
-					bestPos = i;
-				}
-			}
-			cursorPosition = bestPos;
+			cursorPosition = closestCursorPosition(clickX);
 			highlightPosition = cursorPosition;
 
 			return true;
@@ -118,18 +146,7 @@ public class TextBox extends UIWidget {
 	public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
 		if (focused) {
 			float clickX = (float) mouseX - (x + 10) + scrollOffset;
-			int bestPos = 0;
-			float minDiff = Float.MAX_VALUE;
-
-			for (int i = 0; i <= value.length(); i++) {
-				float w = SkijaRenderer.textWidth(value.substring(0, i), Fonts.PRETENDARD_MEDIUM, 14f);
-				float diff = Math.abs(w - clickX);
-				if (diff < minDiff) {
-					minDiff = diff;
-					bestPos = i;
-				}
-			}
-			cursorPosition = bestPos;
+			cursorPosition = closestCursorPosition(clickX);
 			return true;
 		}
 		return false;
@@ -184,12 +201,12 @@ public class TextBox extends UIWidget {
 			return true;
 
 		} else if (key == GLFW.GLFW_KEY_LEFT) {
-			int nextPos = isCtrlDown ? getWordSkipPosition(-1) : cursorPosition - 1;
+			int nextPos = isCtrlDown ? getWordSkipPosition(-1) : value.offsetByCodePoints(cursorPosition, cursorPosition > 0 ? -1 : 0);
 			moveCursorTo(nextPos, isShiftDown);
 			return true;
 
 		} else if (key == GLFW.GLFW_KEY_RIGHT) {
-			int nextPos = isCtrlDown ? getWordSkipPosition(1) : cursorPosition + 1;
+			int nextPos = isCtrlDown ? getWordSkipPosition(1) : value.offsetByCodePoints(cursorPosition, cursorPosition < value.length() ? 1 : 0);
 			moveCursorTo(nextPos, isShiftDown);
 			return true;
 
@@ -248,15 +265,16 @@ public class TextBox extends UIWidget {
 			if (backspace) {
 				if (cursorPosition > 0) {
 					saveToUndo();
-					value = value.substring(0, cursorPosition - 1) + value.substring(cursorPosition);
-					cursorPosition--;
+					int previous = value.offsetByCodePoints(cursorPosition, -1);
+					value = value.substring(0, previous) + value.substring(cursorPosition);
+					cursorPosition = previous;
 					highlightPosition = cursorPosition;
 					if (onChange != null) onChange.accept(value);
 				}
 			} else {
 				if (cursorPosition < value.length()) {
 					saveToUndo();
-					value = value.substring(0, cursorPosition) + value.substring(cursorPosition + 1);
+					value = value.substring(0, cursorPosition) + value.substring(value.offsetByCodePoints(cursorPosition, 1));
 					highlightPosition = cursorPosition;
 					if (onChange != null) onChange.accept(value);
 				}
@@ -290,7 +308,7 @@ public class TextBox extends UIWidget {
 	}
 
 	private void moveCursorTo(int newPosition, boolean select) {
-		cursorPosition = Math.max(0, Math.min(newPosition, value.length()));
+		cursorPosition = clampCursor(newPosition);
 		if (!select) {
 			highlightPosition = cursorPosition;
 		}
@@ -337,8 +355,8 @@ public class TextBox extends UIWidget {
 
 	public void setValue(String value) {
 		this.value = value == null ? "" : value;
-		this.cursorPosition = Math.min(cursorPosition, this.value.length());
-		this.highlightPosition = Math.min(highlightPosition, this.value.length());
+		this.cursorPosition = clampCursor(cursorPosition);
+		this.highlightPosition = clampCursor(highlightPosition);
 	}
 
 	public void setOnChange(Consumer<String> onChange) {

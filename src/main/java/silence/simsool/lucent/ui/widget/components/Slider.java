@@ -79,9 +79,12 @@ public class Slider extends UIWidget {
 	@Override
 	protected void renderWidget(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
 		String currentValText = inputMode ? inputBuffer : formatValue(value);
-		int VALUE_BOX_W = (int) SkijaRenderer.textWidth(currentValText, Fonts.PRETENDARD_MEDIUM, VALUE_FONT) + VALUE_BOX_PAD * 2;
-		int minLabelW = (int) SkijaRenderer.textWidth(formatValue(min), Fonts.PRETENDARD, LABEL_FONT);
-		int maxLabelW = (int) SkijaRenderer.textWidth(formatValue(max), Fonts.PRETENDARD, LABEL_FONT);
+		int valueTextWidth = (int) SkijaRenderer.textWidth(currentValText, Fonts.PRETENDARD_MEDIUM, VALUE_FONT);
+		int VALUE_BOX_W = valueTextWidth + VALUE_BOX_PAD * 2;
+		String minText = formatValue(min);
+		String maxText = formatValue(max);
+		int minLabelW = (int) SkijaRenderer.textWidth(minText, Fonts.PRETENDARD, LABEL_FONT);
+		int maxLabelW = (int) SkijaRenderer.textWidth(maxText, Fonts.PRETENDARD, LABEL_FONT);
 
 		// 좌→우:
 		// [minLabel][LABEL_TO_TRACK][track][TRACK_TO_LABEL][maxLabel][LABEL_TO_BOX][valueBox]
@@ -112,7 +115,7 @@ public class Slider extends UIWidget {
 
 		// ── 드래그 중 현재값 말풍선 ──────────────────────────────────
 		if (isDragging || thumbScale > 0.1f) {
-			String curValText = formatValue(value);
+			String curValText = inputMode ? formatValue(value) : currentValText;
 			int curValW = (int) SkijaRenderer.textWidth(curValText, Fonts.PRETENDARD_MEDIUM, LABEL_FONT);
 			int curValX = (int) displayX - curValW / 2;
 			int curValY = thumbCy - (int) currentRadius - (int) LABEL_FONT - 4;
@@ -122,18 +125,17 @@ public class Slider extends UIWidget {
 		}
 
 		// ── min / max 라벨 ───────────────────────────────────────────
-		SkijaRenderer.text(formatValue(min), x, labelY, Fonts.PRETENDARD, UIColors.MUTED, LABEL_FONT);
-		SkijaRenderer.text(formatValue(max), trackX + trackW + TRACK_TO_LABEL, labelY, Fonts.PRETENDARD, UIColors.MUTED, LABEL_FONT);
+		SkijaRenderer.text(minText, x, labelY, Fonts.PRETENDARD, UIColors.MUTED, LABEL_FONT);
+		SkijaRenderer.text(maxText, trackX + trackW + TRACK_TO_LABEL, labelY, Fonts.PRETENDARD, UIColors.MUTED, LABEL_FONT);
 
 		// ── 값 상자 ──────────────────────────────────────────────────
-		renderValueBox(valueBoxX, valueBoxY, VALUE_BOX_W, VALUE_BOX_H, VALUE_FONT);
+		renderValueBox(valueBoxX, valueBoxY, VALUE_BOX_W, VALUE_BOX_H, VALUE_FONT, currentValText, valueTextWidth);
 	}
 
-	private void renderValueBox(int bx, int by, int bw, int bh, float fontSize) {
+	private void renderValueBox(int bx, int by, int bw, int bh, float fontSize, String displayText, int textWidth) {
 		SkijaRenderer.outlineRect(bx, by, bw, bh, 1, inputMode ? UIColors.ACCENT_BLUE : UIColors.DARK, 8f);
 
-		String displayText = inputMode ? inputBuffer : formatValue(value);
-		int tx = bx + (bw - (int) SkijaRenderer.textWidth(displayText, Fonts.PRETENDARD_MEDIUM, fontSize)) / 2;
+		int tx = bx + (bw - textWidth) / 2;
 		int ty = by + (bh - (int) fontSize) / 2;
 
 		if (inputMode) {

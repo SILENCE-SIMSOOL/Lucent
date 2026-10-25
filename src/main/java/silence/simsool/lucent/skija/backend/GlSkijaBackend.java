@@ -26,7 +26,14 @@ public class GlSkijaBackend implements SkijaBackend {
 	private static final int GL_RGBA8 = 0x8058;
 
 	private DirectContext cachedContext = null;
-	private final Map<GpuTextureView, Integer> fbos = new IdentityHashMap<>();
+	private final Map<GpuTextureView, Target> targets = new IdentityHashMap<>();
+
+	private record Target(int fbo, BackendRenderTarget renderTarget) {
+		void close() {
+			renderTarget.close();
+			GL30C.glDeleteFramebuffers(fbo);
+		}
+	}
 
 	@Override
 	public String getDisplayName() {
@@ -74,10 +81,16 @@ public class GlSkijaBackend implements SkijaBackend {
 		GL30C.glFramebufferTexture2D(GL30C.GL_FRAMEBUFFER, GL30C.GL_COLOR_ATTACHMENT0, GL11C.GL_TEXTURE_2D, glId, 0);
 		GL30C.glBindFramebuffer(GL30C.GL_FRAMEBUFFER, prevFbo);
 
-		fbos.put(view, fbo);
-
 		BackendRenderTarget rt = BackendRenderTarget.makeGL(w, h, 0, 0, fbo, GL_RGBA8);
-		return Surface.wrapBackendRenderTarget(getContext(), rt, SurfaceOrigin.BOTTOM_LEFT, ColorType.RGBA_8888, null);
+		try {
+			Surface surface = Surface.wrapBackendRenderTarget(getContext(), rt, SurfaceOrigin.BOTTOM_LEFT, ColorType.RGBA_8888, null);
+			targets.put(view, new Target(fbo, rt));
+			return surface;
+		} catch (RuntimeException | Error error) {
+			rt.close();
+			GL30C.glDeleteFramebuffers(fbo);
+			throw error;
+		}
 	}
 
 	@Override
@@ -94,14 +107,14 @@ public class GlSkijaBackend implements SkijaBackend {
 
 	@Override
 	public void releaseTarget(GpuTextureView view) {
-		Integer fbo = fbos.remove(view);
-		if (fbo != null) GL30C.glDeleteFramebuffers(fbo);
+		Target target = targets.remove(view);
+		if (target != null) target.close();
 	}
 
 	@Override
 	public void dispose() {
-		for (int fbo : fbos.values()) GL30C.glDeleteFramebuffers(fbo);
-		fbos.clear();
+		targets.values().forEach(Target::close);
+		targets.clear();
 		if (cachedContext != null) {
 			cachedContext.close();
 			cachedContext = null;
