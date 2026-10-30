@@ -9,6 +9,7 @@ import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 import silence.simsool.lucent.ui.widget.UIWidget;
 
 public class ActionButton extends UIWidget {
+
 	private final String label;
 	private Runnable onClick;
 	private float hoverAnim = 0.0f;
@@ -57,4 +58,5 @@ public class ActionButton extends UIWidget {
 	public void setOnClick(Runnable onClick) {
 		this.onClick = onClick;
 	}
+
 }

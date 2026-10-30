@@ -15,6 +15,7 @@ import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 import silence.simsool.lucent.ui.widget.UIWidget;
 
 public class KeyBindButton extends UIWidget {
+
 	private KeyBind value;
 	private boolean waiting = false; // 키 입력 대기 중
 	private Consumer<KeyBind> onChange;
@@ -39,7 +40,7 @@ public class KeyBindButton extends UIWidget {
 	@Override
 	protected void renderWidget(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
 		NVGRenderer.push();
-		
+
 		hoverAnim = UAnimation.stepProgress(hoverAnim, hovered && !waiting, ANIM_SPEED, delta);
 		if (waiting) waitAnim = (float) ((System.currentTimeMillis() - waitStart) % 1500) / 1500f;
 		else waitAnim = 0f;
@@ -110,7 +111,7 @@ public class KeyBindButton extends UIWidget {
 			float hintAlpha = 0.5f + 0.3f * (float) Math.sin(waitAnim * Math.PI * 2);
 			NVGRenderer.text(hint, x + (width - hw) / 2f, y + height + 4f, Fonts.PRETENDARD, UColor.withAlpha(UIColors.TEXT_PRIMARY, (int) (hintAlpha * 255)), 10f);
 		}
-		
+
 		NVGRenderer.pop();
 	}
 
@@ -229,4 +230,5 @@ public class KeyBindButton extends UIWidget {
 				|| keyCode == GLFW.GLFW_KEY_LEFT_SUPER   || keyCode == GLFW.GLFW_KEY_RIGHT_SUPER
 		);
 	}
+
 }

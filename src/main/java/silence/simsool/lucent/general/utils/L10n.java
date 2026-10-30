@@ -14,6 +14,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import silence.simsool.lucent.config.LucentConfig;
 
 public class L10n {
+
 	private static final Map<String, String> translations = new HashMap<>();
 	private static final Map<String, String> fallbackTranslations = new HashMap<>();
 	private static String loadedLanguage = "";
@@ -73,4 +74,5 @@ public class L10n {
 			default -> "en_us";
 		};
 	}
+
 }

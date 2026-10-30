@@ -4,5 +4,7 @@ import silence.simsool.lucent.events.impl.LucentEvent;
 
 @FunctionalInterface
 public interface IScoreboardUpdateEvent {
+
 	void onScoreboardUpdate(LucentEvent.ScoreboardUpdateEvent event);
+
 }

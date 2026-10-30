@@ -54,7 +54,7 @@ public abstract class LucentHUD {
 	public Object getRenderCacheKey() {
 		return null;
 	}
-	
+
 	/**
 	 * Determines if this HUD element should be rendered.
 	 * Subclasses can override this to tie visibility to mod settings.

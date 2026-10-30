@@ -28,6 +28,7 @@ public final class PacketEvent {
 	);
 
 	public static class ReceiveEvent {
+
 		public Packet<?> packet;
 		private boolean canceled = false;
 
@@ -42,9 +43,11 @@ public final class PacketEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 	public static class SendEvent {
+
 		public Packet<?> packet;
 		private boolean canceled = false;
 
@@ -59,6 +62,7 @@ public final class PacketEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 }

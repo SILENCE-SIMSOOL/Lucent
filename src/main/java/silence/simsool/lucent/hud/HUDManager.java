@@ -225,4 +225,5 @@ public class HUDManager {
 	private void updateNanoVGStatus() {
 		this.cachedHasNanoVG = huds.stream().anyMatch(h -> h.getRenderType() == RenderType.NANOVG);
 	}
+
 }

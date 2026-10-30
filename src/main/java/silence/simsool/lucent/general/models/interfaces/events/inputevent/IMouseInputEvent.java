@@ -4,5 +4,7 @@ import silence.simsool.lucent.events.impl.InputEvent;
 
 @FunctionalInterface
 public interface IMouseInputEvent {
+
 	void onMouseInput(InputEvent.MouseInputEvent event);
+
 }

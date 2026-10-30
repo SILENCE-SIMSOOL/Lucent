@@ -14,8 +14,11 @@ import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 import silence.simsool.lucent.ui.widget.UIWidget;
 
 public class Slider extends UIWidget {
+
 	public enum SliderType {
+
 		DOUBLE, FLOAT, INT
+
 	}
 
 	private final int   TRACK_H =          6;
@@ -513,4 +516,5 @@ public class Slider extends UIWidget {
 //		this.trackFillColor = fill;
 //		return this;
 //	}
+
 }

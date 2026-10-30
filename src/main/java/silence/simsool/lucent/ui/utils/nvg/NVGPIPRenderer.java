@@ -98,6 +98,7 @@ public class NVGPIPRenderer extends PictureInPictureRenderer<NVGPIPRenderer.NVGR
 	}
 
 	public static class NVGRenderState implements PictureInPictureRenderState {
+
 		private final int x, y, width, height;
 		private final ScreenRectangle scissor;
 		private final ScreenRectangle bounds;
@@ -153,5 +154,7 @@ public class NVGPIPRenderer extends PictureInPictureRenderer<NVGPIPRenderer.NVGR
 		public ScreenRectangle bounds() {
 			return bounds;
 		}
+
 	}
+
 }

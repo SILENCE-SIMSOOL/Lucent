@@ -13,6 +13,7 @@ import silence.simsool.lucent.general.utils.LucentCategory;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD})
 public @interface ModConfig {
+
 	ConfigType type();
 	String name();
 	String display() default "";
@@ -32,13 +33,18 @@ public @interface ModConfig {
 	@Target(ElementType.TYPE)
 	@Repeatable(CategoryPriority.List.class)
 	public @interface CategoryPriority {
+
 		String name();
 		int priority();
 
 		@Retention(RetentionPolicy.RUNTIME)
 		@Target(ElementType.TYPE)
 		public @interface List {
+
 			CategoryPriority[] value();
+
 		}
+
 	}
+
 }

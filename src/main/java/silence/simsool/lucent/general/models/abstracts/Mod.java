@@ -8,6 +8,7 @@ import silence.simsool.lucent.events.impl.PacketEvent;
 import silence.simsool.lucent.events.impl.ConfigEvent;
 
 public abstract class Mod {
+
 	public final String name;
 	public final String description;
 	public final String category;

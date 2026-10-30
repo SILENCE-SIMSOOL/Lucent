@@ -6,6 +6,7 @@ import silence.simsool.lucent.general.utils.render.Render3D;
 import silence.simsool.lucent.ui.utils.UColor;
 
 public class BoxData {
+
 	public AABB aabb;
 	public float r, g, b, a;
 	public float thickness;
@@ -34,4 +35,5 @@ public class BoxData {
 		boolean isFullyOpaque = a >= 0.999f;
 		return Render3D.resolveFillRenderType(depth, isFullyOpaque);
 	}
+
 }

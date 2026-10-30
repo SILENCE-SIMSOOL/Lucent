@@ -13,6 +13,7 @@ import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.GuiElementRenderState;
 
 public class LucentGuiRenderState implements GuiElementRenderState {
+
 	private final RenderPipeline pipeline;
 	private final TextureSetup textureSetup;
 	private final ScreenRectangle scissorArea;
@@ -60,4 +61,5 @@ public class LucentGuiRenderState implements GuiElementRenderState {
 		ScreenRectangle screenRect = new ScreenRectangle(x0, y0, x1 - x0, y1 - y0).transformMaxBounds(pose);
 		return scissorArea != null ? scissorArea.intersection(screenRect) : screenRect;
 	}
+
 }

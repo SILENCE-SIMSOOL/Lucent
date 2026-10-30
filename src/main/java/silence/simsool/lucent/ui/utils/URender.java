@@ -127,7 +127,7 @@ public class URender {
 			livingState.bodyRot = 0.0f + yaw;
 			livingState.yRot = 0.0f;
 			livingState.xRot = -pitch;
-			
+
 			livingState.boundingBoxWidth = livingState.boundingBoxWidth / livingState.scale;
 			livingState.boundingBoxHeight = livingState.boundingBoxHeight / livingState.scale;
 			livingState.scale = 1.0f;

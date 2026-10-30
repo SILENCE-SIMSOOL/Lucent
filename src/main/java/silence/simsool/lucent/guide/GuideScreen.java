@@ -9,6 +9,7 @@ import silence.simsool.lucent.general.utils.useful.UScreen;
 
 /** Releases the mouse for the initial coach mark without pausing the world. */
 public final class GuideScreen extends Screen {
+
 	public GuideScreen() {
 		super(Component.literal(GuideManager.text("guide.title")));
 	}
@@ -24,4 +25,5 @@ public final class GuideScreen extends Screen {
 		}
 		return super.keyPressed(input);
 	}
+
 }

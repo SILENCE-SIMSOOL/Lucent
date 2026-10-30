@@ -6,6 +6,7 @@ import silence.simsool.lucent.ui.utils.UColor;
 public class DrawContextRenderer {
 
 	public static class CornerRadii {
+
 		public final float topLeft, topRight, bottomRight, bottomLeft;
 
 		public CornerRadii(float topLeft, float topRight, float bottomRight, float bottomLeft) {
@@ -21,9 +22,11 @@ public class DrawContextRenderer {
 			float clamped = Math.max(0, radius);
 			return new CornerRadii(clamped, clamped, clamped, clamped);
 		}
+
 	}
 
 	public static class OutlineStyle {
+
 		public final int color;
 		public final float width;
 
@@ -31,16 +34,20 @@ public class DrawContextRenderer {
 			this.color = color;
 			this.width = width;
 		}
+
 	}
 
 	public enum GradientDirection {
+
 		LEFT_TO_RIGHT,
 		TOP_TO_BOTTOM,
 		TOP_LEFT_TO_BOTTOM_RIGHT,
 		BOTTOM_LEFT_TO_TOP_RIGHT,
+
 	}
 
 	public static class RoundedOptions {
+
 		public final CornerRadii radii;
 		public final OutlineStyle outline;
 
@@ -52,6 +59,7 @@ public class DrawContextRenderer {
 		public RoundedOptions() {
 			this(CornerRadii.ZERO, null);
 		}
+
 	}
 
 	public static void roundedFill(GuiGraphics context, int x0, int y0, int x1, int y1, int color, RoundedOptions options) {

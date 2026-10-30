@@ -3,6 +3,7 @@ package silence.simsool.lucent.ui.widget;
 import net.minecraft.client.gui.GuiGraphics;
 
 public abstract class UIWidget {
+
 	protected int x, y, width, height;
 	protected boolean hovered = false;
 	protected boolean focused = false;
@@ -130,4 +131,5 @@ public abstract class UIWidget {
 	public boolean isHovered() {
 		return hovered;
 	}
+
 }

@@ -4,5 +4,7 @@ import silence.simsool.lucent.events.impl.GUIEvent;
 
 @FunctionalInterface
 public interface IGUIOpenPreEvent {
+
 	void onOpenPre(GUIEvent.GUIOpenPreEvent event);
+
 }

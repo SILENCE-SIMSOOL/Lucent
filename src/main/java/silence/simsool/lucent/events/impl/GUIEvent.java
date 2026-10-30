@@ -24,6 +24,7 @@ import silence.simsool.lucent.general.utils.useful.UChat;
 public final class GUIEvent {
 
 	public static final class RenderHUD {
+
 		public static final Event<IRenderHUD> EVENT = createArrayBacked(
 			IRenderHUD.class, listeners -> event -> {
 				for (IRenderHUD l : listeners) l.onRenderHUD(event);
@@ -35,9 +36,11 @@ public final class GUIEvent {
 		public RenderHUD(GuiGraphics graphics) {
 			this.graphics = graphics;
 		}
+
 	}
 
 	public static final class OPEN_PRE {
+
 		public static final Event<IGUIOpenPreEvent> EVENT = createArrayBacked(
 			IGUIOpenPreEvent.class, listeners -> event -> {
 				for (IGUIOpenPreEvent l : listeners) {
@@ -46,17 +49,21 @@ public final class GUIEvent {
 				}
 			}
 		);
+
 	}
 
 	public static final class OPEN {
+
 		public static final Event<IGUIOpenEvent> EVENT = createArrayBacked(
 			IGUIOpenEvent.class, listeners -> event -> {
 				for (IGUIOpenEvent l : listeners) l.onOpen(event);
 			}
 		);
+
 	}
 
 	public static final class CLOSE {
+
 		public static final Event<IGUICloseEvent> EVENT = createArrayBacked(
 			IGUICloseEvent.class, listeners -> event -> {
 				for (IGUICloseEvent l : listeners) {
@@ -65,9 +72,11 @@ public final class GUIEvent {
 				}
 			}
 		);
+
 	}
 
 	public static final class CLICK {
+
 		public static final Event<IGUIClickEvent> EVENT = createArrayBacked(
 			IGUIClickEvent.class, listeners -> event -> {
 				for (IGUIClickEvent l : listeners) {
@@ -76,9 +85,11 @@ public final class GUIEvent {
 				}
 			}
 		);
+
 	}
 
 	public static final class KEY {
+
 		public static final Event<IGUIKeyEvent> EVENT = createArrayBacked(
 			IGUIKeyEvent.class, listeners -> event -> {
 				for (IGUIKeyEvent l : listeners) {
@@ -87,11 +98,13 @@ public final class GUIEvent {
 				}
 			}
 		);
+
 	}
 
 	public static final class SLOT {
 
 		public static final class Click {
+
 			public static final Event<ISlotClickEvent> EVENT = createArrayBacked(
 				ISlotClickEvent.class, listeners -> event -> {
 					for (ISlotClickEvent l : listeners) {
@@ -100,9 +113,11 @@ public final class GUIEvent {
 					}
 				}
 			);
+
 		}
 
 		public static final class RenderPre {
+
 			public static final Event<IRenderSlotPreEvent> EVENT = createArrayBacked(
 				IRenderSlotPreEvent.class, listeners -> event -> {
 					for (IRenderSlotPreEvent l : listeners) {
@@ -111,9 +126,11 @@ public final class GUIEvent {
 					}
 				}
 			);
+
 		}
 
 		public static final class RenderPost {
+
 			public static final Event<IRenderSlotPostEvent> EVENT = createArrayBacked(
 				IRenderSlotPostEvent.class, listeners -> event -> {
 					for (IRenderSlotPostEvent l : listeners) {
@@ -121,9 +138,11 @@ public final class GUIEvent {
 					}
 				}
 			);
+
 		}
 
 		public static final class RenderHotbarPre {
+
 			public static final Event<IRenderHotbarPreEvent> EVENT = createArrayBacked(
 				IRenderHotbarPreEvent.class, listeners -> event -> {
 					for (IRenderHotbarPreEvent l : listeners) {
@@ -132,9 +151,11 @@ public final class GUIEvent {
 					}
 				}
 			);
+
 		}
 
 		public static final class RenderHotbarPost {
+
 			public static final Event<IRenderHotbarPostEvent> EVENT = createArrayBacked(
 				IRenderHotbarPostEvent.class, listeners -> event -> {
 					for (IRenderHotbarPostEvent l : listeners) {
@@ -142,9 +163,11 @@ public final class GUIEvent {
 					}
 				}
 			);
+
 		}
 
 		public static final class Update {
+
 			public static final Event<ISlotUpdateEvent> EVENT = createArrayBacked(
 				ISlotUpdateEvent.class, listeners -> event -> {
 					for (ISlotUpdateEvent l : listeners) {
@@ -152,6 +175,7 @@ public final class GUIEvent {
 					}
 				}
 			);
+
 		}
 
 	}
@@ -159,32 +183,39 @@ public final class GUIEvent {
 	public static final class CONTAINER {
 
 		public static final class All {
+
 			public static final Event<IRenderContainer> EVENT = createArrayBacked(
 				IRenderContainer.class, listeners -> event -> {
 					for (IRenderContainer l : listeners) l.onContainer(event);
 				}
 			);
+
 		}
 
 		public static final class Inventory {
+
 			public static final Event<IRenderInventory> EVENT = createArrayBacked(
 				IRenderInventory.class, listeners -> event -> {
 					for (IRenderInventory l : listeners) l.onInventory(event);
 				}
 			);
+
 		}
 
 		public static final class Chest {
+
 			public static final Event<IRenderChest> EVENT = createArrayBacked(
 				IRenderChest.class, listeners -> event -> {
 					for (IRenderChest l : listeners) l.onChest(event);
 				}
 			);
+
 		}
 
 	}
 
 	public static final class Tooltip {
+
 		public static final Event<ITooltipEvent> EVENT = createArrayBacked(
 			ITooltipEvent.class, listeners -> event -> {
 				for (ITooltipEvent l : listeners) {
@@ -193,9 +224,11 @@ public final class GUIEvent {
 				}
 			}
 		);
+
 	}
 
 	public static class GUIClickEvent {
+
 		public final double mouseX;
 		public final double mouseY;
 		public final int button;
@@ -220,9 +253,11 @@ public final class GUIEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 	public static class GUICloseEvent {
+
 		public final Screen screen;
 		public final String title;
 		public final AbstractContainerMenu handler;
@@ -241,9 +276,11 @@ public final class GUIEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 	public static class RenderContainer {
+
 		public final GuiGraphics graphics;
 		public final Screen screen;
 		public final String title;
@@ -265,9 +302,11 @@ public final class GUIEvent {
 			this.width = width;
 			this.height = height;
 		}
+
 	}
 
 	public static class RenderChest {
+
 		public final GuiGraphics graphics;
 		public final Screen screen;
 		public final String title;
@@ -289,9 +328,11 @@ public final class GUIEvent {
 			this.width = width;
 			this.height = height;
 		}
+
 	}
 
 	public static class RenderInventory {
+
 		public final GuiGraphics graphics;
 		public final Screen screen;
 		public final String title;
@@ -313,9 +354,11 @@ public final class GUIEvent {
 			this.width = width;
 			this.height = height;
 		}
+
 	}
 
 	public static class GUIKeyEvent {
+
 		public final String keyName;
 		public final int key;
 		public final char character;
@@ -340,9 +383,11 @@ public final class GUIEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 	public static class GUIOpenPreEvent {
+
 		public final ClientboundOpenScreenPacket packet;
 		public final String title;
 		private boolean canceled = false;
@@ -368,9 +413,11 @@ public final class GUIEvent {
 		public boolean isClosed() {
 			return closed;
 		}
+
 	}
 
 	public static class GUIOpenEvent {
+
 		public final Screen screen;
 		public final String title;
 
@@ -378,9 +425,11 @@ public final class GUIEvent {
 			this.screen = screen;
 			this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
 		}
+
 	}
 
 	public static class SlotClickEvent {
+
 		public final Slot slot;
 		public final int slotId;
 		public final int button;
@@ -407,9 +456,11 @@ public final class GUIEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 	public static class RenderSlotPreEvent {
+
 		public final Slot slot;
 		public final GuiGraphics graphics;
 		public final AbstractContainerScreen<?> screen;
@@ -430,9 +481,11 @@ public final class GUIEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 	public static class RenderSlotPostEvent {
+
 		public final Slot slot;
 		public final GuiGraphics graphics;
 		public final AbstractContainerScreen<?> screen;
@@ -444,9 +497,11 @@ public final class GUIEvent {
 			this.screen = screen;
 			this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
 		}
+
 	}
 
 	public static class RenderHotbarPreEvent {
+
 		public final ItemStack itemStack;
 		public final int x;
 		public final int y;
@@ -467,9 +522,11 @@ public final class GUIEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 	public static class RenderHotbarPostEvent {
+
 		public final ItemStack itemStack;
 		public final int x;
 		public final int y;
@@ -481,9 +538,11 @@ public final class GUIEvent {
 			this.y = y;
 			this.graphics = graphics;
 		}
+
 	}
 
 	public static class SlotUpdateEvent {
+
 		public final Screen screen;
 		public final ClientboundContainerSetSlotPacket packet;
 		public final AbstractContainerMenu menu;
@@ -495,9 +554,11 @@ public final class GUIEvent {
 			this.menu = menu;
 			this.title = (screen != null && screen.getTitle() != null) ? UChat.getString(screen.getTitle()) : "";
 		}
+
 	}
 
 	public static class TooltipEvent {
+
 		public final ItemStack itemStack;
 		public final List<Component> toolTip;
 		public final TooltipContext context;
@@ -520,6 +581,7 @@ public final class GUIEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 }

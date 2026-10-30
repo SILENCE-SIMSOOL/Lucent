@@ -3,6 +3,7 @@ package silence.simsool.lucent.general.models.data.nvg;
 import java.nio.ByteBuffer;
 
 public class NVGFont {
+
 	final int id;
 	final ByteBuffer buffer;
 
@@ -18,4 +19,5 @@ public class NVGFont {
 	public ByteBuffer getBuffer() {
 		return buffer;
 	}
+
 }

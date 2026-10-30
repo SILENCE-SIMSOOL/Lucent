@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 /** Translation keys are resolved each frame so guides follow the selected language. */
 public record GuideStep(String title, String body, BooleanSupplier completed,
 		BooleanSupplier visible, Supplier<GuideTarget> target, Runnable open, boolean actionWhileVisible) {
+
 	public static GuideStep explain(String title, String body) {
 		return new GuideStep(title, body, null, () -> true, () -> null, null, false);
 	}
@@ -20,4 +21,5 @@ public record GuideStep(String title, String body, BooleanSupplier completed,
 			BooleanSupplier visible, Supplier<GuideTarget> target, Runnable reopen) {
 		return new GuideStep(title, body, completed, visible, target, reopen, false);
 	}
+
 }

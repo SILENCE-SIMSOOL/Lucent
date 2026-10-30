@@ -4,5 +4,7 @@ import silence.simsool.lucent.events.impl.ConfigEvent;
 
 @FunctionalInterface
 public interface IColorPickerEvent {
+
 	void onChange(ConfigEvent.ColorPickerEvent event);
+
 }

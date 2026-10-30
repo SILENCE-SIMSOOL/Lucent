@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import silence.simsool.lucent.general.models.abstracts.Mod;
 
 public class KeyBindFieldInfo {
+
 	public final Mod module;
 	public final Field field;
 	public KeyBindFieldInfo(Mod module, Field field) {
@@ -18,4 +19,5 @@ public class KeyBindFieldInfo {
 			return null;
 		}
 	}
+
 }

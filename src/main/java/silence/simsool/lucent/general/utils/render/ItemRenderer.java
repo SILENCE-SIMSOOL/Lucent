@@ -30,6 +30,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 public class ItemRenderer extends PictureInPictureRenderer<ItemRenderer.State> {
+
 	private GpuTextureView textureView;
 	private State lastState;
 
@@ -84,6 +85,7 @@ public class ItemRenderer extends PictureInPictureRenderer<ItemRenderer.State> {
 	}
 
 	public static class State implements PictureInPictureRenderState {
+
 		private final GuiItemRenderState state;
 
 		public State(GuiItemRenderState state) {
@@ -147,6 +149,7 @@ public class ItemRenderer extends PictureInPictureRenderer<ItemRenderer.State> {
 		public int hashCode() {
 			return Objects.hash(state.itemStackRenderState().getModelIdentity(), state.pose().m00(), state.pose().m11());
 		}
+
 	}
 
 	public static void drawItemStack(GuiGraphics graphics, ItemStack item, int x, int y) {
@@ -158,4 +161,5 @@ public class ItemRenderer extends PictureInPictureRenderer<ItemRenderer.State> {
 		State state = new State(new GuiItemRenderState(item.getItem().getName().getString(), new Matrix3x2f(graphics.pose()), tracking, x, y, graphics.scissorStack.peek()));
 		graphics.guiRenderState.submitPicturesInPictureState(state);
 	}
+
 }

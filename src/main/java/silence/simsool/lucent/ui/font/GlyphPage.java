@@ -16,6 +16,7 @@ import net.minecraft.resources.Identifier;
 import static silence.simsool.lucent.Lucent.mc;
 
 public class GlyphPage {
+
 	private final int imgSize = 512;
 	private final int[] glyphX      = new int[256];
 	private final int[] glyphY      = new int[256];
@@ -136,4 +137,5 @@ public class GlyphPage {
 	public int getImgSize() {
 		return imgSize;
 	}
+
 }

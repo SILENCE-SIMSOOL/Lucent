@@ -4,5 +4,7 @@ import silence.simsool.lucent.events.impl.LucentEvent;
 
 @FunctionalInterface
 public interface IRenderBossBarEvent {
+
 	void onRenderBossBar(LucentEvent.RenderBossBarEvent event);
+
 }

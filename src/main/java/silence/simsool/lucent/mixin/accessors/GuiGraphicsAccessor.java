@@ -11,4 +11,5 @@ public interface GuiGraphicsAccessor {
 
 	@Accessor("guiRenderState")
 	GuiRenderState getGuiRenderState();
+
 }

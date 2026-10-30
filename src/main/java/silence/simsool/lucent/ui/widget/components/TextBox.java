@@ -14,6 +14,7 @@ import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 import silence.simsool.lucent.ui.widget.UIWidget;
 
 public class TextBox extends UIWidget {
+
 	private String value;
 	private Consumer<String> onChange;
 	private boolean focused = false;
@@ -22,6 +23,7 @@ public class TextBox extends UIWidget {
 	private float scrollOffset = 0;
 
 	private static class TextState {
+
 		final String value;
 		final int cursorPosition;
 		final int highlightPosition;
@@ -31,6 +33,7 @@ public class TextBox extends UIWidget {
 			this.cursorPosition = cursorPosition;
 			this.highlightPosition = highlightPosition;
 		}
+
 	}
 
 	private final Stack<TextState> undoStack = new Stack<>();
@@ -60,13 +63,13 @@ public class TextBox extends UIWidget {
 
 		NVGRenderer.push();
 		NanoVG.nvgIntersectScissor(NVGRenderer.getVG(), (int) textAreaX, (int) y, (int) textAreaW, (int) height);
-		
+
 		String visibleText = value;
 		float cursorX = NVGRenderer.textWidth(value.substring(0, Math.min(cursorPosition, value.length())), Fonts.PRETENDARD_MEDIUM, 14f);
-		
+
 		if (cursorX - scrollOffset > textAreaW) scrollOffset = cursorX - textAreaW + 4f;
 		else if (cursorX - scrollOffset < 0) scrollOffset = cursorX;
-		
+
 		// Draw selection highlight
 		int selMin = Math.min(cursorPosition, highlightPosition);
 		int selMax = Math.max(cursorPosition, highlightPosition);
@@ -84,7 +87,7 @@ public class TextBox extends UIWidget {
 			float cx = textAreaX + cursorX - scrollOffset;
 			NVGRenderer.rect(cx + 1f, textY - 1f, 1.5f, 16f, UIColors.ACCENT_BLUE, 0f);
 		}
-		
+
 		NVGRenderer.pop();
 	}
 
@@ -353,4 +356,5 @@ public class TextBox extends UIWidget {
 	public void setFocused(boolean focused) {
 		this.focused = focused;
 	}
+
 }

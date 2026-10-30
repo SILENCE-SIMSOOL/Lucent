@@ -20,6 +20,7 @@ import silence.simsool.lucent.general.utils.useful.UScreen;
 
 /** One process-wide coordinator shared by every mod using Lucent. */
 public final class GuideManager {
+
 	private static final Path FILE = FabricLoader.getInstance().getConfigDir().resolve("lucent/guides.properties");
 	private static final Properties progress = new Properties();
 	private static final GuideQueue queue = new GuideQueue(progress);
@@ -138,4 +139,5 @@ public final class GuideManager {
 		L10n.load();
 		return L10n.translate(key).replace("{menuKey}", ((KeyMappingAccessor) Lucent.CONFIG_KEY).getKey().getDisplayName().getString());
 	}
+
 }

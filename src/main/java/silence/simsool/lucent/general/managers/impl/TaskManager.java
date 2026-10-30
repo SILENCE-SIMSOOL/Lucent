@@ -61,6 +61,7 @@ public class TaskManager {
 	}
 
 	private static class Task {
+
 		int delay;
 		final Runnable callback;
 
@@ -68,6 +69,7 @@ public class TaskManager {
 			this.delay = delay;
 			this.callback = callback;
 		}
+
 	}
 
 }

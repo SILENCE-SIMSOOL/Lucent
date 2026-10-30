@@ -10,6 +10,7 @@ import silence.simsool.lucent.ui.utils.nvg.NVGRenderer;
 import silence.simsool.lucent.ui.widget.UIWidget;
 
 public class ToggleButton extends UIWidget {
+
 	private static final float PADDING = 2.0f;
 	private static final float ANIM_SPEED = 0.4f;
 
@@ -28,7 +29,7 @@ public class ToggleButton extends UIWidget {
 	@Override
 	protected void renderWidget(GuiGraphics ctx, int mouseX, int mouseY, float delta) {
 		NVGRenderer.push();
-		
+
 		float target = value ? 1.0f : 0.0f;
 		animProgress = animProgress + (target - animProgress) * ANIM_SPEED * delta * 2.5f;
 		if (Math.abs(target - animProgress) < 0.005f) animProgress = target;
@@ -58,7 +59,7 @@ public class ToggleButton extends UIWidget {
 		NVGRenderer.rect(x, y, width, height, trackColor, height / 2.0f);
 		NVGRenderer.dropShadow(thumbX - expandedRadius, thumbY - expandedRadius, expandedRadius * 2, expandedRadius * 2, 4f, 0f, expandedRadius);
 		NVGRenderer.circle(thumbX, thumbY, expandedRadius, UIColors.PURE_WHITE);
-		
+
 		NVGRenderer.pop();
 	}
 
@@ -121,4 +122,5 @@ public class ToggleButton extends UIWidget {
 //		this.thumbColor = color;
 //		return this;
 //	}
+
 }

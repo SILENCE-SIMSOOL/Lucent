@@ -4,5 +4,7 @@ import silence.simsool.lucent.events.impl.GUIEvent;
 
 @FunctionalInterface
 public interface IRenderHUD {
+
 	void onRenderHUD(GUIEvent.RenderHUD event);
+
 }

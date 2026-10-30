@@ -10,6 +10,7 @@ import silence.simsool.lucent.general.utils.useful.UFile;
 import silence.simsool.lucent.ui.font.LucentFont;
 
 public class Fonts {
+
 	//public static LucentFont PRETENDARD_EXTRALIGHT;
 	public static volatile LucentFont PRETENDARD_LIGHT;
 	public static volatile LucentFont PRETENDARD;

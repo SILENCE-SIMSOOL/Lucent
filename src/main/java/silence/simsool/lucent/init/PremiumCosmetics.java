@@ -118,7 +118,7 @@ public class PremiumCosmetics {
 	public static boolean hasCosmetic(UUID uuid, String cosmeticName) {
 		if (uuid == null) return false;
 		UserCosmetic info = cache.get(uuid); if (info == null) return false;
-		
+
 		CosmeticSetting setting = info.cosmetics.get(cosmeticName);
 		return setting != null && setting.enabled;
 	}
@@ -126,7 +126,7 @@ public class PremiumCosmetics {
 	public static String getCosmeticMode(UUID uuid, String cosmeticName) {
 		if (uuid == null) return null;
 		UserCosmetic info = cache.get(uuid); if (info == null) return null;
-		
+
 		CosmeticSetting setting = info.cosmetics.get(cosmeticName);
 		return setting != null ? setting.mode : null;
 	}
@@ -164,7 +164,7 @@ public class PremiumCosmetics {
 				if (!userObj.has("uuid")) continue;
 				String uuidStr = userObj.get("uuid").getAsString().toLowerCase();
 				UUID uuid = parseUuid(uuidStr);
-				
+
 				JsonObject cosmetics = userObj.getAsJsonObject("cosmetics");
 				Map<String, CosmeticSetting> cosmeticMap = new HashMap<>();
 				if (cosmetics != null) {
@@ -245,11 +245,11 @@ public class PremiumCosmetics {
 	}
 
 	private static void tryDownloadWithCooldown() {
-	    long now = System.currentTimeMillis();
-	    if (now - lastDownloadAttempt > DOWNLOAD_COOLDOWN_MS) {
-	        lastDownloadAttempt = now;
-	        downloadCosmetics();
-	    }
+		long now = System.currentTimeMillis();
+		if (now - lastDownloadAttempt > DOWNLOAD_COOLDOWN_MS) {
+			lastDownloadAttempt = now;
+			downloadCosmetics();
+		}
 	}
 
 	private static synchronized void downloadCosmeticsSync() {

@@ -1,6 +1,7 @@
 package silence.simsool.lucent.general.models.data.nvg;
 
 public class NVGImage {
+
 	int count;
 	final int nvg;
 
@@ -24,4 +25,5 @@ public class NVGImage {
 	public void decrementCount() {
 		this.count--;
 	}
+
 }

@@ -1,6 +1,7 @@
 package silence.simsool.lucent.general.models.data.nvg;
 
 public class NVGImageEntry {
+
 	public final int glId;
 	public final int nvgImageHandle;
 
@@ -8,4 +9,5 @@ public class NVGImageEntry {
 		this.glId = glId;
 		this.nvgImageHandle = nvgImageHandle;
 	}
+
 }

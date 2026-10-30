@@ -104,6 +104,7 @@ public class NVGRenderer {
 	}
 
 	private static class Scissor {
+
 		final Scissor previous;
 		final float x, y, w, h;
 
@@ -119,6 +120,7 @@ public class NVGRenderer {
 		void applyScissor() {
 			nvgIntersectScissor(vg, x, y, w, h);
 		}
+
 	}
 
 	public static long getVG() {
@@ -365,13 +367,13 @@ public class NVGRenderer {
 	 * @param r4        Bottom-Right radius
 	 */
 	public static void outlineRect(float x, float y, float w, float h, float thickness, int color, float r1, float r2, float r3, float r4) {
-	    nvgBeginPath(vg);
-	    roundedRectPath(x, y, w, h, r1, r2, r3, r4);
-	    nvgStrokeWidth(vg, thickness);
-	    nvgPathWinding(vg, NVG_HOLE);
-	    color(color);
-	    nvgStrokeColor(vg, nvgColor);
-	    nvgStroke(vg);
+		nvgBeginPath(vg);
+		roundedRectPath(x, y, w, h, r1, r2, r3, r4);
+		nvgStrokeWidth(vg, thickness);
+		nvgPathWinding(vg, NVG_HOLE);
+		color(color);
+		nvgStrokeColor(vg, nvgColor);
+		nvgStroke(vg);
 	}
 
 	/**
@@ -621,7 +623,7 @@ public class NVGRenderer {
 	 */
 	public static void drawCheckerboard(float x, float y, float w, float h, float gridSize, int color1, int color2, float radius) {
 		long key = ((long)color1 << 32) | (color2 & 0xFFFFFFFFL);
-		
+
 		int image = checkerCache.computeIfAbsent(key, k -> {
 			ByteBuffer buffer = MemoryUtil.memAlloc(16);
 			// 색상 순서: RGBA -> NanoVG는 기본적으로 리틀 엔디안을 고려하거나 byte 순서를 따름
@@ -638,7 +640,7 @@ public class NVGRenderer {
 		try (MemoryStack stack = MemoryStack.stackPush()) {
 			NVGPaint paint = NVGPaint.malloc(stack);
 			NanoVG.nvgImagePattern(vg, x, y, gridSize * 2, gridSize * 2, 0f, image, 1f, paint);
-			
+
 			NanoVG.nvgBeginPath(vg);
 			NanoVG.nvgRoundedRect(vg, x, y, w, h, radius);
 			NanoVG.nvgFillPaint(vg, paint);

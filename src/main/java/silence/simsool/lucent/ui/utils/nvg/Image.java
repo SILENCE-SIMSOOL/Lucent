@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import org.lwjgl.system.MemoryUtil;
 
 public class Image {
+
 	public final String identifier;
 	public boolean isSVG;
 	public InputStream stream;
@@ -81,4 +82,5 @@ public class Image {
 			}
 		}
 	}
+
 }
