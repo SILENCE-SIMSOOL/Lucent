@@ -29,10 +29,12 @@ public class GlSkijaBackend implements SkijaBackend {
 	private final Map<GpuTextureView, Target> targets = new IdentityHashMap<>();
 
 	private record Target(int fbo, BackendRenderTarget renderTarget) {
+
 		void close() {
 			renderTarget.close();
 			GL30C.glDeleteFramebuffers(fbo);
 		}
+
 	}
 
 	@Override
@@ -77,17 +79,20 @@ public class GlSkijaBackend implements SkijaBackend {
 
 		int prevFbo = GL30C.glGetInteger(GL30C.GL_FRAMEBUFFER_BINDING);
 		int fbo = GL30C.glGenFramebuffers();
-		GL30C.glBindFramebuffer(GL30C.GL_FRAMEBUFFER, fbo);
-		GL30C.glFramebufferTexture2D(GL30C.GL_FRAMEBUFFER, GL30C.GL_COLOR_ATTACHMENT0, GL11C.GL_TEXTURE_2D, glId, 0);
-		GL30C.glBindFramebuffer(GL30C.GL_FRAMEBUFFER, prevFbo);
-
-		BackendRenderTarget rt = BackendRenderTarget.makeGL(w, h, 0, 0, fbo, GL_RGBA8);
+		BackendRenderTarget rt = null;
 		try {
+			try {
+				GL30C.glBindFramebuffer(GL30C.GL_FRAMEBUFFER, fbo);
+				GL30C.glFramebufferTexture2D(GL30C.GL_FRAMEBUFFER, GL30C.GL_COLOR_ATTACHMENT0, GL11C.GL_TEXTURE_2D, glId, 0);
+			} finally {
+				GL30C.glBindFramebuffer(GL30C.GL_FRAMEBUFFER, prevFbo);
+			}
+			rt = BackendRenderTarget.makeGL(w, h, 0, 0, fbo, GL_RGBA8);
 			Surface surface = Surface.wrapBackendRenderTarget(getContext(), rt, SurfaceOrigin.BOTTOM_LEFT, ColorType.RGBA_8888, null);
 			targets.put(view, new Target(fbo, rt));
 			return surface;
 		} catch (RuntimeException | Error error) {
-			rt.close();
+			if (rt != null) rt.close();
 			GL30C.glDeleteFramebuffers(fbo);
 			throw error;
 		}
@@ -98,11 +103,10 @@ public class GlSkijaBackend implements SkijaBackend {
 		if (!(view instanceof GlTextureView glView)) return null;
 		int glId = glView.glId();
 		GLTextureInfo info = new GLTextureInfo(GL11C.GL_TEXTURE_2D, glId, GL_RGBA8);
-		BackendTexture backend = BackendTexture.makeGL(view.getWidth(0), view.getHeight(0), false, info);
-		ColorAlphaType alpha = premultiplied ? ColorAlphaType.PREMUL : ColorAlphaType.UNPREMUL;
-		Image image = Image.borrowTextureFrom(getContext(), backend, SurfaceOrigin.TOP_LEFT, ColorType.RGBA_8888, alpha, null, null);
-		backend.close();
-		return image;
+		try (BackendTexture backend = BackendTexture.makeGL(view.getWidth(0), view.getHeight(0), false, info)) {
+			ColorAlphaType alpha = premultiplied ? ColorAlphaType.PREMUL : ColorAlphaType.UNPREMUL;
+			return Image.borrowTextureFrom(getContext(), backend, SurfaceOrigin.TOP_LEFT, ColorType.RGBA_8888, alpha, null, null);
+		}
 	}
 
 	@Override

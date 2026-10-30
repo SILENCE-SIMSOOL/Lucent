@@ -6,6 +6,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.world.phys.Vec3;
 
 public class TextData {
+
 	public String text;
 	public Vec3 pos;
 	public float scale;
@@ -39,4 +40,5 @@ public class TextData {
 		this.outlineColor = outlineColor;
 		this.shadow = shadow;
 	}
+
 }

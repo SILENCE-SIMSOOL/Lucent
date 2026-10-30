@@ -12,6 +12,7 @@ import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 import silence.simsool.lucent.ui.widget.UIWidget;
 
 public class ColorPickerButton extends UIWidget {
+
 	private int color = 0xFFFF0000;
 	private int borderColor      = 0xFF555555;
 	private int borderHoverColor = 0xFF888888;
@@ -171,6 +172,9 @@ public class ColorPickerButton extends UIWidget {
 	}
 
 	private void closePicker(boolean confirmed) {
+		if (colorPicker != null) {
+			colorPicker.closeActiveInput();
+		}
 		pickerOpen = false;
 		colorPicker = null;
 	}
@@ -191,4 +195,5 @@ public class ColorPickerButton extends UIWidget {
 	public boolean isPickerOpen() {
 		return pickerOpen;
 	}
+
 }

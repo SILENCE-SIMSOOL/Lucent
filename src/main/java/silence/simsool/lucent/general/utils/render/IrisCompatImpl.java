@@ -46,4 +46,5 @@ public class IrisCompatImpl implements IrisCompatibility {
 			// Failed to assign pipeline
 		}
 	}
+
 }

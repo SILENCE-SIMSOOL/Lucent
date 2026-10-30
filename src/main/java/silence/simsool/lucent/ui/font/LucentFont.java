@@ -10,6 +10,7 @@ import java.nio.ByteOrder;
 import java.util.Objects;
 
 public class LucentFont {
+
 	private final String name;
 	private final byte[] cachedBytes;
 	private final Path path;
@@ -66,4 +67,5 @@ public class LucentFont {
 		LucentFont font = (LucentFont) other;
 		return Objects.equals(name, font.name);
 	}
+
 }

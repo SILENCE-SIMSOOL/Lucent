@@ -200,7 +200,7 @@ public class EditHUDScreen extends Screen {
 			for (int i = huds.size() - 1; i >= 0; i--) {
 				LucentHUD hud = huds.get(i);
 				if (!hud.isEnabled()) continue;
-				
+
 				int handle = getHandleUnderMouse(hud, mx, my);
 				if (handle != -1) {
 					draggingScale       = hud;
@@ -287,7 +287,7 @@ public class EditHUDScreen extends Screen {
 
 			float scaledW = draggingMove.getScaledWidth();
 			float scaledH = draggingMove.getScaledHeight();
-			
+
 			float minRx = 0, maxRx = vw - scaledW;
 			float minRy = 0, maxRy = vh - scaledH;
 
@@ -330,12 +330,12 @@ public class EditHUDScreen extends Screen {
 			if (!shiftDown) {
 				for (LucentHUD other : LucentAPI.getHUDManager().getHUDs()) {
 					if (!other.isEnabled() || other == draggingMove) continue;
-	
+
 					float orx = other.getRenderX(), ory = other.getRenderY();
 					float orw = other.getScaledWidth(), orh = other.getScaledHeight();
 					float ohcx = orx + orw / 2f;
 					float ohcy = ory + orh / 2f;
-	
+
 					// Current renderX with snappedX
 					float curRx;
 					switch (draggingMove.alignment) {
@@ -343,7 +343,7 @@ public class EditHUDScreen extends Screen {
 						case RIGHT:  curRx = snappedX - scaledW;      break;
 						default:     curRx = snappedX;                break;
 					}
-	
+
 					// Snap X
 					if (Math.abs(curRx - orx) < SNAP_PX) {
 						switch (draggingMove.alignment) {
@@ -364,7 +364,7 @@ public class EditHUDScreen extends Screen {
 							default:     snappedX = orx + orw - scaledW;      break;
 						}
 					}
-	
+
 					// Snap Y
 					if (Math.abs(snappedY - ory) < SNAP_PX) snappedY = ory;
 					else if (Math.abs((snappedY + scaledH / 2f) - ohcy) < SNAP_PX) snappedY = ohcy - scaledH / 2f;
@@ -474,7 +474,7 @@ public class EditHUDScreen extends Screen {
 		if (btn2P > 0) {
 			float e = UAnimation.Easing.spring(btn2P);
 			float curBy = by + (1f - e) * 40f;
-			
+
 			boolean hov = mx >= bx && mx <= bx + bw && my >= curBy && my <= curBy + bh;
 			int bg = UIColors.withAlpha(hov ? UIColors.CARD_HOVER : UIColors.CARD_BG, (int) (180 * btn2P));
 
@@ -760,7 +760,7 @@ public class EditHUDScreen extends Screen {
 		if (my < cy + pad + opts.length * iH) idx = (int)((my - cy - pad) / iH);
 		if (idx >= 0 && idx < opts.length) {
 			contextMenuHud.alignment = opts[idx];
-			
+
 			// 화면 밖으로 나가는 것 방지 (필요한 경우에만 보정)
 			float rw = contextMenuHud.getScaledWidth(), rh = contextMenuHud.getScaledHeight();
 			float rx = contextMenuHud.getRenderX(), ry = contextMenuHud.getRenderY();

@@ -160,6 +160,7 @@ public class RoundedRectRenderer {
 	}
 
 	private static class Element implements GuiElementRenderState {
+
 		private final Matrix3x2fc pose;
 		private final float x0, y0, x1, y1;
 		private final float centerX, centerY;
@@ -243,5 +244,7 @@ public class RoundedRectRenderer {
 					.setUv2(packedRadiiTop, packedRadiiBottom)
 					.setLineWidth(edgeWidth);
 		}
+
 	}
+
 }

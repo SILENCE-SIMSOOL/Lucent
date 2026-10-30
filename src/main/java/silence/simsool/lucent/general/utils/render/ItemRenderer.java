@@ -29,6 +29,7 @@ import net.minecraft.world.item.ItemStack;
 import silence.simsool.lucent.mixin.accessors.PictureInPictureRendererAccessor;
 
 public class ItemRenderer extends PictureInPictureRenderer<ItemRenderer.State> {
+
 	private State lastState;
 
 	public ItemRenderer() {
@@ -79,6 +80,7 @@ public class ItemRenderer extends PictureInPictureRenderer<ItemRenderer.State> {
 	}
 
 	public static class State implements PictureInPictureRenderState {
+
 		private final GuiItemRenderState state;
 
 		public State(GuiItemRenderState state) {
@@ -142,6 +144,7 @@ public class ItemRenderer extends PictureInPictureRenderer<ItemRenderer.State> {
 		public int hashCode() {
 			return Objects.hash(state.itemStackRenderState().getModelIdentity(), state.pose().m00(), state.pose().m11());
 		}
+
 	}
 
 	public static void drawItemStack(GuiGraphicsExtractor graphics, ItemStack item, int x, int y) {
@@ -150,8 +153,9 @@ public class ItemRenderer extends PictureInPictureRenderer<ItemRenderer.State> {
 		TrackingItemStackRenderState tracking = new TrackingItemStackRenderState();
 		mc.getItemModelResolver().updateForTopItem(tracking, item, ItemDisplayContext.GUI, mc.level, mc.player, 0);
 
-		
+
 		State state = new State(new GuiItemRenderState(new Matrix3x2f(graphics.pose()), tracking, x, y, graphics.scissorStack.peek()));
 		graphics.guiRenderState.addPicturesInPictureState(state);
 	}
+
 }

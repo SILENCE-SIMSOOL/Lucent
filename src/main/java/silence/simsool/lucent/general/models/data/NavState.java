@@ -3,6 +3,7 @@ package silence.simsool.lucent.general.models.data;
 import silence.simsool.lucent.general.models.abstracts.Mod;
 
 public class NavState {
+
 	public final String page;
 	public final Mod mod;
 	public final String category;
@@ -14,4 +15,5 @@ public class NavState {
 		this.category = category;
 		this.scrollOffset = scrollOffset;
 	}
+
 }

@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import com.mojang.blaze3d.Blaze3D;
 
 public class UDesktop {
+
 	private static boolean isLinux;
 	private static boolean isXdg;
 	private static boolean isKde;

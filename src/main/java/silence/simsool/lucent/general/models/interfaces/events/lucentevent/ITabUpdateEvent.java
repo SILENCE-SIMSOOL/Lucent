@@ -4,5 +4,7 @@ import silence.simsool.lucent.events.impl.LucentEvent;
 
 @FunctionalInterface
 public interface ITabUpdateEvent {
+
 	void onTabUpdate(LucentEvent.TabUpdateEvent event);
+
 }

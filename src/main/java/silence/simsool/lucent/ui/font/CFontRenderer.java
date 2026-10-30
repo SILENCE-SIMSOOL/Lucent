@@ -6,6 +6,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 
 public class CFontRenderer {
+
 	private final Font font;
 	private final boolean antiAliasing;
 	private final GlyphPage[] pages = new GlyphPage[256];
@@ -144,4 +145,5 @@ public class CFontRenderer {
 		if (baseHeight == 0) baseHeight = 11;
 		return size;
 	}
+
 }

@@ -16,6 +16,7 @@ import static com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT;
 
 /** A single anchored coach mark; opaque semantic surfaces keep text readable over the world. */
 public final class GuideOverlay {
+
 	// Current web guide: .modal-preview-card, .modal-desc and .btn-md.
 	private static final int DARK_SURFACE = 0xFF131722;
 	private static final int LIGHT_SURFACE = 0xFFFFFFFF;
@@ -223,4 +224,5 @@ public final class GuideOverlay {
 		if (GuideManager.step().completed() == null) GuideManager.next();
 		else GuideManager.open();
 	}
+
 }

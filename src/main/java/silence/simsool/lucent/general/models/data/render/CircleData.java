@@ -6,6 +6,7 @@ import silence.simsool.lucent.general.utils.render.Render3D;
 import silence.simsool.lucent.ui.utils.UColor;
 
 public class CircleData {
+
 	public Vec3 center;
 	public float radius;
 	public float thickness;
@@ -39,4 +40,5 @@ public class CircleData {
 		if (filled) return Render3D.resolveFillRenderType(depth, isFullyOpaque);
 		else return Render3D.resolveLineRenderType(depth, isFullyOpaque);
 	}
+
 }

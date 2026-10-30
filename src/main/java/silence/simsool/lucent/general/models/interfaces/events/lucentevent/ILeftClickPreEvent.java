@@ -4,5 +4,7 @@ import silence.simsool.lucent.events.impl.LucentEvent;
 
 @FunctionalInterface
 public interface ILeftClickPreEvent {
+
 	void onLeftClickPre(LucentEvent.LeftClickPreEvent event);
+
 }

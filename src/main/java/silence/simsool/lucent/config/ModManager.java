@@ -880,7 +880,7 @@ public class ModManager {
 					needsResave = true;
 					continue;
 				}
-				
+
 				JsonObject json = modulesJson.getAsJsonObject(key);
 				if (module.isLocked) {
 					module.isEnabled = true;
@@ -912,11 +912,11 @@ public class ModManager {
 				}
 			}
 		} catch (Exception e) {}
-		
+
 		if (needsResave && !modules.isEmpty()) {
 			saveConfigs();
 		}
-		
+
 		LucentAPI.getHUDManager().loadAll();
 	}
 
@@ -1002,14 +1002,14 @@ public class ModManager {
 		File globalFile = getGlobalLucentDir();
 		if (!globalFile.exists()) globalFile.mkdirs();
 		File file = new File(globalFile, "lucent_global.json");
-		
+
 		JsonObject json = null;
 		if (file.exists()) {
 			try (BufferedReader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
 				json = GSON.fromJson(reader, JsonObject.class);
 			} catch (Exception e) {}
 		}
-		
+
 		if (json == null) json = new JsonObject();
 
 		json.addProperty("currentProfile", currentProfile);
@@ -1059,4 +1059,5 @@ public class ModManager {
 			}
 		}
 	}
+
 }

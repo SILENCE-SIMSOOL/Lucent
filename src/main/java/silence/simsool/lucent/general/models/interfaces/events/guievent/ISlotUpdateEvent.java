@@ -4,5 +4,7 @@ import silence.simsool.lucent.events.impl.GUIEvent;
 
 @FunctionalInterface
 public interface ISlotUpdateEvent {
+
 	void onSlotUpdate(GUIEvent.SlotUpdateEvent event);
+
 }

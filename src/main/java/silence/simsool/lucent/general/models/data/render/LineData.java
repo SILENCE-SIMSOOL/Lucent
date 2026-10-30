@@ -5,6 +5,7 @@ import net.minecraft.world.phys.Vec3;
 import silence.simsool.lucent.general.utils.render.Render3D;
 
 public class LineData {
+
 	public Vec3 from, to;
 	public int color1, color2;
 	public float thickness;
@@ -37,4 +38,5 @@ public class LineData {
 	public RenderType renderType() {
 		return Render3D.resolveLineRenderType(depth, Render3D.isFullyOpaque(color1) && Render3D.isFullyOpaque(color2));
 	}
+
 }

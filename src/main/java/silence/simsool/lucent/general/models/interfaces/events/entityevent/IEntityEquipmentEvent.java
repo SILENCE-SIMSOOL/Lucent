@@ -4,5 +4,7 @@ import silence.simsool.lucent.events.impl.EntityEvent;
 
 @FunctionalInterface
 public interface IEntityEquipmentEvent {
+
 	void onEntityEquipment(EntityEvent.EntityEquipmentEvent event);
+
 }

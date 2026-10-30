@@ -13,6 +13,7 @@ import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 
 /** Reusable ConfigScreen onboarding for a mod's own manager. */
 public final class ConfigScreenGuide {
+
 	private ConfigScreenGuide() {}
 
 	public static Guide create(String id, ModManager manager, int priority) {
@@ -63,4 +64,5 @@ public final class ConfigScreenGuide {
 		return new GuideTarget((UDisplay.getScreenWidth() / scale - 164) / 2 * ratio,
 			(UDisplay.getScreenHeight() / scale - 48) / 2 * ratio, 164 * ratio, 48 * ratio);
 	}
+
 }

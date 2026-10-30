@@ -27,4 +27,5 @@ public class MixinMouseHandler {
 		InputEvent.MOUSE.invoker().onMouseInput(event);
 		if (event.isCanceled()) ci.cancel();
 	}
+
 }

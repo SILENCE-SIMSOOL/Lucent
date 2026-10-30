@@ -1,6 +1,7 @@
 package silence.simsool.lucent.general.enums;
 
 public enum ConfigType {
+
 	SWITCH, // ToggleButton
 	SLIDER,
 	BUTTON, // ActionButton
@@ -8,4 +9,5 @@ public enum ConfigType {
 	SELECTOR,
 	KEYBIND,
 	TEXT // Text Field
+
 }

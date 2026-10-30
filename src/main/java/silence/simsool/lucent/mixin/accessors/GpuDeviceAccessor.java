@@ -8,6 +8,8 @@ import com.mojang.renderpearl.frontend.FrontendGpuDevice;
 
 @Mixin(FrontendGpuDevice.class)
 public interface GpuDeviceAccessor {
+
 	@Accessor
 	GpuDeviceBackend getBackend();
+
 }

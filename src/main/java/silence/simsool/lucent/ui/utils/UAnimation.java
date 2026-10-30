@@ -81,6 +81,7 @@ public class UAnimation {
 			}
 
 		}
+
 	}
 
 	// ────────────────────────────────────────────────
@@ -161,14 +162,14 @@ public class UAnimation {
 	public static double snapToStep(double value, double step) {
 		if (step <= 0) return value;
 		double snapped = Math.round(value / step) * step;
-		
+
 		int decimals = 0;
 		double s = step;
 		while (s < 1 && decimals < 10) {
 			s *= 10;
 			decimals++;
 		}
-		
+
 		BigDecimal bd = new BigDecimal(Double.toString(snapped));
 		bd = bd.setScale(decimals, RoundingMode.HALF_UP);
 		return bd.doubleValue();
@@ -177,14 +178,14 @@ public class UAnimation {
 	/** Format based on decimal places (matching step) */
 	public static String formatForStep(double value, double step) {
 		if (step >= 1) return String.valueOf((int) Math.round(value));
-		
+
 		int decimals = 0;
 		double s = step;
 		while (s < 1 && decimals < 10) {
 			s *= 10;
 			decimals++;
 		}
-		
+
 		String formatted = String.format("%." + decimals + "f", value);
 		if (formatted.contains(".")) {
 			while (formatted.endsWith("0") && !formatted.endsWith(".0")) {
@@ -241,4 +242,5 @@ public class UAnimation {
 		float range = max - min;
 		return (float) (min + ((((v - min) % range) + range) % range));
 	}
+
 }

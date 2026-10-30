@@ -31,4 +31,5 @@ public interface IrisCompatibility {
 		}
 		return new IrisCompatNoOp();
 	}
+
 }

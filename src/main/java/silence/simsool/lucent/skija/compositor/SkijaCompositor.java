@@ -43,6 +43,7 @@ public class SkijaCompositor {
 	private static final int UI_TEXTURE_USAGE = 0xf;
 
 	private static class Target {
+
 		final String name;
 		GpuTexture texture;
 		GpuTextureView view;
@@ -64,13 +65,18 @@ public class SkijaCompositor {
 			lastUsed = System.nanoTime();
 			if (matches(w, h)) return;
 			close();
-			texture = RenderSystem.getDevice().createTexture(name, UI_TEXTURE_USAGE, GpuFormat.RGBA8_UNORM, w, h, 1, 1);
-			view = RenderSystem.getDevice().createTextureView(texture);
-			owner = backend;
-			surface = backend.wrapTarget(view);
-			surface.getCanvas().clear(0);
-			width = w;
-			height = h;
+			try {
+				texture = RenderSystem.getDevice().createTexture(name, UI_TEXTURE_USAGE, GpuFormat.RGBA8_UNORM, w, h, 1, 1);
+				view = RenderSystem.getDevice().createTextureView(texture);
+				owner = backend;
+				surface = backend.wrapTarget(view);
+				surface.getCanvas().clear(0);
+				width = w;
+				height = h;
+			} catch (RuntimeException | Error error) {
+				close();
+				throw error;
+			}
 		}
 
 		void close() {
@@ -91,6 +97,7 @@ public class SkijaCompositor {
 			width = 0;
 			height = 0;
 		}
+
 	}
 
 	private final Target hudTarget = new Target("lucent hud");
@@ -119,6 +126,7 @@ public class SkijaCompositor {
 	private final Map<Object, HudPicture> hudPictures = new IdentityHashMap<>();
 
 	private static class HudPicture {
+
 		Object key;
 		Picture picture;
 		long lastUsed;
@@ -127,6 +135,7 @@ public class SkijaCompositor {
 			if (picture != null) picture.close();
 			picture = null;
 		}
+
 	}
 
 	public void drawCachedHud(Object hud, Object key, int width, int height, Runnable draw) {
@@ -359,6 +368,7 @@ public class SkijaCompositor {
 				profileTotalNs = profileClearNs = profileDrawNs = profileSubmitNs = profileBarrierNs = profileBlitQueueNs = 0;
 			}
 			discard();
+			SkijaRenderer.trimFontCache();
 			hudSplit = -1;
 			screenBlitted = false;
 			inHud = false;

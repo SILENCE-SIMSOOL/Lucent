@@ -7,4 +7,5 @@ public class UKeyboard {
 	public static boolean withShift() {
 		return InputConstants.isKeyDown(InputConstants.KEY_LSHIFT) || InputConstants.isKeyDown(InputConstants.KEY_RSHIFT);
 	}
+
 }

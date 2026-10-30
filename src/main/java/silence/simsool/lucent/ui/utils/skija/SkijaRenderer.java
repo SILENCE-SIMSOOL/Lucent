@@ -5,6 +5,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -45,7 +46,9 @@ import silence.simsool.lucent.ui.utils.UIColors;
 public class SkijaRenderer {
 
 	private static final Map<String, Image> imageCache = new ConcurrentHashMap<>();
-	private static final Map<Long, Font> fontCache = new ConcurrentHashMap<>();
+	private static final int MAX_FONTS = 512;
+	private static final Map<Long, Font> fontCache = new LinkedHashMap<>(MAX_FONTS, 0.75f, true);
+	private static Typeface fallbackTypeface;
 	private static final Map<Float, MaskFilter> blurMaskCache = new ConcurrentHashMap<>();
 
 	private static final ThreadLocal<Paint> RENDER_PAINT = ThreadLocal.withInitial(Paint::new);
@@ -857,22 +860,34 @@ public class SkijaRenderer {
 		});
 	}
 
-	private static Font getOrCreateFont(LucentFont lucentFont, float size) {
+	private static synchronized Font getOrCreateFont(LucentFont lucentFont, float size) {
+		float cacheSize = Math.round(size * 4f) / 4f;
 		Typeface typeface = Fonts.getTypeface(lucentFont);
 		if (typeface == null) {
-			typeface = FontMgr.getDefault().matchFamilyStyle(null, FontStyle.NORMAL);
+			if (fallbackTypeface == null) {
+				fallbackTypeface = FontMgr.getDefault().matchFamilyStyleCharacter(null, FontStyle.NORMAL, null, 'A');
+			}
+			typeface = fallbackTypeface;
 		}
-		long key = (((long) typeface.hashCode()) << 32) | (Float.floatToIntBits(size) & 0xFFFFFFFFL);
+		long key = (((long) (typeface == null ? 0 : typeface.hashCode())) << 32) | (Float.floatToIntBits(cacheSize) & 0xFFFFFFFFL);
 		Typeface finalTf = typeface;
 
 		return fontCache.computeIfAbsent(key, k -> {
-			Font font = new Font(finalTf, size);
+			Font font = new Font(finalTf, cacheSize);
 			font.setHinting(FontHinting.NONE);
 			font.setSubpixel(true);
 			font.setBaselineSnapped(false);
 			font.setEdging(FontEdging.ANTI_ALIAS);
 			return font;
 		});
+	}
+
+	public static synchronized void trimFontCache() {
+		// Called after the frame's queued drawing and submission have completed.
+		while (fontCache.size() > MAX_FONTS) {
+			Long key = fontCache.keySet().iterator().next();
+			fontCache.remove(key).close();
+		}
 	}
 
 	private static int applyAlpha(int color, float alpha) {
@@ -914,6 +929,10 @@ public class SkijaRenderer {
 		blurMaskCache.clear();
 		fontCache.values().forEach(Font::close);
 		fontCache.clear();
+		if (fallbackTypeface != null) {
+			fallbackTypeface.close();
+			fallbackTypeface = null;
+		}
 		imageCache.values().forEach(Image::close);
 		imageCache.clear();
 	}

@@ -17,6 +17,7 @@ import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 import silence.simsool.lucent.ui.widget.UIWidget;
 
 public class Selector extends UIWidget {
+
 	private int borderColor = UIColors.ITEM_BORDER;
 	private int textColor = UIColors.TEXT_PRIMARY;
 	private int dropdownBgColor = UIColors.WIN_BG;
@@ -73,7 +74,7 @@ public class Selector extends UIWidget {
 		String currentText = displayOptions.isEmpty() ? "" : displayOptions.get(selectedIndex);
 		int textAreaW = width - PADDING * 2 - ARROW_W - 4;
 		String clipped = fitText(currentText, textAreaW, Fonts.PRETENDARD_MEDIUM);
-		
+
 		int ty = y + (height - 14) / 2;
 		SkijaRenderer.text(clipped, x + PADDING, ty, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_PRIMARY, 14f);
 
@@ -84,14 +85,14 @@ public class Selector extends UIWidget {
 	private void drawChevron(float cx, float cy, float openProgress) {
 		float size = 5f;
 		float angle = UAnimation.lerp(0, (float)Math.PI, openProgress);
-		
+
 		SkijaRenderer.push();
 		SkijaRenderer.translate(cx, cy);
 		SkijaRenderer.rotate(angle);
-		
+
 		SkijaRenderer.line(-size, -size/2, 0, size/2, 1.5f, UIColors.TEXT_SECONDARY);
 		SkijaRenderer.line(0, size/2, size, -size/2, 1.5f, UIColors.TEXT_SECONDARY);
-		
+
 		SkijaRenderer.pop();
 	}
 
@@ -297,4 +298,5 @@ public class Selector extends UIWidget {
 	public float getDropdownAnim() {
 		return dropdownAnim;
 	}
+
 }

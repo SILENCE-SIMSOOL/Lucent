@@ -4,5 +4,7 @@ import silence.simsool.lucent.events.impl.ConfigEvent;
 
 @FunctionalInterface
 public interface ITextBoxEvent {
+
 	void onChange(ConfigEvent.TextBoxEvent event);
+
 }

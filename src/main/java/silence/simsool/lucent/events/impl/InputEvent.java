@@ -37,6 +37,7 @@ public final class InputEvent {
 	}
 
 	public static class MouseInputEvent {
+
 		public final int button;
 		public final int action;
 		public final boolean state;
@@ -55,9 +56,11 @@ public final class InputEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 	public static class KeyInputEvent {
+
 		public final KeyEvent keyEvent;
 		public final boolean state;
 		private boolean canceled = false;
@@ -74,6 +77,7 @@ public final class InputEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 }

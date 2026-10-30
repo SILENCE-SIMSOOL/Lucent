@@ -36,4 +36,5 @@ public class MixinGui {
 		if (mc.gui == null || mc.gui.hud == null || mc.gui.hud.isHidden() || mc.level == null || mc.player == null) return;
 		GUIEvent.RenderHUD.EVENT.invoker().onRenderHUD(new GUIEvent.RenderHUD(guiGraphics));
 	}
+
 }

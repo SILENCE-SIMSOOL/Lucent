@@ -211,12 +211,12 @@ public class UChat {
 
 	public static String componentToLegacy(Component component) {
 		if (component == null) return "";
-		
+
 		StringBuilder sb = new StringBuilder();
 
 		component.visit((style, text) -> {
 			TextColor color = style.getColor();
-			
+
 			if (color != null) {
 				for (ChatFormatting formatting : ChatFormatting.values()) {
 					TextColor legacyColor = TextColor.fromLegacyFormat(formatting);

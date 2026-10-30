@@ -4,5 +4,7 @@ import silence.simsool.lucent.events.impl.LucentEvent;
 
 @FunctionalInterface
 public interface IChatEvent {
+
 	void onChat(LucentEvent.MessageEvent event);
+
 }

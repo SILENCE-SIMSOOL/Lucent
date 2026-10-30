@@ -13,6 +13,7 @@ import silence.simsool.lucent.general.utils.LucentCategory;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD})
 public @interface ModConfigExtra {
+
 	ConfigType type();
 	String name();
 	String display() default "";
@@ -30,4 +31,5 @@ public @interface ModConfigExtra {
 	boolean forcewidget() default false;
 	Align align() default Align.LEFT;
 	KeyMode keymode() default KeyMode.ALL;
+
 }
