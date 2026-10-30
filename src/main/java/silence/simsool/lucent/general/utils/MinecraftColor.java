@@ -58,4 +58,5 @@ public class MinecraftColor {
 		char c = Character.toLowerCase(code);
 		return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || c == 'r';
 	}
+
 }

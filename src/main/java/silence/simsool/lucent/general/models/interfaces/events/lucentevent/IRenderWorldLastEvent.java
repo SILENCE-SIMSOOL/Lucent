@@ -4,5 +4,7 @@ import silence.simsool.lucent.events.impl.LucentEvent;
 
 @FunctionalInterface
 public interface IRenderWorldLastEvent {
+
 	void onRenderWorldLast(LucentEvent.RenderWorldLastEvent event);
+
 }

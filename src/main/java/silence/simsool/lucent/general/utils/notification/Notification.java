@@ -3,6 +3,7 @@ package silence.simsool.lucent.general.utils.notification;
 public class Notification {
 
 	public enum Type {
+
 		INFO(0x1A2A6C, "\uE88F"),
 		SUCCESS(0x1A4D3E, "\uE86C"),
 		WARNING(0x6C521A, "\uE002"),
@@ -23,6 +24,7 @@ public class Notification {
 		public String getIcon() {
 			return icon;
 		}
+
 	}
 
 	private String title;

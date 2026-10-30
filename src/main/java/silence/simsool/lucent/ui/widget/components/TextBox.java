@@ -14,6 +14,7 @@ import silence.simsool.lucent.ui.utils.skija.SkijaRenderer;
 import silence.simsool.lucent.ui.widget.UIWidget;
 
 public class TextBox extends UIWidget {
+
 	private String value;
 	private Consumer<String> onChange;
 	private boolean focused = false;
@@ -26,6 +27,7 @@ public class TextBox extends UIWidget {
 	private float[] prefixWidths;
 
 	private static class TextState {
+
 		final String value;
 		final int cursorPosition;
 		final int highlightPosition;
@@ -35,6 +37,7 @@ public class TextBox extends UIWidget {
 			this.cursorPosition = cursorPosition;
 			this.highlightPosition = highlightPosition;
 		}
+
 	}
 
 	private final Stack<TextState> undoStack = new Stack<>();
@@ -63,13 +66,13 @@ public class TextBox extends UIWidget {
 		float textY = y + (height - 14f) / 2f;
 
 		SkijaRenderer.pushScissor((int) textAreaX, (int) y, (int) textAreaW, (int) height);
-		
+
 		String visibleText = value;
 		float cursorX = SkijaRenderer.textWidth(value.substring(0, Math.min(cursorPosition, value.length())), Fonts.PRETENDARD_MEDIUM, 14f);
-		
+
 		if (cursorX - scrollOffset > textAreaW) scrollOffset = cursorX - textAreaW + 4f;
 		else if (cursorX - scrollOffset < 0) scrollOffset = cursorX;
-		
+
 		// Draw selection highlight
 		int selMin = Math.min(cursorPosition, highlightPosition);
 		int selMax = Math.max(cursorPosition, highlightPosition);
@@ -80,15 +83,15 @@ public class TextBox extends UIWidget {
 			float x2 = textAreaX + Math.max(selectionMinX, selectionMaxX) - scrollOffset;
 			SkijaRenderer.rect(x1, textY - 1f, x2 - x1, 16f, UIColors.withAlpha(UIColors.ACCENT_BLUE, 100), 0f);
 		}
-		
+
 		SkijaRenderer.text(visibleText, textAreaX - scrollOffset, textY, Fonts.PRETENDARD_MEDIUM, UIColors.TEXT_PRIMARY, 14f);
-		
+
 		// Draw cursor
 		if (focused && (System.currentTimeMillis() / 500) % 2 == 0) {
 			float cx = textAreaX + cursorX - scrollOffset;
 			SkijaRenderer.rect(cx + 1f, textY - 1f, 1.5f, 16f, UIColors.ACCENT_BLUE, 0f);
 		}
-		
+
 		SkijaRenderer.popScissor();
 	}
 
@@ -370,4 +373,5 @@ public class TextBox extends UIWidget {
 	public void setFocused(boolean focused) {
 		this.focused = focused;
 	}
+
 }

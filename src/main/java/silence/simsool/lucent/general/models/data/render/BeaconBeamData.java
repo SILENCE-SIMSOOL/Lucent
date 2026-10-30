@@ -3,6 +3,7 @@ package silence.simsool.lucent.general.models.data.render;
 import net.minecraft.world.phys.Vec3;
 
 public class BeaconBeamData {
+
 	public Vec3 pos;
 	public int color;
 	public float partialTicks;
@@ -20,4 +21,5 @@ public class BeaconBeamData {
 		this.gameTime = gameTime;
 		this.isScoping = isScoping;
 	}
+
 }

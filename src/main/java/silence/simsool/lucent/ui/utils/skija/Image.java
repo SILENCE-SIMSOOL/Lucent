@@ -9,9 +9,10 @@ import io.github.humbleui.skija.Data;
 import io.github.humbleui.skija.svg.SVGDOM;
 
 public class Image {
+
 	public final String identifier;
 	public final boolean isSVG;
-	private final byte[] data;
+	private byte[] data;
 	private io.github.humbleui.skija.Image skijaImage;
 	private SVGDOM svgDom;
 
@@ -46,6 +47,7 @@ public class Image {
 	}
 
 	public synchronized void close() {
+		data = null;
 		if (skijaImage != null) {
 			skijaImage.close();
 			skijaImage = null;
@@ -91,4 +93,5 @@ public class Image {
 			return in.readAllBytes();
 		}
 	}
+
 }

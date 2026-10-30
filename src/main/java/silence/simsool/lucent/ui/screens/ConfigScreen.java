@@ -216,6 +216,7 @@ public class ConfigScreen extends Screen {
 	private record ColorSegment(String text, int color) {}
 
 	private class CategoryLabelWidget extends UIWidget {
+
 		private final String name;
 		public CategoryLabelWidget(int x, int y, int w, String name) {
 			super(x, y, w, 32);
@@ -227,17 +228,19 @@ public class ConfigScreen extends Screen {
 			float fontSize = 12f;
 			int color = UIColors.MUTED; 
 			float indent = 8f;
-			
+
 			SkijaRenderer.text(catName, x + indent, y + 14, Fonts.PRETENDARD_SEMIBOLD, color, fontSize);
-			
+
 			float textW = SkijaRenderer.textWidth(catName, Fonts.PRETENDARD_SEMIBOLD, fontSize);
 			float lineX = x + indent + textW + 16;
 			float lineW = (x + width - 6) - lineX;
 			if (lineW > 0) SkijaRenderer.rect(lineX, y + 20, lineW, 1.5f, UIColors.withAlpha(color, 40));
 		}
+
 	}
 
 	private class ModCardWidget extends UIWidget {
+
 		private final Mod mod;
 		private static final int BAR_H = 30;
 
@@ -298,7 +301,7 @@ public class ConfigScreen extends Screen {
 
 			float divX = x + width - 36f;
 			SkijaRenderer.rect(divX, barTop + 6f, 1, BAR_H - 12f, barDiv, 0f);
-			
+
 			SkijaRenderer.text(ICON_SETTINGS, divX + 10f, barTop + 7f, Fonts.MATERIAL_ICONS_ROUND, barFg, 16f);
 
 			// Favorite Heart Icon (top-right)
@@ -327,9 +330,11 @@ public class ConfigScreen extends Screen {
 			}
 			return false;
 		}
+
 	}
 
 	private class ProfileHeaderWidget extends UIWidget {
+
 		private final TextBox input;
 		private final ActionButton createBtn;
 
@@ -374,9 +379,11 @@ public class ConfigScreen extends Screen {
 		public boolean charTyped(char chr, int mods) {
 			return input.charTyped(chr, mods);
 		}
+
 	}
 
 	private class ProfileCardWidget extends UIWidget {
+
 		private String profileName;
 		private final boolean active;
 		private static final int BAR_H = 34;
@@ -395,7 +402,7 @@ public class ConfigScreen extends Screen {
 		@Override
 		protected void renderWidget(GuiGraphicsExtractor graphics, int mx, int my, float delta) {
 			boolean hov = isMouseOver(mx, my);
-			
+
 			int topBg = hov ? UIColors.CARD_HOVER : UIColors.CARD_BG;
 			int barBg;
 			if (active) {
@@ -525,9 +532,11 @@ public class ConfigScreen extends Screen {
 			renameBox.setVisible(false);
 			refreshUI();
 		}
+
 	}
 
 	private class ThemeCardWidget extends UIWidget {
+
 		private final LucentTheme theme;
 		private float hoverAnim = 0f;
 
@@ -586,9 +595,11 @@ public class ConfigScreen extends Screen {
 			}
 			return false;
 		}
+
 	}
 
 	private class SettingRowWidget extends UIWidget {
+
 		private final String label, description;
 		private final List<DescriptionRun> descriptionRuns = new ArrayList<>();
 		private float descriptionWidth = -1;
@@ -720,6 +731,7 @@ public class ConfigScreen extends Screen {
 				default -> -1; // not a color code
 			};
 		}
+
 	}
 
 	@Override
@@ -756,7 +768,7 @@ public class ConfigScreen extends Screen {
 		float scaleX = (screenW - pad) / WINDOW_W;
 		float scaleY = (screenH - pad) / WINDOW_H;
 		float autoFit = Math.min(1.0f, Math.min(scaleX, scaleY));
-		
+
 		uiScale = autoFit * LucentConfig.uiScale;
 
 		float virtScreenW = screenW / uiScale;
@@ -850,7 +862,7 @@ public class ConfigScreen extends Screen {
 			float smy = UMouse.getSkijaScaledY(uiScale);
 
 			SkijaRenderer.push();
-			
+
 			// Apply Animation
 			if (LucentConfig.openAnimation) {
 				float ease = UAnimation.Easing.spring(openAnimationProgress);
@@ -869,10 +881,10 @@ public class ConfigScreen extends Screen {
 				renderSearchBarBg();
 				if (currentModSettings == null) renderCategoryTabs();
 			} 
- 
+
 			SkijaRenderer.pushScissor(contentX - 2, scissorY - 2, contentW - SCROLLBAR_W - 2, scissorH + 4);
 			if (currentSidebarPage.equals("Mods") && currentModSettings != null) renderSettingsHeader();
-			
+
 			SkijaRenderer.push();
 			SkijaRenderer.translate(0, (float) -scrollOffset);
 			for (UIWidget w : widgets) {
@@ -968,7 +980,7 @@ public class ConfigScreen extends Screen {
 
 		float bx = winX + SIDEBAR_W + PAD;
 		float cy = winY + TOPBAR_H / 2f;
-		
+
 		// Back button ←
 		if (mx >= bx - 4 && mx <= bx + 20 && my >= cy - 20 && my <= cy + 10) {
 			if (!history.isEmpty()) {
@@ -987,7 +999,7 @@ public class ConfigScreen extends Screen {
 		if (currentSidebarPage.equals("Mods") && currentModSettings == null) {
 			float catX = winX + SIDEBAR_W + PAD;
 			float catY = winY + TOPBAR_H;
-			
+
 			for (String cat : getCategories()) {
 				float tw = SkijaRenderer.textWidth(L10n.translate(cat), Fonts.PRETENDARD_MEDIUM, 13f);
 				int tabW = (int)(tw + 32);
@@ -1009,7 +1021,7 @@ public class ConfigScreen extends Screen {
 			String[] pages = {"Mods", "Profiles", "Themes", "Preferences"};
 			int sy3 = sy + 36 + 36 + 32;
 			int[] ys = {sy, sy + 36, sy3, sy3 + 36};
-			
+
 			for (int i = 0; i < pages.length; i++) {
 				int ty = ys[i];
 				if (mx >= winX + 16 && mx <= winX + SIDEBAR_W - 16 && my >= ty && my <= ty + 36) {
@@ -1100,7 +1112,7 @@ public class ConfigScreen extends Screen {
 					if (w.mouseScrolled(mx, my + scrollOffset, hAmt, vAmt)) return true;
 				}
 			}
-			
+
 			for (UIWidget w : overlayWidgets) {
 				if (w instanceof ColorPickerButton cp && cp.isPickerOpen()) return true;
 			}
@@ -1327,7 +1339,7 @@ public class ConfigScreen extends Screen {
 		int sx = contentX + PAD;
 		int sy = contentY + 20;
 		int fullW = contentW - PAD * 2;
-		
+
 		// 1. Create Profile Header (Long input bar + Create button)
 		overlayWidgets.add(new ProfileHeaderWidget(sx, sy, fullW));
 
@@ -1351,7 +1363,7 @@ public class ConfigScreen extends Screen {
 			maxRow = Math.max(maxRow, row);
 			widgets.add(new ProfileCardWidget(sx + col * (cardW + gap), gridY + row * (cardH + gap), cardW, cardH, profiles.get(i), profiles.get(i).equals(current)));
 		}
-		
+
 		maxScroll = Math.max(0, (maxRow + 1) * (cardH + gap) + 40 - scissorH);
 	}
 
@@ -1361,7 +1373,7 @@ public class ConfigScreen extends Screen {
 		int sx = contentX + PAD;
 		int sy = scissorY;
 		int itemW = contentW - PAD * 2;
-		
+
 		int currentY = sy;
 
 		// 1. Open Animation
@@ -1440,7 +1452,7 @@ public class ConfigScreen extends Screen {
 
 		// 10. Version Info
 		widgets.add(new SettingRowWidget(sx, currentY, itemW, 74, L10n.translate("lucent.preferences.version"), "Current: " + Lucent.VERSION + "  |  Latest: " + Lucent.LATEST_VERSION));
-		
+
 		int btnW = 120;
 		ActionButton updateBtn = new ActionButton(sx + itemW - PAD - btnW, currentY + 19, btnW, 36, L10n.translate("lucent.preferences.update"));
 		updateBtn.setOnClick(() -> {
@@ -1605,7 +1617,7 @@ public class ConfigScreen extends Screen {
 		ModConfig cfg = (member instanceof Field f) ? f.getAnnotation(ModConfig.class) : ((Method)member).getAnnotation(ModConfig.class);
 		String cfgName = cfg.name();
 		String cfgDesc = cfg.description();
-		
+
 		// 기본 높이를 74로 복구, 설명이 1줄을 넘을 때만 추가
 		int descLines = countDescLines(L10n.translate(cfgDesc), (float)(itemW - 32 - 110), 14f);
 		int rowH = 74 + Math.max(0, descLines - 1) * 17;
@@ -2058,6 +2070,7 @@ public class ConfigScreen extends Screen {
 
 	/** Hover Tooltip for ExtraConfig Widget */
 	private class ExtraTooltipWidget extends UIWidget {
+
 		private final String tooltip;
 		private long hoverStartMs = -1L;
 		private float tooltipAlpha = 0f;
@@ -2108,6 +2121,7 @@ public class ConfigScreen extends Screen {
 				lastMy = Integer.MIN_VALUE;
 			}
 		}
+
 	}
 
 	/** 설명 텍스트가 maxWidth 안에서 몇 줄이 되는지 계산 */
@@ -2128,7 +2142,7 @@ public class ConfigScreen extends Screen {
 	private Map<String, List<Object>> groupConfigMembers() {
 		String query = (searchField == null) ? "" : searchField.getValue().trim().toLowerCase();
 		Class<?> clazz = currentModSettings.getClass();
-		
+
 		List<Object> allMembers = modMemberCache.computeIfAbsent(clazz, c -> {
 			List<Object> members = new ArrayList<>();
 			for (Field field : c.getDeclaredFields()) {
@@ -2156,7 +2170,7 @@ public class ConfigScreen extends Screen {
 		Map<String, List<Object>> map = new LinkedHashMap<>();
 		for (Object member : allMembers) {
 			ModConfig cfg = (member instanceof Field f) ? f.getAnnotation(ModConfig.class) : ((Method)member).getAnnotation(ModConfig.class);
-			
+
 			if (cfg.hidden()) continue;
 
 			// Handle Search
@@ -2179,7 +2193,7 @@ public class ConfigScreen extends Screen {
 		for (ModConfig.CategoryPriority cp : annos) {
 			if (L10n.translate(cp.name()).equalsIgnoreCase(category)) return cp.priority();
 		}
-		
+
 		int max = Integer.MIN_VALUE;
 		if (cMembers != null) {
 			for (Object m : cMembers) {
@@ -2254,7 +2268,7 @@ public class ConfigScreen extends Screen {
 		SkijaRenderer.text(moduleManager.getTitle(), ix, winY + 26f, moduleManager.getTitleFont(), titleColor, moduleManager.getTitleSize());
 
 		int sy = winY + 44;
-		
+
 		sy += 36;
 		SkijaRenderer.text("MOD CONFIG", ix, sy, Fonts.PRETENDARD_SEMIBOLD, UIColors.MUTED, 10f);
 		sy += 16;
@@ -2356,7 +2370,7 @@ public class ConfigScreen extends Screen {
 
 	private void renderCategoryTabs() {
 		List<String> cats = getCategories();
-		
+
 		float cx = contentX + PAD;
 		float cy = contentY; 
 
@@ -2364,18 +2378,18 @@ public class ConfigScreen extends Screen {
 			String translatedCat = L10n.translate(cat);
 			float tw = SkijaRenderer.textWidth(translatedCat, Fonts.PRETENDARD_MEDIUM, 13f);
 			boolean active = cat.equals(currentCategory);
-			
+
 			int bg = active ? UIColors.ACCENT_BLUE : UIColors.TAB_BG;
 			int fg = active ? UIColors.getContrastText(bg) : 0xFFCCCCCC;
-			
+
 			int padX = 16;
 			int tabW = (int)(tw + padX * 2);
 			int tabH = 28;
-			
+
 			SkijaRenderer.rect(cx, cy, tabW, tabH, bg, 8f);
 			float textY = cy + (tabH - 13f) / 2f;
 			SkijaRenderer.text(translatedCat, cx + padX, textY, Fonts.PRETENDARD_MEDIUM, fg, 13f);
-			
+
 			cx += tabW + 8f; 
 		}
 	}
@@ -2439,6 +2453,7 @@ public class ConfigScreen extends Screen {
 	}
 
 	private class IconButtonWidget extends UIWidget {
+
 		private final String iconText;
 		private final Image iconImage;
 		private final Runnable onClick;
@@ -2482,6 +2497,7 @@ public class ConfigScreen extends Screen {
 			}
 			return false;
 		}
+
 	}
 
 }

@@ -4,5 +4,7 @@ import silence.simsool.lucent.events.impl.EntityEvent;
 
 @FunctionalInterface
 public interface INameChangeEvent {
+
 	void onNameChange(EntityEvent.NameChangeEvent event);
+
 }

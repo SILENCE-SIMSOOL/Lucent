@@ -10,7 +10,9 @@ import net.minecraft.sounds.SoundSource;
 public class USound {
 
 	public static class LucentSounds {
+
 		public static final LucentSound Alert = silence.simsool.lucent.general.utils.useful.LucentSounds.Alert;
+
 	}
 
 	public static void playSound(SoundEvent sound, float pitch) {

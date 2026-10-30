@@ -1,6 +1,7 @@
 package silence.simsool.lucent.general.models.data;
 
 public class LucentTheme {
+
 	public final String name;
 	public final int winBg, sidebarBg, accent, textPrimary, textSecondary, textLabel;
 	public final int itemBg, itemHover, itemBorder, barOn, barOff, divider, sidebarSel, searchbarBg;
@@ -13,4 +14,5 @@ public class LucentTheme {
 		this.barOn = barOn; this.barOff = barOff; this.divider = divider;
 		this.sidebarSel = sidebarSel; this.searchbarBg = searchbarBg;
 	}
+
 }

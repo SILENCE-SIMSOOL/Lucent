@@ -10,6 +10,7 @@ import silence.simsool.lucent.general.models.interfaces.events.configevent.*;
 public class ConfigEvent {
 
 	public static class ToggleButtonEvent {
+
 		private final Mod mod;
 		private final Field field;
 		private final String configName;
@@ -43,6 +44,7 @@ public class ConfigEvent {
 		public boolean getNewValue() {
 			return newValue;
 		}
+
 	}
 
 	public static final Event<IToggleButtonEvent> TOGGLE_BUTTON = createArrayBacked(
@@ -52,6 +54,7 @@ public class ConfigEvent {
 	);
 
 	public static class SliderEvent {
+
 		private final Mod mod;
 		private final Field field;
 		private final String configName;
@@ -71,6 +74,7 @@ public class ConfigEvent {
 		public String getConfigName() { return configName; }
 		public double getOldValue() { return oldValue; }
 		public double getNewValue() { return newValue; }
+
 	}
 
 	public static final Event<ISliderEvent> SLIDER = createArrayBacked(
@@ -80,6 +84,7 @@ public class ConfigEvent {
 	);
 
 	public static class SelectorEvent {
+
 		private final Mod mod;
 		private final Field field;
 		private final String configName;
@@ -113,6 +118,7 @@ public class ConfigEvent {
 		public String getNewValue() {
 			return newValue;
 		}
+
 	}
 
 	public static final Event<ISelectorEvent> SELECTOR = createArrayBacked(
@@ -122,6 +128,7 @@ public class ConfigEvent {
 	);
 
 	public static class ColorPickerEvent {
+
 		private final Mod mod;
 		private final Field field;
 		private final String configName;
@@ -141,6 +148,7 @@ public class ConfigEvent {
 		public String getConfigName() { return configName; }
 		public int getOldValue() { return oldValue; }
 		public int getNewValue() { return newValue; }
+
 	}
 
 	public static final Event<IColorPickerEvent> COLOR_PICKER = createArrayBacked(
@@ -150,6 +158,7 @@ public class ConfigEvent {
 	);
 
 	public static class TextBoxEvent {
+
 		private final Mod mod;
 		private final Field field;
 		private final String configName;
@@ -183,6 +192,7 @@ public class ConfigEvent {
 		public String getNewValue() {
 			return newValue;
 		}
+
 	}
 
 	public static final Event<ITextBoxEvent> TEXT_BOX = createArrayBacked(
@@ -192,6 +202,7 @@ public class ConfigEvent {
 	);
 
 	public static class KeyBindEvent {
+
 		private final Mod mod;
 		private final Field field;
 		private final String configName;
@@ -225,6 +236,7 @@ public class ConfigEvent {
 		public KeyBind getNewValue() {
 			return newValue;
 		}
+
 	}
 
 	public static final Event<IKeyBindEvent> KEY_BIND = createArrayBacked(

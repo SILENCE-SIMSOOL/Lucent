@@ -4,5 +4,7 @@ import silence.simsool.lucent.events.impl.InputEvent;
 
 @FunctionalInterface
 public interface IKeyInputEvent {
+
 	void onKeyInput(InputEvent.KeyInputEvent event);
+
 }

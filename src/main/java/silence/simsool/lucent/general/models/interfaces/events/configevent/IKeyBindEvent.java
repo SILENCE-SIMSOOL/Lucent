@@ -4,5 +4,7 @@ import silence.simsool.lucent.events.impl.ConfigEvent;
 
 @FunctionalInterface
 public interface IKeyBindEvent {
+
 	void onChange(ConfigEvent.KeyBindEvent event);
+
 }

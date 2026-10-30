@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import silence.simsool.lucent.general.enums.LogLevel;
 
 public class ULog {
+
 	private final String name;
 	private final Logger logger;
 
@@ -127,4 +128,5 @@ public class ULog {
 	private String getPrefix(LogLevel level) {
 		return "[" + name + "] [" + level.name() + "] ";
 	}
+
 }

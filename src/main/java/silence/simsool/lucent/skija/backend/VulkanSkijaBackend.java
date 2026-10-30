@@ -140,13 +140,12 @@ public class VulkanSkijaBackend implements SkijaBackend {
 				false,
 				VK_SHARING_MODE_EXCLUSIVE
 		);
-		BackendTexture backend = BackendTexture.makeVulkan(view.getWidth(0), view.getHeight(0), info);
-		ColorAlphaType alpha = premultiplied ? ColorAlphaType.PREMUL : ColorAlphaType.UNPREMUL;
-		Image image = Image.borrowTextureFrom(
-				getContext(), backend, SurfaceOrigin.TOP_LEFT, ColorType.RGBA_8888, alpha, ColorSpace.getSRGB(), null
-		);
-		backend.close();
-		return image;
+		try (BackendTexture backend = BackendTexture.makeVulkan(view.getWidth(0), view.getHeight(0), info)) {
+			ColorAlphaType alpha = premultiplied ? ColorAlphaType.PREMUL : ColorAlphaType.UNPREMUL;
+			return Image.borrowTextureFrom(
+					getContext(), backend, SurfaceOrigin.TOP_LEFT, ColorType.RGBA_8888, alpha, ColorSpace.getSRGB(), null
+			);
+		}
 	}
 
 	@Override

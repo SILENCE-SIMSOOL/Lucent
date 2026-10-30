@@ -8,6 +8,8 @@ import com.mojang.blaze3d.systems.GpuDeviceBackend;
 
 @Mixin(GpuDevice.class)
 public interface GpuDeviceAccessor {
+
 	@Accessor
 	GpuDeviceBackend getBackend();
+
 }

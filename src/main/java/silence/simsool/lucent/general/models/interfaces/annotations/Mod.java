@@ -8,9 +8,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Mod {
+
 	String name();
 	String description() default "";
 	String searchTags() default "";
 	String category() default "General";
 	String icon() default "";
+
 }

@@ -24,7 +24,7 @@ public class WingModel extends Model<AvatarRenderState> {
 	public static ModelPart createModelPart() {
 		MeshDefinition meshDefinition = new MeshDefinition();
 		PartDefinition root = meshDefinition.getRoot();
-		
+
 		PartDefinition wingPart = root.addOrReplaceChild(
 			"wing",
 			CubeListBuilder.create()
@@ -32,7 +32,7 @@ public class WingModel extends Model<AvatarRenderState> {
 				.texOffs(20, 8).addBox("skin", -10.0F, 0.0F, 0.5F, 10.0F, 0.0F, 10.0F),
 			PartPose.offset(-2.0F, 0.0F, 0.0F)
 		);
-		
+
 		wingPart.addOrReplaceChild(
 			"wingtip",
 			CubeListBuilder.create()
@@ -50,7 +50,7 @@ public class WingModel extends Model<AvatarRenderState> {
 		float angleX = -85.0F;
 		float angleY = 40.0F;
 		float angleZ = 20.0F;
-		
+
 		float f11 = (System.currentTimeMillis() % 1000L) / 1000.0F * (float) Math.PI * 2.0F;
 		this.wing.xRot = (float) Math.toRadians(angleX) - (float) Math.cos(f11) * 0.2F;
 		this.wing.yRot = (float) Math.toRadians(angleY) + (float) Math.sin(f11) * 0.4F;

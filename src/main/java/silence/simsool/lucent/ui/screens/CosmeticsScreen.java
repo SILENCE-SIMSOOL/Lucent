@@ -84,7 +84,7 @@ public class CosmeticsScreen extends Screen {
 		float scaleX = (screenW - pad) / WINDOW_W;
 		float scaleY = (screenH - pad) / WINDOW_H;
 		float autoFit = Math.max(0.1f, Math.min(1.0f, Math.min(scaleX, scaleY)));
-		
+
 		uiScale = Math.max(0.1f, autoFit * LucentConfig.uiScale);
 		if (!Float.isFinite(uiScale) || uiScale <= 0.01f || uiScale > 10.0f) {
 			uiScale = 1.0f;
@@ -166,7 +166,7 @@ public class CosmeticsScreen extends Screen {
 			float smy = UMouse.getSkijaScaledY(uiScale);
 
 			SkijaRenderer.push();
-			
+
 			// Open Animation
 			float ease = UAnimation.Easing.spring(openAnimationProgress);
 			SkijaRenderer.translate(width / 2f, height / 2f);
@@ -258,10 +258,10 @@ public class CosmeticsScreen extends Screen {
 	private void renderHeaderAndTabs(float smx, float smy) {
 		int ix = winX + PAD;
 		SkijaRenderer.text("Wardrobe", ix, winY + 30f, Fonts.PRETENDARD_SEMIBOLD, UIColors.PURE_WHITE, 22f);
-		
+
 		int tabX = winX + 300;
 		int tabY = winY + 28;
-		
+
 		drawCategoryTab(tabX, tabY, "Hats", currentCategory.equals("Hats"), smx, smy);
 		drawCategoryTab(tabX + 90, tabY, "Wings", currentCategory.equals("Wings"), smx, smy);
 		drawCategoryTab(tabX + 180, tabY, "Capes", currentCategory.equals("Capes"), smx, smy);
@@ -271,12 +271,12 @@ public class CosmeticsScreen extends Screen {
 		int w = 76;
 		int h = 32;
 		boolean hov = smx >= x && smx <= x + w && smy >= y && smy <= y + h;
-		
+
 		int bg = active ? 0xFF3182F6 : (hov ? 0x1AFFFFFF : 0x0AFFFFFF);
 		int fg = active ? UIColors.PURE_WHITE : (hov ? UIColors.TEXT_PRIMARY : UIColors.TEXT_SECONDARY);
-		
+
 		SkijaRenderer.rect(x, y, w, h, bg, 16f);
-		
+
 		float tw = SkijaRenderer.textWidth(label, Fonts.PRETENDARD_MEDIUM, 13f);
 		SkijaRenderer.text(label, x + (w - tw) / 2f, y + (h - 13f) / 2f, Fonts.PRETENDARD_MEDIUM, fg, 13f);
 	}
@@ -289,13 +289,13 @@ public class CosmeticsScreen extends Screen {
 
 		float px = sx + sw / 2f;
 		float py = sy + sh / 2f - 20f;
-		
+
 		SkijaRenderer.circle(px, py, 110f, 0x083182F6);
 		SkijaRenderer.circle(px, py, 70f, 0x0B3182F6);
 
 		boolean isPremium = PremiumCosmetics.isPremium(mc.getUser().getProfileId());
 		String btnText = isPremium ? "Edit Custom Cosmetic" : "Get Premium Wardrobe";
-		
+
 		int btnW = sw - 20;
 		int btnH = 46;
 		int bx = sx + (sw - btnW) / 2;
@@ -304,7 +304,7 @@ public class CosmeticsScreen extends Screen {
 		boolean hov = smx >= bx && smx <= bx + btnW && smy >= by && smy <= by + btnH;
 		int btnBg = hov ? 0xFF1B64DA : 0xFF3182F6;
 		SkijaRenderer.rect(bx, by, btnW, btnH, btnBg, 12f);
-		
+
 		float tw = SkijaRenderer.textWidth(btnText, Fonts.PRETENDARD_SEMIBOLD, 14f);
 		SkijaRenderer.text(btnText, bx + (btnW - tw) / 2f, by + (btnH - 14f) / 2f, Fonts.PRETENDARD_SEMIBOLD, UIColors.PURE_WHITE, 14f);
 

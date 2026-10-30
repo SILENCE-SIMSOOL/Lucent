@@ -7,6 +7,7 @@ import java.util.Properties;
 
 /** Client-thread state machine; world transitions suspend rather than finish a guide. */
 public final class GuideQueue {
+
 	private final Map<String, Guide> guides = new LinkedHashMap<>();
 	private final Properties progress;
 	private Guide active;
@@ -52,4 +53,5 @@ public final class GuideQueue {
 		index = 0;
 		return true;
 	}
+
 }

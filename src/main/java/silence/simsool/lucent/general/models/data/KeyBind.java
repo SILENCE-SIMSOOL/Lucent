@@ -151,11 +151,11 @@ public class KeyBind {
 			case GLFW.GLFW_KEY_LEFT          -> "←";
 			case GLFW.GLFW_KEY_RIGHT         -> "→";
 			case GLFW.GLFW_KEY_LEFT_SHIFT,
-			     GLFW.GLFW_KEY_RIGHT_SHIFT   -> "Shift";
+				 GLFW.GLFW_KEY_RIGHT_SHIFT   -> "Shift";
 			case GLFW.GLFW_KEY_LEFT_CONTROL,
-			     GLFW.GLFW_KEY_RIGHT_CONTROL -> "Ctrl";
+				 GLFW.GLFW_KEY_RIGHT_CONTROL -> "Ctrl";
 			case GLFW.GLFW_KEY_LEFT_ALT,
-			     GLFW.GLFW_KEY_RIGHT_ALT     -> "Alt";
+				 GLFW.GLFW_KEY_RIGHT_ALT     -> "Alt";
 			case GLFW.GLFW_KEY_ESCAPE        -> "Esc";
 			case GLFW.GLFW_KEY_CAPS_LOCK     -> "CapsLk";
 			case GLFW.GLFW_KEY_F1            -> "F1";
@@ -178,4 +178,5 @@ public class KeyBind {
 	public String toString() {
 		return getDisplayName();
 	}
+
 }

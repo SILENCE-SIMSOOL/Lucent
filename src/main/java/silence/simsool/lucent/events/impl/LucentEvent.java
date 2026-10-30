@@ -386,6 +386,7 @@ public class LucentEvent {
 	);
 
 	public static class BlockInteractEvent {
+
 		public final ItemStack itemStack;
 		public final BlockPos pos;
 		private boolean canceled = false;
@@ -402,9 +403,11 @@ public class LucentEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 	public static class BlockUpdateEvent {
+
 		public BlockPos pos;
 		public BlockState oldState;
 		public BlockState newState;
@@ -414,9 +417,11 @@ public class LucentEvent {
 			this.oldState = oldState;
 			this.newState = newState;
 		}
+
 	}
 
 	public static class RenderBossBarEvent {
+
 		public final BossEvent bossBar;
 		private boolean canceled = false;
 
@@ -431,9 +436,11 @@ public class LucentEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 	public static class DropItemEvent {
+
 		public final ItemStack stack;
 		public final DropType dropType;
 		public final boolean all;
@@ -452,9 +459,11 @@ public class LucentEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 	public static class KeybindEvent {
+
 		public final KeyBind keybind;
 		private final boolean pressed;
 		private final boolean keyDown;
@@ -472,9 +481,11 @@ public class LucentEvent {
 		public boolean isKeyDown() {
 			return keyDown;
 		}
+
 	}
 
 	public static class ModMessageEvent {
+
 		public final String chat;
 		public final String format;
 		private boolean canceled = false;
@@ -491,9 +502,11 @@ public class LucentEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 	public static class MessageEvent {
+
 		public Component component;
 		public String message;
 		public String chat;
@@ -517,9 +530,11 @@ public class LucentEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 	public static class MessageSentEvent {
+
 		public String message;
 		private boolean canceled = false;
 
@@ -534,9 +549,11 @@ public class LucentEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 	public static class TabCompletionEvent {
+
 		private final String fullInput;
 		private final String beforeCursor;
 		private final ArrayList<String> existing;
@@ -571,9 +588,11 @@ public class LucentEvent {
 		public ArrayList<String> getExisting() {
 			return existing;
 		}
+
 	}
 
 	public static class RenderWorldEvent {
+
 		public final LevelExtractionContext context;
 		public final LevelRenderer handler;
 		public final float partialTick;
@@ -587,9 +606,11 @@ public class LucentEvent {
 		public float getFloat() {
 			return partialTick;
 		}
+
 	}
 
 	public static class RenderWorldLastEvent {
+
 		public final LevelRenderContext context;
 		public final LevelRenderer handler;
 		public final float partialTick;
@@ -603,9 +624,11 @@ public class LucentEvent {
 		public float getFloat() {
 			return partialTick;
 		}
+
 	}
 
 	public static class ItemPickupEvent {
+
 		public final ItemEntity entity;
 		public final int entityId;
 
@@ -613,9 +636,11 @@ public class LucentEvent {
 			this.entity = entity;
 			this.entityId = entityId;
 		}
+
 	}
 
 	public static class SoundEvent {
+
 		public final String sound;
 		public final float pitch;
 		public final float volume;
@@ -646,9 +671,11 @@ public class LucentEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 	public static class ScoreboardEvent {
+
 		public final String message;
 		public final ClientboundSetPlayerTeamPacket packet;
 
@@ -660,9 +687,11 @@ public class LucentEvent {
 			this.message = message;
 			this.packet = packet;
 		}
+
 	}
 
 	public static class TabAddEvent {
+
 		public final String message;
 		public final Component component;
 
@@ -670,9 +699,11 @@ public class LucentEvent {
 			this.message = message;
 			this.component = component;
 		}
+
 	}
 
 	public static class TabUpdateEvent {
+
 		public final String message;
 		public final Component component;
 
@@ -680,9 +711,11 @@ public class LucentEvent {
 			this.message = message;
 			this.component = component;
 		}
+
 	}
 
 	public static class TabFooterEvent {
+
 		public final String message;
 		public final Component component;
 
@@ -690,9 +723,11 @@ public class LucentEvent {
 			this.message = message;
 			this.component = component;
 		}
+
 	}
 
 	public static class TabHeaderEvent {
+
 		public final String message;
 		public final Component component;
 
@@ -700,9 +735,11 @@ public class LucentEvent {
 			this.message = message;
 			this.component = component;
 		}
+
 	}
 
 	public static class ActionbarEvent {
+
 		public final String message;
 		public final Component component;
 
@@ -710,9 +747,11 @@ public class LucentEvent {
 			this.message = message;
 			this.component = component;
 		}
+
 	}
 
 	public static class UseItemOnEvent {
+
 		public final BlockHitResult blockHitResult;
 		public final InteractionHand hand;
 
@@ -720,17 +759,21 @@ public class LucentEvent {
 			this.blockHitResult = blockHitResult;
 			this.hand = hand;
 		}
+
 	}
 
 	public static class UseItemEvent {
+
 		public final InteractionHand hand;
 
 		public UseItemEvent(InteractionHand hand) {
 			this.hand = hand;
 		}
+
 	}
 
 	public static class LeftClickPreEvent {
+
 		private boolean canceled = false;
 
 		public void cancel() {
@@ -740,9 +783,11 @@ public class LucentEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 	public static class RightClickPreEvent {
+
 		private boolean canceled = false;
 
 		public void cancel() {
@@ -752,9 +797,11 @@ public class LucentEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 	public static class LeftClickPostEvent {
+
 		private final boolean result;
 
 		public LeftClickPostEvent(boolean result) {
@@ -764,12 +811,15 @@ public class LucentEvent {
 		public boolean getResult() {
 			return result;
 		}
+
 	}
 
 	public static class RightClickPostEvent {
+
 	}
 
 	public static class BlockOverlayEvent {
+
 		public final LevelExtractionContext renderContext;
 		public final HitResult hitResult;
 		private boolean canceled = false;
@@ -786,9 +836,11 @@ public class LucentEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 	public static class ParticleSpawnEvent {
+
 		public final Particle particle;
 		private boolean canceled = false;
 
@@ -803,9 +855,11 @@ public class LucentEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 	public static class TablistUpdateEvent {
+
 		public final ClientboundPlayerInfoUpdatePacket packet;
 		public final EnumSet<ClientboundPlayerInfoUpdatePacket.Action> actions;
 		public final List<ClientboundPlayerInfoUpdatePacket.Entry> entries;
@@ -825,9 +879,11 @@ public class LucentEvent {
 				}
 			}
 		}
+
 	}
 
 	public static class ScoreboardUpdateEvent {
+
 		public final ClientboundSetScorePacket packet;
 		public final String owner;
 		public final String objectiveName;
@@ -843,6 +899,7 @@ public class LucentEvent {
 			this.display = packet.display();
 			this.cleanObjective = ScoreboardUtils.cleanSB(packet.objectiveName());
 		}
+
 	}
 
 }

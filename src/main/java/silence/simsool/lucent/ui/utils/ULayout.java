@@ -72,6 +72,7 @@ public class ULayout {
 	// ────────────────────────────────────────────────
 
 	public record Insets(int top, int right, int bottom, int left) {
+
 		public static Insets all(int v) {
 			return new Insets(v, v, v, v);
 		}
@@ -95,6 +96,7 @@ public class ULayout {
 		public int innerY(int y) {
 			return y + top;
 		}
+
 	}
 
 	// ────────────────────────────────────────────────

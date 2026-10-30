@@ -240,4 +240,5 @@ public class HUDManager {
 	private void updateSkijaStatus() {
 		this.cachedHasSkija = huds.stream().anyMatch(h -> h.getRenderType() == RenderType.SKIJA);
 	}
+
 }

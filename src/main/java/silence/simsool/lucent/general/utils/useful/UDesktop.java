@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import net.minecraft.util.Util;
 
 public class UDesktop {
+
 	private static boolean isLinux;
 	private static boolean isXdg;
 	private static boolean isKde;

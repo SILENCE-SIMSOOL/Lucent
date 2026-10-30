@@ -131,22 +131,27 @@ public final class EntityEvent {
 	);
 
 	public static class EntityJoinEvent {
+
 		public final Entity entity;
 
 		public EntityJoinEvent(Entity entity) {
 			this.entity = entity;
 		}
+
 	}
 
 	public static class EntityLeaveEvent {
+
 		public final Entity entity;
 
 		public EntityLeaveEvent(Entity entity) {
 			this.entity = entity;
 		}
+
 	}
 
 	public static class EntityDeathEvent {
+
 		public final Entity entity;
 		public final ClientLevel level;
 
@@ -154,9 +159,11 @@ public final class EntityEvent {
 			this.entity = entity;
 			this.level = level;
 		}
+
 	}
 
 	public static class RenderEntityPreEvent {
+
 		public final EntityRenderState entityState;
 		public final CameraRenderState cameraState;
 		public final PoseStack matrix;
@@ -168,9 +175,11 @@ public final class EntityEvent {
 			this.matrix = matrix;
 			this.submitter = submitter;
 		}
+
 	}
 
 	public static class RenderEntityAllowEvent {
+
 		public final Entity entity;
 		public final Frustum frustum;
 		public final double x;
@@ -193,9 +202,11 @@ public final class EntityEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 	public static class ExtractRenderStatePre {
+
 		public final Entity entity;
 		public final float partialTick;
 		private boolean canceled = false;
@@ -212,9 +223,11 @@ public final class EntityEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 	public static class ExtractRenderStatePost {
+
 		public final Entity entity;
 		public final EntityRenderState state;
 		public final float partialTick;
@@ -224,9 +237,11 @@ public final class EntityEvent {
 			this.state = state;
 			this.partialTick = partialTick;
 		}
+
 	}
 
 	public static class NameChangeEvent {
+
 		public final int entityId;
 		public final EntityType<?> type;
 		public final Component nameText;
@@ -238,9 +253,11 @@ public final class EntityEvent {
 			this.nameText = nameText;
 			this.name = name;
 		}
+
 	}
 
 	public static class EntityDataEvent {
+
 		private final int entityId;
 		private final EntityType<?> type;
 		private final List<SynchedEntityData.DataValue<?>> data;
@@ -262,9 +279,11 @@ public final class EntityEvent {
 		public List<SynchedEntityData.DataValue<?>> getData() {
 			return data;
 		}
+
 	}
 
 	public static class EntityEquipmentEvent {
+
 		public final int entityId;
 		public final EntityType<?> type;
 		public final Vec3 spawnPos;
@@ -276,9 +295,11 @@ public final class EntityEvent {
 			this.spawnPos = spawnPos;
 			this.slots = slots;
 		}
+
 	}
 
 	public static class EntityInteractEvent {
+
 		public final Entity entity;
 		private boolean canceled = false;
 
@@ -293,6 +314,7 @@ public final class EntityEvent {
 		public boolean isCanceled() {
 			return canceled;
 		}
+
 	}
 
 }

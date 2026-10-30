@@ -9,9 +9,11 @@ import net.minecraft.client.renderer.SubmitNodeStorage;
 
 @Mixin(LevelRenderer.class)
 public interface LevelRendererAccessor {
+
 	@Accessor("renderBuffers")
 	RenderBuffers getRenderBuffers();
 
 	@Accessor
 	SubmitNodeStorage getSubmitNodeStorage();
+
 }

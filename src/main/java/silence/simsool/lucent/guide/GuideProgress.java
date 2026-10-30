@@ -11,6 +11,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 
 public final class GuideProgress {
+
 	private GuideProgress() {}
 
 	public static Properties load(Path path) throws IOException {
@@ -35,4 +36,5 @@ public final class GuideProgress {
 			Files.move(temporary, path, StandardCopyOption.REPLACE_EXISTING);
 		}
 	}
+
 }

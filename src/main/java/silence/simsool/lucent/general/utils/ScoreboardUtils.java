@@ -18,17 +18,17 @@ public class ScoreboardUtils {
 
 	public static List<String> getSidebarScores(Scoreboard scoreboard, Objective objective) {
 		List<String> lines = new ArrayList<>();
-		
+
 		for (PlayerScoreEntry score : scoreboard.listPlayerScores(objective)) {
 			String owner = score.owner();
 			PlayerTeam team = scoreboard.getPlayersTeam(owner);
-			
+
 			String prefix = team != null ? team.getPlayerPrefix().getString() : "";
 			String suffix = team != null ? team.getPlayerSuffix().getString() : "";
-			
+
 			lines.add(prefix + owner + suffix);
 		}
-		
+
 		return lines;
 	}
 

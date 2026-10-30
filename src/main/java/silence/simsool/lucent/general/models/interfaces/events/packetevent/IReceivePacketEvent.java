@@ -4,5 +4,7 @@ import silence.simsool.lucent.events.impl.PacketEvent;
 
 @FunctionalInterface
 public interface IReceivePacketEvent {
+
 	void onReceivePacket(PacketEvent.ReceiveEvent event);
+
 }
